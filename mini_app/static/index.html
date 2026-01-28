@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Рулетка Призов</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 AI Рулетка Призов</h1>
+            <p class="subtitle">Крутите рулетку и выигрывайте скидку на разработку!</p>
+        </div>
+        
+        <div class="wheel-container">
+            <div class="wheel-pointer">▼</div>
+            <canvas id="roulette" width="320" height="320"></canvas>
+        </div>
+        
+        <button id="spinBtn" class="spin-button">
+            <span class="button-icon">🎲</span>
+            <span class="button-text">Крутить рулетку!</span>
+        </button>
+        
+        <div id="result" class="result hidden">
+            <div class="result-content">
+                <div class="result-icon">🎉</div>
+                <div class="result-title">Поздравляем!</div>
+                <div class="result-prize"></div>
+                <div class="result-message">Скидка на разработку от rusneurosoft.ru</div>
+            </div>
+        </div>
+        
+        <div id="alreadySpun" class="already-spun hidden">
+            <div class="already-spun-content">
+                <div class="already-spun-icon">✅</div>
+                <div class="already-spun-title">Вы уже крутили рулетку!</div>
+                <div class="already-spun-prize"></div>
+                <div class="already-spun-message">Ваш промокод уже сохранен. Свяжитесь с нами для активации скидки!</div>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Загрузка...</p>
+        </div>
+    </div>
+    
+    <script src="/script.js"></script>
+</body>
+</html>

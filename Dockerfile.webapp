@@ -1,0 +1,19 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application files
+COPY mini_app/ /app/
+COPY app/database.py /app/app/
+COPY app/config.py /app/app/
+
+# Create app directory if it doesn't exist
+RUN mkdir -p /app/app
+
+EXPOSE 8080
+
+CMD ["python", "server.py"]
