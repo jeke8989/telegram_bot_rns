@@ -4,6 +4,7 @@ Serves static files and API endpoints for the roulette
 """
 
 from aiohttp import web
+import aiohttp
 import os
 import sys
 import logging
@@ -16,6 +17,7 @@ load_dotenv()
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from app.database import Database
+from app.config import Config
 
 # Setup logging
 logging.basicConfig(
@@ -29,10 +31,37 @@ database_url = os.getenv('DATABASE_URL')
 if not database_url:
     raise ValueError("DATABASE_URL is not set in environment variables")
 
-# Initialize database
+# Initialize database and config
 db = Database(database_url)
+config = Config()
 
 routes = web.RouteTableDef()
+
+# ========== Helper Functions ==========
+
+async def send_telegram_message(telegram_id: int, text: str, reply_markup=None):
+    """Send message to user via Telegram Bot API"""
+    try:
+        url = f"https://api.telegram.org/bot{config.telegram_token}/sendMessage"
+        payload = {
+            'chat_id': telegram_id,
+            'text': text,
+            'parse_mode': 'Markdown'
+        }
+        if reply_markup:
+            payload['reply_markup'] = reply_markup
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload) as response:
+                if response.status == 200:
+                    logger.info(f"Message sent to user {telegram_id}")
+                    return True
+                else:
+                    logger.error(f"Failed to send message: {await response.text()}")
+                    return False
+    except Exception as e:
+        logger.error(f"Error sending Telegram message: {e}")
+        return False
 
 # ========== Static Files ==========
 
@@ -55,7 +84,7 @@ async def js(request):
 
 import random
 
-PRIZES = [5000, 10000, 15000, 20000, 30000]
+PRIZES = [5000, 10000, 15000, 20000, 25000, 30000]
 
 @routes.get('/api/can-spin')
 async def can_spin(request):
@@ -107,6 +136,25 @@ async def spin_roulette(request):
         await db.save_roulette_spin(telegram_id, prize)
         
         logger.info(f"User {telegram_id} won {prize} RUB")
+        
+        # Send notification to user
+        message_text = f"""
+🎉 **Поздравляем!**
+
+Вы выиграли скидку **{prize:,} ₽** на услуги нашей компании!
+
+💰 Эта сумма будет вычтена из стоимости разработки вашего проекта.
+
+📞 Свяжитесь с нами, чтобы использовать скидку:
+• Сайт: {config.company_website}
+• Email: {config.company_email}
+• Телефон: {config.company_phone}
+
+Спасибо за участие! 🚀
+        """.strip()
+        
+        # Send message asynchronously (don't wait for result)
+        await send_telegram_message(telegram_id, message_text)
         
         return web.json_response({'prize': prize})
     

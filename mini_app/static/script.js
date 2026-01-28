@@ -14,8 +14,8 @@ const alreadySpunPrize = document.querySelector('.already-spun-prize');
 const loadingDiv = document.getElementById('loading');
 
 // Configuration
-const PRIZES = [5000, 10000, 15000, 20000, 30000];
-const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'];
+const PRIZES = [5000, 10000, 15000, 20000, 25000, 30000];
+const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F39C12'];
 const CENTER_X = canvas.width / 2;
 const CENTER_Y = canvas.height / 2;
 const RADIUS = 150;
@@ -82,12 +82,18 @@ function animateSpin(targetPrize) {
     const targetIndex = PRIZES.indexOf(targetPrize);
     const arc = (2 * Math.PI) / PRIZES.length;
     
-    // Calculate target angle (stop at top, accounting for pointer)
-    const targetAngle = (2 * Math.PI) - (targetIndex * arc) - (arc / 2);
+    // Calculate target angle (stop at top, accounting for pointer at 12 o'clock)
+    // Pointer is at top (270 degrees or -PI/2), segments start from right (0 degrees)
+    // We need to rotate so the CENTER of target segment is under the pointer
+    const pointerAngle = -Math.PI / 2; // Top position (12 o'clock)
+    const segmentStartAngle = targetIndex * arc;
+    const segmentCenterAngle = segmentStartAngle + (arc / 2);
+    const targetAngle = pointerAngle - segmentCenterAngle;
     
-    // Add multiple full rotations
+    // Normalize to positive angle and add full rotations
+    const normalizedTargetAngle = (targetAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
     const fullRotations = 5;
-    const totalRotation = (fullRotations * 2 * Math.PI) + targetAngle;
+    const totalRotation = (fullRotations * 2 * Math.PI) + normalizedTargetAngle;
     
     const startTime = Date.now();
     const duration = 4000; // 4 seconds
@@ -126,10 +132,21 @@ function showResult(prize) {
     resultPrize.textContent = formatPrize(prize);
     resultDiv.classList.remove('hidden');
     
-    // Auto close after 5 seconds
+    // Send result to bot after 3 seconds and close mini app
     setTimeout(() => {
-        resultDiv.classList.add('hidden');
-    }, 5000);
+        try {
+            // Send prize data to bot
+            const data = JSON.stringify({ prize: prize });
+            tg.sendData(data);
+            
+            // Close mini app
+            tg.close();
+        } catch (error) {
+            console.error('Error sending data to bot:', error);
+            // If sendData fails, just close
+            resultDiv.classList.add('hidden');
+        }
+    }, 3000);
 }
 
 // Check if user can spin
