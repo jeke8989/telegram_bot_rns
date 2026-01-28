@@ -36,16 +36,17 @@ class Config:
     log_level = os.getenv('LOG_LEVEL', 'INFO')
     debug = os.getenv('DEBUG', 'False').lower() == 'true'
     
-    # Company Information
-    company_name = os.getenv('COMPANY_NAME', 'РусНейроСофт')
-    company_description = os.getenv('COMPANY_DESCRIPTION', 'Создаем интеллектуальные IT-решения для бизнеса')
-    company_email = os.getenv('COMPANY_EMAIL', 'info@rusneurosoft.ru')
-    company_phone = os.getenv('COMPANY_PHONE', '+7 (987) 750-30-75')
+    # Company Information (NO DEFAULTS - ALL FROM ENV)
+    company_name = os.getenv('COMPANY_NAME')
+    company_description = os.getenv('COMPANY_DESCRIPTION')
+    company_email = os.getenv('COMPANY_EMAIL')
+    company_phone = os.getenv('COMPANY_PHONE')
     company_telegram = os.getenv('COMPANY_TELEGRAM', '')
-    company_website = os.getenv('COMPANY_WEBSITE', 'https://rusneurosoft.ru')
-    cases_link = os.getenv('CASES_LINK', 'https://rusneurosoft.ru/cases')
-    jobs_link = os.getenv('JOBS_LINK', 'https://rusneurosoft.ru/jobs')
-    book_call_link = os.getenv('BOOK_CALL_LINK', 'https://calendly.com/rusneurosoft')
+    company_website = os.getenv('COMPANY_WEBSITE')
+    company_linkedin = os.getenv('COMPANY_LINKEDIN', '')
+    cases_link = os.getenv('CASES_LINK')
+    jobs_link = os.getenv('JOBS_LINK', '')
+    book_call_link = os.getenv('BOOK_CALL_LINK')
     
     def __init__(self):
         """Validate configuration"""
@@ -55,3 +56,13 @@ class Config:
             raise ValueError("OPENROUTER_API_KEY is not set in environment variables")
         if not self.database_url:
             raise ValueError("DATABASE_URL is not set in environment variables")
+        if not self.company_name:
+            raise ValueError("COMPANY_NAME is not set in environment variables")
+        if not self.company_email:
+            raise ValueError("COMPANY_EMAIL is not set in environment variables")
+        if not self.company_website:
+            raise ValueError("COMPANY_WEBSITE is not set in environment variables")
+        if not self.cases_link:
+            raise ValueError("CASES_LINK is not set in environment variables")
+        if not self.book_call_link:
+            raise ValueError("BOOK_CALL_LINK is not set in environment variables")
