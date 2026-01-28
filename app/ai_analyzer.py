@@ -16,10 +16,11 @@ logger = logging.getLogger(__name__)
 class AIAnalyzer:
     """AI Analysis handler"""
     
-    def __init__(self, openrouter_key: str, model: str = "gpt-4o"):
+    def __init__(self, openrouter_key: str, model: str = "gpt-4o", config=None):
         self.api_key = openrouter_key
         self.model = model
         self.base_url = "https://openrouter.ai/api/v1"
+        self.config = config
         
         # Initialize local Whisper model for audio transcription
         # Using base model for faster processing, can be upgraded to medium/large if needed
@@ -69,8 +70,10 @@ class AIAnalyzer:
                                             department_affected: str) -> str:
         """Generate AI solution for entrepreneur"""
         
+        company_name = self.config.company_name if self.config else "нашей компании"
+        
         prompt = f"""
-Ты — AI-бизнес-аналитик из IT-компании rusneurosoft.ru. 
+Ты — AI-бизнес-аналитик из IT-компании {company_name}. 
 Твоя задача — проанализировать ответы предпринимателя и сгенерировать ОДНО, 
 но очень конкретное и измеримое решение.
 
@@ -98,8 +101,10 @@ class AIAnalyzer:
                                               main_barrier: str) -> str:
         """Generate MVP ideas and recommendations for startup"""
         
+        company_name = self.config.company_name if self.config else "нашей компании"
+        
         prompt = f"""
-Ты — опытный AI-ментор для стартапов из компании rusneurosoft.ru. 
+Ты — опытный AI-ментор для стартапов из компании {company_name}. 
 Твоя задача — проанализировать идею основателя и дать ему два конкретных совета: 
 один по MVP и один по типичной ошибке на его стадии.
 
@@ -124,8 +129,10 @@ class AIAnalyzer:
                                          work_format: str) -> str:
         """Generate personalized welcome message for specialist"""
         
+        company_name = self.config.company_name if self.config else "нашей компании"
+        
         prompt = f"""
-Ты — дружелюбный AI-рекрутер из компании rusneurosoft.ru. 
+Ты — дружелюбный AI-рекрутер из компании {company_name}. 
 Твоя задача — проанализировать профиль специалиста и сгенерировать 
 короткое, персонализированное сообщение, подтверждающее его добавление в базу талантов.
 

@@ -42,6 +42,9 @@ services:
       COMPANY_PHONE: ${COMPANY_PHONE}
       COMPANY_WEBSITE: ${COMPANY_WEBSITE}
       COMPANY_LINKEDIN: ${COMPANY_LINKEDIN}
+      WEBAPP_URL: ${WEBAPP_URL}
+      CASES_LINK: ${CASES_LINK}
+      BOOK_CALL_LINK: ${BOOK_CALL_LINK}
     volumes:
       - ./app:/app
       - ./assets:/app/assets

@@ -40,10 +40,12 @@ class Config:
     company_name = os.getenv('COMPANY_NAME', 'РусНейроСофт')
     company_description = os.getenv('COMPANY_DESCRIPTION', 'Создаем интеллектуальные IT-решения для бизнеса')
     company_email = os.getenv('COMPANY_EMAIL', 'info@rusneurosoft.ru')
+    company_phone = os.getenv('COMPANY_PHONE', '+7 (987) 750-30-75')
     company_telegram = os.getenv('COMPANY_TELEGRAM', '')
     company_website = os.getenv('COMPANY_WEBSITE', 'https://rusneurosoft.ru')
     cases_link = os.getenv('CASES_LINK', 'https://rusneurosoft.ru/cases')
-    book_call_link = os.getenv('BOOK_CALL_LINK', 'https://rusneurosoft.ru/book')
+    jobs_link = os.getenv('JOBS_LINK', 'https://rusneurosoft.ru/jobs')
+    book_call_link = os.getenv('BOOK_CALL_LINK', 'https://calendly.com/rusneurosoft')
     
     def __init__(self):
         """Validate configuration"""

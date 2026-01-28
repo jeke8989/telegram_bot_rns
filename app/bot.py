@@ -6,7 +6,7 @@ Telegram Bot "Neuro-Connector" v3
 
 import os
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, WebAppInfo
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, WebAppInfo, BotCommand
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -54,7 +54,8 @@ class NeuroConnectorBot:
         self.db = Database(self.config.database_url)
         self.ai = AIAnalyzer(
             openrouter_key=self.config.openrouter_api_key,
-            model=self.config.openrouter_model
+            model=self.config.openrouter_model,
+            config=self.config
         )
         self._db_initialized = False
     
@@ -428,46 +429,58 @@ _(например: обработка заявок, подготовка отч
         )
         
         # Generate solution
-        loading_msg = await update.message.reply_text("⏳ Анализирую вашу проблему и готовлю решение...")
-        
-        solution = await self.ai.generate_entrepreneur_solution(
-            process_pain=context.user_data['process_pain'],
-            time_lost=context.user_data['time_lost'],
-            department_affected=context.user_data['department_affected']
-        )
-        
-        await loading_msg.edit_text("✅ Решение готово!")
-        
-        # Send business card
-        await self.send_business_card(update.message.chat_id, context)
+        try:
+            loading_msg = await update.message.reply_text("⏳ Анализирую вашу проблему и готовлю решение...")
+            
+            logger.info(f"Generating solution for user {user_id}")
+            solution = await self.ai.generate_entrepreneur_solution(
+                process_pain=context.user_data['process_pain'],
+                time_lost=context.user_data['time_lost'],
+                department_affected=context.user_data['department_affected']
+            )
+            logger.info(f"Solution generated successfully for user {user_id}")
+            
+            await loading_msg.edit_text("✅ Решение готово!")
+            
+            # Send business card
+            await self.send_business_card(update.message.chat_id, context)
+        except Exception as e:
+            logger.error(f"Error generating solution for user {user_id}: {e}")
+            await update.message.reply_text("❌ Произошла ошибка при генерации решения. Попробуйте позже.")
+            return ROLE_SELECTION
         
         # Send solution
         result_text = f"""
-✅ **Готово, {update.effective_user.first_name}! Все данные сохранены.**
+✅ <b>Готово, {update.effective_user.first_name}! Все данные сохранены.</b>
 
-🌐 **{self.config.company_website}**
+🌐 <b>{self.config.company_website}</b>
 
-📊 **ПРОБЛЕМА:**
-Ваш {context.user_data['department_affected']} тратит около **{context.user_data['time_lost']}** на **{context.user_data['process_pain']}**.
+📊 <b>ПРОБЛЕМА:</b>
+Ваш {context.user_data['department_affected']} тратит около <b>{context.user_data['time_lost']}</b> на <b>{context.user_data['process_pain']}</b>.
 
-> ✨ **РЕШЕНИЕ:**
+✨ <b>РЕШЕНИЕ:</b>
 {solution}
 
-Мы в **{self.config.company_name}** успешно решаем именно такие задачи. 
+Мы в <b>{self.config.company_name}</b> успешно решаем именно такие задачи. 
 Будем рады обсудить детали и показать кейсы похожих компаний.
 
 Хорошего дня и продуктивной работы! 🚀
         """
         
         keyboard = [
-            [InlineKeyboardButton("🌐 Посмотреть кейсы", url=self.config.cases_link)],
-            [InlineKeyboardButton("🗓 Запланировать звонок", url=self.config.book_call_link)],
-            [InlineKeyboardButton("💬 Связаться с сотрудником", callback_data="contact_support")],
-            [InlineKeyboardButton("🏠 В главное меню", callback_data="back_to_roles")]
+            [InlineKeyboardButton("🎰 Крутить AI рулетку", web_app=WebAppInfo(url=self.config.webapp_url))]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        await update.message.reply_text(result_text, reply_markup=reply_markup, parse_mode='Markdown')
+        logger.info(f"Sending entrepreneur solution message to user {user_id}")
+        try:
+            await update.message.reply_text(result_text, reply_markup=reply_markup, parse_mode='HTML')
+            logger.info(f"Entrepreneur solution message sent successfully to user {user_id}")
+        except Exception as e:
+            logger.error(f"Error sending solution message: {e}")
+            # Try without formatting if HTML fails
+            simple_text = f"✅ Готово! Решение готово.\n\n{solution}\n\nСвяжитесь с нами: {self.config.company_website}"
+            await update.message.reply_text(simple_text, reply_markup=reply_markup)
         
         return ROLE_SELECTION
     
@@ -699,40 +712,52 @@ _(Например: "Приложение для поиска напарнико
             phone=context.user_data.get('phone', 'Not provided')
         )
         
-        loading_msg = await update.message.reply_text("⏳ Анализирую вашу идею и готовлю рекомендации...")
-        
-        welcome_msg = await self.ai.generate_startup_welcome(
-            problem_solved=context.user_data['problem_solved'],
-            current_stage=context.user_data['current_stage'],
-            main_barrier=context.user_data['main_barrier']
-        )
-        
-        await loading_msg.edit_text("✅ Рекомендации готовы!")
-        
-        # Send business card
-        await self.send_business_card(update.message.chat_id, context)
+        try:
+            loading_msg = await update.message.reply_text("⏳ Анализирую вашу идею и готовлю рекомендации...")
+            
+            logger.info(f"Generating recommendations for user {user_id}")
+            welcome_msg = await self.ai.generate_startup_welcome(
+                problem_solved=context.user_data['problem_solved'],
+                current_stage=context.user_data['current_stage'],
+                main_barrier=context.user_data['main_barrier']
+            )
+            logger.info(f"Recommendations generated successfully for user {user_id}")
+            
+            await loading_msg.edit_text("✅ Рекомендации готовы!")
+            
+            # Send business card
+            await self.send_business_card(update.message.chat_id, context)
+        except Exception as e:
+            logger.error(f"Error generating recommendations for user {user_id}: {e}")
+            await update.message.reply_text("❌ Произошла ошибка при генерации рекомендаций. Попробуйте позже.")
+            return ROLE_SELECTION
         
         # Send welcome message
         result_text = f"""
-✅ **Готово! Спасибо за доверие, {update.effective_user.first_name}!**
+✅ <b>Готово! Спасибо за доверие, {update.effective_user.first_name}!</b>
 
 {welcome_msg}
 
-Мы в **{self.config.company_name}** часто помогаем стартапам с разработкой MVP 
+Мы в <b>{self.config.company_name}</b> часто помогаем стартапам с разработкой MVP 
 и масштабированием проектов. Будем рады обсудить детали и показать похожие кейсы.
 
 Хорошего дня и удачи в развитии вашей идеи! 🚀
         """
         
         keyboard = [
-            [InlineKeyboardButton("🌐 Посмотреть портфолио", url=self.config.cases_link)],
-            [InlineKeyboardButton("🗓 Запланировать звонок", url="https://calendly.com/rusneurosoft")],
-            [InlineKeyboardButton("💬 Связаться с сотрудником", callback_data="contact_support")],
-            [InlineKeyboardButton("🏠 В главное меню", callback_data="back_to_roles")]
+            [InlineKeyboardButton("🎰 Крутить AI рулетку", web_app=WebAppInfo(url=self.config.webapp_url))]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        await update.message.reply_text(result_text, reply_markup=reply_markup, parse_mode='Markdown')
+        logger.info(f"Sending startup solution message to user {user_id}")
+        try:
+            await update.message.reply_text(result_text, reply_markup=reply_markup, parse_mode='HTML')
+            logger.info(f"Startup solution message sent successfully to user {user_id}")
+        except Exception as e:
+            logger.error(f"Error sending solution message: {e}")
+            # Try without formatting if HTML fails
+            simple_text = f"✅ Готово! Рекомендации готовы.\n\n{welcome_msg}\n\nСвяжитесь с нами: {self.config.company_website}"
+            await update.message.reply_text(simple_text, reply_markup=reply_markup)
         
         return ROLE_SELECTION
     
@@ -1008,10 +1033,7 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
         """
         
         keyboard = [
-            [InlineKeyboardButton("🌐 Открытые вакансии", url=f"{self.config.company_website}/jobs")],
-            [InlineKeyboardButton("📧 Написать нам", url=f"mailto:{self.config.company_email}")],
-            [InlineKeyboardButton("💬 Связаться с сотрудником", callback_data="contact_support")],
-            [InlineKeyboardButton("🏠 В главное меню", callback_data="back_to_roles")]
+            [InlineKeyboardButton("🎰 Крутить AI рулетку", web_app=WebAppInfo(url=self.config.webapp_url))]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -1087,14 +1109,23 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
 Заинтересовались? Давайте обсудим ваш проект!
             """
         else:  # contact
-            text = f"""
-🤝 **Свяжитесь с нами:**
-
-📧 Email: {self.config.company_email}
-🌐 Website: {self.config.company_website}
-
-Будем рады обсудить ваш проект!
-            """
+            contact_parts = ["🤝 **Свяжитесь с нами:**"]
+            
+            if self.config.company_email:
+                contact_parts.append(f"\n📧 Email: {self.config.company_email}")
+            
+            if self.config.company_phone:
+                contact_parts.append(f"\n📞 Телефон: {self.config.company_phone}")
+            
+            if self.config.company_telegram:
+                contact_parts.append(f"\n📱 Telegram: {self.config.company_telegram}")
+            
+            if self.config.company_website:
+                contact_parts.append(f"\n🌐 Website: {self.config.company_website}")
+            
+            contact_parts.append("\n\nБудем рады обсудить ваш проект!")
+            
+            text = "\n".join(contact_parts)
         
         # Send business card
         await self.send_business_card(query.message.chat_id, context)
@@ -1108,13 +1139,20 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
 Спасибо за интерес к **{self.config.company_name}**! 🚀
         """
         
-        keyboard = [
+        # Build keyboard based on info type
+        keyboard = []
+        
+        if info_type == "cases":
+            keyboard.append([InlineKeyboardButton("🌐 Посмотреть все кейсы", url=self.config.cases_link)])
+        
+        keyboard.extend([
             [InlineKeyboardButton("💰 Расчет стоимости проекта", callback_data="request_cost_calculation")],
             [InlineKeyboardButton("🌐 Посетить наш сайт", url=self.config.company_website)],
-            [InlineKeyboardButton("🗓 Запланировать звонок", url="https://calendly.com/rusneurosoft")],
+            [InlineKeyboardButton("🗓 Запланировать звонок", url=self.config.book_call_link)],
             [InlineKeyboardButton("💬 Связаться с сотрудником", callback_data="contact_support")],
             [InlineKeyboardButton("🏠 В главное меню", callback_data="back_to_roles")]
-        ]
+        ])
+        
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await query.edit_message_text(final_text, reply_markup=reply_markup, parse_mode='Markdown')
@@ -1140,6 +1178,9 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
             
             if self.config.company_email:
                 caption_parts.append(f"\n📧 {self.config.company_email}")
+            
+            if self.config.company_phone:
+                caption_parts.append(f"\n📞 {self.config.company_phone}")
             
             if self.config.company_telegram:
                 caption_parts.append(f"\n📱 {self.config.company_telegram}")
@@ -1799,6 +1840,73 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
             )
             return ROLE_SELECTION
     
+    async def handle_roulette_result(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle roulette result from mini app"""
+        user = update.effective_user
+        web_app_data = update.message.web_app_data.data
+        
+        try:
+            import json
+            data = json.loads(web_app_data)
+            prize = data.get('prize', 0)
+            
+            logger.info(f"User {user.id} won {prize} RUB in roulette")
+            
+            # Send congratulations message with buttons
+            congrats_text = f"""
+🎉 **Поздравляем, {user.first_name}!**
+
+Вы выиграли **{prize:,} ₽** на услуги нашей компании!
+
+Этот приз можно использовать как скидку при заказе разработки проекта.
+
+Хотите узнать стоимость вашего проекта с учетом скидки?
+            """
+            
+            keyboard = [
+                [InlineKeyboardButton("💰 Расчет стоимости проекта", callback_data="request_cost_calculation")],
+                [InlineKeyboardButton("🏠 В главное меню", callback_data="back_to_roles")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await update.message.reply_text(
+                text=congrats_text,
+                reply_markup=reply_markup,
+                parse_mode='Markdown'
+            )
+            
+        except Exception as e:
+            logger.error(f"Error handling roulette result: {e}")
+    
+    async def roulette_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /roulette command - open mini app"""
+        user = update.effective_user
+        logger.info(f"User {user.id} ({user.first_name}) requested roulette")
+        
+        # Create keyboard with Web App button that opens mini app
+        keyboard = [
+            [InlineKeyboardButton(
+                "🎰 Крутить рулетку призов", 
+                web_app=WebAppInfo(url=self.config.webapp_url)
+            )]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(
+            "🎰 **Рулетка призов**\n\n"
+            "Нажмите кнопку ниже, чтобы открыть рулетку и попытать удачу!\n\n"
+            "💰 **Призы:**\n"
+            "• 5 000 ₽\n"
+            "• 10 000 ₽\n"
+            "• 15 000 ₽\n"
+            "• 20 000 ₽\n"
+            "• 25 000 ₽\n"
+            "• 30 000 ₽\n\n"
+            "🎁 Вы можете выиграть скидку на услуги нашей компании!",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    
     async def cancel(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Cancel conversation"""
         await update.message.reply_text("Диалог отменен. Спасибо за внимание! 👋")
@@ -1810,12 +1918,6 @@ def main():
     
     # Create application
     application = Application.builder().token(bot.config.telegram_token).build()
-    
-    # Initialize database on startup
-    async def post_init(app: Application) -> None:
-        await bot.initialize_db()
-    
-    application.post_init = post_init
     
     # Create wrapper for voice message handling
     async def handle_voice_and_text_entrepreneur_q1(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1971,6 +2073,26 @@ def main():
     )
     
     application.add_handler(conv_handler)
+    
+    # Add roulette command handler
+    application.add_handler(CommandHandler("roulette", bot.roulette_command))
+    
+    # Add web app data handler (for roulette results)
+    application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, bot.handle_roulette_result))
+    
+    # Initialize database and register bot commands
+    async def post_init(app: Application) -> None:
+        """Initialize database and register bot commands"""
+        await bot.initialize_db()
+        commands = [
+            BotCommand("start", "🚀 Начать работу с ботом"),
+            BotCommand("roulette", "🎰 Крутить рулетку призов"),
+            BotCommand("cancel", "❌ Отменить текущий опрос")
+        ]
+        await app.bot.set_my_commands(commands)
+        logger.info("Bot commands registered in menu")
+    
+    application.post_init = post_init
     
     # Start bot
     logger.info("Starting Neuro-Connector Bot...")
