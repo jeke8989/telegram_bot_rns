@@ -1,0 +1,118 @@
+---
+description: Security rules — endpoints, CORS, injections, UUID, secrets, headers, logging
+alwaysApply: true
+---
+
+# Security Rules
+
+## 1. Endpoints — Closed by Default
+- ALL endpoints are PROTECTED by default. No public endpoints unless the user explicitly requests it.
+- Every new route/endpoint must have authentication and authorization before any business logic.
+- Use middleware/guards/decorators to enforce auth at the router level, not inside each handler.
+- If an endpoint must be public (e.g. webhook, health check), mark it explicitly with a comment explaining why.
+- Validate and sanitize all incoming data (body, query, params) on every endpoint.
+- Rate-limit sensitive endpoints (login, registration, password reset, OTP).
+
+## 2. UUID as Public Identifiers
+- ALL entities exposed in URLs, API responses, or links MUST use `UUID v4` as public identifier.
+- Internal `SERIAL` / `BIGSERIAL` IDs are for database joins only — NEVER expose them to the client.
+- Every table that may appear in a URL must have a `uuid UUID NOT NULL DEFAULT gen_random_uuid() UNIQUE` column.
+- Use the `uuid` column in all API paths and query params: `/api/projects/{uuid}`, not `/api/projects/{id}`.
+- This prevents enumeration attacks (IDOR) — sequential IDs allow attackers to guess valid resources.
+
+## 3. CORS (Cross-Origin Resource Sharing)
+- NEVER use wildcard `"*"` for `allow_origins` in production.
+- Whitelist only trusted origins explicitly:
+  ```python
+  allowed_origins = [
+      os.getenv("WEBAPP_URL", ""),        # main web app
+      "https://web.telegram.org",          # Telegram Web App
+  ]
+  ```
+- `allow_credentials: True` requires explicit origins (not `*`).
+- `allow_methods`: list only methods the API actually uses (`GET, POST, PUT, DELETE, OPTIONS`).
+- `allow_headers`: list only needed headers (`Content-Type, Authorization, X-Session-Token`).
+- `expose_headers`: only what the client needs to read.
+- Review CORS config whenever a new domain is added.
+
+## 4. SQL Injection Protection
+- ALWAYS use parameterized queries (`$1, $2, ...`) with asyncpg — NEVER concatenate or f-string user input into SQL.
+  ```python
+  # CORRECT
+  await conn.fetchrow("SELECT * FROM users WHERE uuid = $1", user_uuid)
+  # WRONG — SQL injection vector
+  await conn.fetchrow(f"SELECT * FROM users WHERE uuid = '{user_uuid}'")
+  ```
+- Validate UUIDs before passing to queries (e.g. `uuid.UUID(value)` in Python).
+- Use allow-lists for dynamic column/table names if absolutely necessary — never accept raw user input.
+- Escape `LIKE` patterns: replace `%` and `_` in user input before using in `LIKE`/`ILIKE` clauses.
+
+## 5. XSS (Cross-Site Scripting) Protection
+- Escape all user-generated content before rendering in HTML templates.
+- Set `Content-Type: application/json` on all API responses — never return raw HTML from API endpoints.
+- Use `textContent` instead of `innerHTML` when inserting user data in the DOM.
+- Sanitize rich-text inputs with a whitelist-based sanitizer if HTML output is needed.
+
+## 6. Security Headers
+- Set these headers on every HTTP response (via middleware):
+  ```
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: 0
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  ```
+- Adjust CSP per page requirements, but keep it as strict as possible.
+
+## 7. Authentication & Session Security
+- Session tokens: minimum 32 bytes of cryptographically random data (`secrets.token_hex(32)`).
+- Session expiry: enforce server-side TTL, never trust client-side expiry alone.
+- Validate session token on every request, not just on login.
+- Invalidate session on logout (delete from DB).
+- Never store session tokens in URL params — use `HttpOnly`, `Secure`, `SameSite=Strict` cookies or `Authorization` header.
+
+## 8. Rate Limiting & Abuse Prevention
+- Rate-limit all API endpoints, stricter limits on auth-related ones.
+- Recommended limits: login — 5 req/min, API general — 60 req/min, webhooks — 100 req/min.
+- Return `429 Too Many Requests` with `Retry-After` header.
+- Implement per-IP and per-user rate limiting.
+
+## 9. Input Validation
+- Validate all inputs at the boundary (API handler), before passing to service/DB layer.
+- Use strict types: UUID for identifiers, int for numeric, bounded strings (max length).
+- Reject unexpected fields — do not blindly pass request body to DB queries.
+- File uploads: validate MIME type, extension, and size. Store outside webroot.
+
+## 10. Secrets & Environment Variables
+- NEVER commit `.env` to the repository.
+- ALL secrets stored ONLY in `.env` file.
+- NEVER store passwords/tokens in `.md` files or source code.
+- Use `.env.example` as template without real keys.
+- Load keys via `python-dotenv` or Docker env.
+- Rotate secrets periodically; support key rotation without downtime.
+
+## 11. API Keys (this project)
+- `TELEGRAM_BOT_TOKEN` — Telegram bot token
+- `OPENROUTER_API_KEY` — OpenRouter API key
+- `ZOOM_CLIENT_SECRET`, `S3_SECRET_KEY`, etc. — third-party secrets
+- `SESSION_SECRET` — for signing/verifying web sessions
+
+## 12. Logging & Monitoring
+- NEVER log sensitive data (tokens, passwords, personal data, full request bodies with credentials).
+- Log only events, errors, and non-sensitive metadata.
+- Mask sensitive fields in debug output (`token=***`, `password=***`).
+- Log security-relevant events: failed logins, permission denials, rate-limit hits, invalid UUID access attempts.
+- Include request ID in logs for tracing.
+
+## 13. Error Handling (Security)
+- NEVER expose stack traces, SQL errors, or internal paths to the client.
+- Return generic error messages: `{"error": "Not found"}`, not `{"error": "relation 'users' does not exist"}`.
+- Log full error details server-side, return only safe messages to client.
+- Use consistent error response format across all endpoints.
+
+## 14. Dependency Security
+- Pin all dependency versions in `requirements.txt` / `requirements-webapp.txt`.
+- Periodically audit dependencies for known vulnerabilities (`pip-audit`, `safety`).
+- Do not install unnecessary packages.

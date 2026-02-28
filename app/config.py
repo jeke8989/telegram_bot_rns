@@ -48,6 +48,47 @@ class Config:
     jobs_link = os.getenv('JOBS_LINK', '')
     book_call_link = os.getenv('BOOK_CALL_LINK')
     
+    # Zoom API
+    zoom_account_id = os.getenv('ZOOM_ACCOUNT_ID', '')
+    zoom_client_id = os.getenv('ZOOM_CLIENT_ID', '')
+    zoom_client_secret = os.getenv('ZOOM_CLIENT_SECRET', '')
+    zoom_webhook_secret_token = os.getenv('ZOOM_WEBHOOK_SECRET_TOKEN', '')
+    zoom_ws_subscription_id = os.getenv('ZOOM_WS_SUBSCRIPTION_ID', '')
+    
+    # Lark API
+    lark_app_id = os.getenv('LARK_APP_ID', '')
+    lark_app_secret = os.getenv('LARK_APP_SECRET', '')
+    lark_group_chat_id = os.getenv('LARK_GROUP_CHAT_ID', '')
+    
+    # Calendly → Telegram notifications
+    calendly_notify_chat_id = os.getenv('CALENDLY_NOTIFY_CHAT_ID', '')
+
+    # Staff
+    staff_secret_code = os.getenv('STAFF_SECRET_CODE', 'change_staff')
+
+    STAFF_CONTACTS = {
+        'black_tie_777': {
+            'name': 'Евгений Кукушкин',
+            'role': 'CEO (Руководитель)',
+            'phone': '+7 (987) 750-30-75',
+            'email': 'info@rusneurosoft.ru',
+            'telegram': '@black_tie_777',
+            'calendly_url': 'https://calendly.com/jeke8989/30min',
+        },
+        'IT_anasta': {
+            'name': 'Анастасия Синькевич',
+            'role': 'COO (Руководитель разработки)',
+            'phone': '',
+            'email': 'info@rusneurosoft.ru',
+            'telegram': '@IT_anasta',
+            'calendly_url': '',
+        },
+    }
+    
+    # Kimai Time Tracking
+    kimai_url = os.getenv('KIMAI_URL', '')
+    kimai_api_token = os.getenv('KIMAI_API_TOKEN', '')
+    
     def __init__(self):
         """Validate configuration"""
         if not self.telegram_token:

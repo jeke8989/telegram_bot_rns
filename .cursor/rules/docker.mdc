@@ -1,0 +1,31 @@
+---
+description: Docker and Docker Compose conventions
+globs: "**/Dockerfile*,**/docker-compose*,.env.example"
+alwaysApply: false
+---
+
+# Docker Rules
+
+## Required Files
+- Every project must have `Dockerfile` and `docker-compose.yml` from day one
+- `.env` for config, `.env.example` as template (no real keys)
+
+## docker-compose.yml
+- All services (db, bot, webapp, auxiliary) defined in one compose file
+- Health checks for dependent services (`depends_on` + `condition: service_healthy`)
+- Named volumes for persistent data (e.g. `postgres_data`)
+- Use `restart: unless-stopped` for production services
+
+## Dockerfile
+- Use multi-stage builds for production
+- Pin base image versions
+- Copy only necessary files (use `.dockerignore`)
+
+## Development
+- Mount source code via volumes for hot-reload in dev mode
+- Use `docker-compose up --build -d` for local dev
+- Logs: `docker-compose logs -f <service>`
+
+## Environment
+- All secrets via `.env`, never hardcoded
+- Pass env vars through `environment:` block in compose

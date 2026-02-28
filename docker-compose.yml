@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:0.8.0-pg15
     container_name: neuro-connector-db
     restart: unless-stopped
     environment:
@@ -45,6 +45,16 @@ services:
       WEBAPP_URL: ${WEBAPP_URL}
       CASES_LINK: ${CASES_LINK}
       BOOK_CALL_LINK: ${BOOK_CALL_LINK}
+      SUPPORT_GROUP_ID: ${SUPPORT_GROUP_ID}
+      ZOOM_ACCOUNT_ID: ${ZOOM_ACCOUNT_ID}
+      ZOOM_CLIENT_ID: ${ZOOM_CLIENT_ID}
+      ZOOM_CLIENT_SECRET: ${ZOOM_CLIENT_SECRET}
+      LARK_APP_ID: ${LARK_APP_ID}
+      LARK_APP_SECRET: ${LARK_APP_SECRET}
+      LARK_GROUP_CHAT_ID: ${LARK_GROUP_CHAT_ID}
+      STAFF_SECRET_CODE: ${STAFF_SECRET_CODE}
+      KIMAI_URL: ${KIMAI_URL}
+      KIMAI_API_TOKEN: ${KIMAI_API_TOKEN}
     volumes:
       - ./app:/app
       - ./assets:/app/assets
@@ -65,10 +75,46 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      ZOOM_ACCOUNT_ID: ${ZOOM_ACCOUNT_ID}
+      ZOOM_CLIENT_ID: ${ZOOM_CLIENT_ID}
+      ZOOM_CLIENT_SECRET: ${ZOOM_CLIENT_SECRET}
+      ZOOM_WEBHOOK_SECRET_TOKEN: ${ZOOM_WEBHOOK_SECRET_TOKEN}
+      ZOOM_WS_SUBSCRIPTION_ID: ${ZOOM_WS_SUBSCRIPTION_ID}
+      LARK_APP_ID: ${LARK_APP_ID}
+      LARK_APP_SECRET: ${LARK_APP_SECRET}
+      LARK_GROUP_CHAT_ID: ${LARK_GROUP_CHAT_ID}
+      COMPANY_NAME: ${COMPANY_NAME}
+      COMPANY_DESCRIPTION: ${COMPANY_DESCRIPTION}
+      COMPANY_EMAIL: ${COMPANY_EMAIL}
+      COMPANY_PHONE: ${COMPANY_PHONE}
+      COMPANY_TELEGRAM: ${COMPANY_TELEGRAM}
+      COMPANY_WEBSITE: ${COMPANY_WEBSITE}
+      COMPANY_LINKEDIN: ${COMPANY_LINKEDIN}
+      CASES_LINK: ${CASES_LINK}
+      BOOK_CALL_LINK: ${BOOK_CALL_LINK}
+      WEBAPP_URL: ${WEBAPP_URL}
+      SUPPORT_GROUP_ID: ${SUPPORT_GROUP_ID}
+      STAFF_SECRET_CODE: ${STAFF_SECRET_CODE}
+      KIMAI_URL: ${KIMAI_URL}
+      KIMAI_API_TOKEN: ${KIMAI_API_TOKEN}
+      CALENDLY_NOTIFY_CHAT_ID: ${CALENDLY_NOTIFY_CHAT_ID}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+      BOT_USERNAME: ${BOT_USERNAME}
     volumes:
       - ./mini_app:/app
       - ./app/database.py:/app/app/database.py
       - ./app/config.py:/app/app/config.py
+      - ./app/zoom_client.py:/app/app/zoom_client.py
+      - ./app/lark_client.py:/app/app/lark_client.py
+      - ./app/zoom_ws_listener.py:/app/app/zoom_ws_listener.py
+      - ./app/embeddings.py:/app/app/embeddings.py
+      - ./app/s3_client.py:/app/app/s3_client.py
+      - ./app/kimai_client.py:/app/app/kimai_client.py
     ports:
       - "8080:8080"
     command: python server.py

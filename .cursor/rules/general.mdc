@@ -1,0 +1,50 @@
+---
+description: Core project rules — stack, async patterns, code style, security practices
+alwaysApply: true
+---
+
+# Neuro-Connector Bot — General Rules
+
+## Stack
+- Python 3.x, python-telegram-bot 20.7, PostgreSQL 15 + asyncpg, OpenRouter API
+- aiohttp for web server (mini_app)
+- Docker + Docker Compose for all environments
+
+## Async / Await
+- All I/O operations must be async (`async/await`)
+- Use `async with` for context managers
+- Wrap external calls in `try...except` with `logger.error()`
+- Set timeouts on all external HTTP requests (30s default)
+
+## Code Style (PEP 8)
+- 4 spaces indentation, max 100 chars per line
+- `snake_case` for functions/variables, `PascalCase` for classes
+- Type hints on all function signatures:
+  ```python
+  async def save_user(self, telegram_id: int, first_name: str) -> None:
+  ```
+
+## Error Handling
+- Always catch specific exceptions, never bare `except:`
+- Log errors via `logger.error(f"Description: {e}")`
+- NEVER expose internal errors to the client — return generic messages
+- Set timeouts on external API requests (30s default)
+
+## Security in Every Module
+- All DB queries: parameterized only (`$1, $2`), NEVER f-strings with user input
+- All public identifiers: UUID, never sequential IDs
+- All user input: validate type, length, and format before processing
+- All API responses: set proper `Content-Type`, never leak internal state
+
+## OpenRouter API
+- Endpoint: `https://openrouter.ai/api/v1/chat/completions`
+- Always include `Authorization`, `Content-Type` headers
+- Use `HTTP-Referer` and `X-Title` for tracking
+- Audio transcription endpoint: `https://openrouter.ai/api/v1/audio/transcriptions`
+- Limit prompt size to prevent abuse; truncate oversized inputs
+
+## Logging
+- Use Python `logging` module with named loggers per module
+- Log levels: DEBUG for dev, INFO for production
+- Include context in log messages (user_id, endpoint, action)
+- NEVER log tokens, passwords, or personal data

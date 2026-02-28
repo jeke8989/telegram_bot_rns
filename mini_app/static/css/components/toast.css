@@ -1,0 +1,25 @@
+.toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface);
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 10px 24px;
+    border-radius: var(--radius-btn);
+    font-size: .85rem;
+    font-weight: 500;
+    z-index: var(--z-toast);
+    opacity: 0;
+    transition: all .3s ease;
+    pointer-events: none;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.toast.error {
+    border-color: var(--red);
+    color: var(--red);
+}

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <title>Вход — РусНейроСофт</title>
+    <link rel="stylesheet" href="/css/tokens.css?v=1772292397">
+    <link rel="stylesheet" href="/css/base.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/buttons.css?v=1772292397">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-glow::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(108,92,231,.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .bg-glow::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: 30%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0,206,201,.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 52px 44px 44px;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3), 0 0 80px rgba(108,92,231,.06);
+        }
+
+        .logo-wrap {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+        }
+        .logo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            border-radius: 50%;
+            filter: drop-shadow(0 4px 20px rgba(108,92,231,.3));
+        }
+
+        .brand-name {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .login-card h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .login-card p {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 36px;
+        }
+
+        .tg-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #2AABEE;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 15px 36px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(42,171,238,.25);
+        }
+        .tg-btn:hover {
+            background: #229ED9;
+            box-shadow: 0 6px 24px rgba(42,171,238,.35);
+        }
+        .tg-btn:active {
+            opacity: .85;
+        }
+        .tg-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 28px 0 20px;
+            color: var(--text-dim);
+            font-size: 12px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .login-footer {
+            color: var(--text-dim);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .tg-spinner {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 0;
+        }
+        .tg-spinner .spin {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        .tg-spinner p { color: var(--text-dim); font-size: 14px; margin: 0; }
+
+        /* Dev auth styles */
+        .dev-badge {
+            display: inline-block;
+            background: #ff6b35;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .dev-role-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .dev-role-tab {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            transition: var(--transition);
+        }
+        .dev-role-tab:hover { border-color: var(--accent); color: var(--text); }
+        .dev-role-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .dev-user-list {
+            max-height: 280px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .dev-user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        .dev-user-item:hover { background: rgba(108,92,231,.08); border-color: var(--border); }
+        .dev-user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .dev-user-info { flex: 1; min-width: 0; }
+        .dev-user-name { font-size: 14px; font-weight: 600; }
+        .dev-user-meta { font-size: 12px; color: var(--text-dim); }
+        .dev-user-role-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .dev-user-role-badge.admin { background: #e74c3c22; color: #e74c3c; }
+        .dev-user-role-badge.staff { background: #3498db22; color: #3498db; }
+        .dev-user-role-badge.seller { background: #f39c1222; color: #f39c12; }
+        .dev-user-role-badge.user { background: #2ecc7122; color: #2ecc71; }
+
+        @media (max-width: 480px) {
+            .login-card { padding: 40px 28px 36px; }
+            .logo-wrap { width: 72px; height: 72px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="login-card" id="loginCard" style="display:none;">
+        <div class="logo-wrap">
+            <img src="/logo.png" alt="РусНейроСофт">
+        </div>
+        <div class="brand-name">РусНейроСофт</div>
+        <h1>Портал</h1>
+        <p id="loginDesc">Для доступа необходима авторизация.<br>Войдите через Telegram-бота компании.</p>
+        <a id="loginBtn" class="tg-btn" href="#">
+            <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.53 8.15l-1.83 8.63c-.14.62-.5.77-1.01.48l-2.8-2.06-1.35 1.3c-.15.15-.28.28-.57.28l.2-2.85 5.18-4.68c.22-.2-.05-.31-.35-.12l-6.4 4.03-2.76-.86c-.6-.19-.61-.6.13-.89l10.78-4.16c.5-.18.94.12.78.9z"/></svg>
+            Войти через Telegram
+        </a>
+        <div class="divider"></div>
+        <div class="login-footer">Авторизация через Telegram-бот РусНейроСофт</div>
+    </div>
+
+    <!-- Spinner shown during auto-auth in Telegram WebApp -->
+    <div class="login-card" id="spinnerCard" style="display:none;">
+        <div class="logo-wrap">
+            <img src="/logo.png" alt="РусНейроСофт">
+        </div>
+        <div class="brand-name">РусНейроСофт</div>
+        <div class="tg-spinner" style="display:flex;">
+            <div class="spin"></div>
+            <p>Выполняется вход…</p>
+        </div>
+    </div>
+
+    <!-- Dev auth card — shown only in development mode -->
+    <div class="login-card" id="devCard" style="display:none;">
+        <div class="logo-wrap">
+            <img src="/logo.png" alt="РусНейроСофт">
+        </div>
+        <div class="brand-name">РусНейроСофт</div>
+        <span class="dev-badge">DEV MODE</span>
+        <h1>Вход для разработки</h1>
+        <p>Выберите пользователя для авторизации</p>
+        <div class="dev-role-tabs" id="devRoleTabs">
+            <button class="dev-role-tab active" data-role="all">Все</button>
+            <button class="dev-role-tab" data-role="admin">Admin</button>
+            <button class="dev-role-tab" data-role="staff">Staff</button>
+            <button class="dev-role-tab" data-role="seller">Seller</button>
+            <button class="dev-role-tab" data-role="user">User</button>
+        </div>
+        <div class="dev-user-list" id="devUserList"></div>
+        <div class="login-footer">Локальная авторизация без Telegram</div>
+    </div>
+
+    <script src="/js/pages/login.js"></script>
+</body>
+</html>

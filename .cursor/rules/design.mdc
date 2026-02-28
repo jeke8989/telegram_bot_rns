@@ -1,0 +1,143 @@
+---
+description: Правила дизайн-системы приложения NC Portal (mini_app/static)
+globs: ["mini_app/static/**/*.html", "mini_app/static/**/*.css", "mini_app/static/**/*.js"]
+alwaysApply: false
+---
+
+# Дизайн-система NC Portal
+
+## Цветовые токены (CSS переменные)
+
+```css
+--bg:           #0f1117   /* фон страницы */
+--surface:      #1a1d27   /* карточки, панели, инпуты, кнопки-outline */
+--surface-2:    #22263a   /* hover-состояния, второстепенные поверхности */
+--border:       #2d3148   /* все рамки */
+--text:         #e4e6f0   /* основной текст */
+--text-dim:     #8b8fa8   /* второстепенный текст, плейсхолдеры */
+--accent:       #6c5ce7   /* primary-действие, активный таб, акцент */
+--accent-glow:  rgba(108,92,231,.25)
+--green:        #00cec9   /* успех, онлайн-статус */
+--green-glow:   rgba(0,206,201,.2)
+--red:          #e17355   /* ошибки, удаление */
+--radius:       14px      /* скругление карточек */
+--ctrl-h:       36px      /* единая высота всех элементов управления в тулбаре */
+--transition:   .25s cubic-bezier(.4,0,.2,1)
+```
+
+## Типографика
+
+- **Шрифт:** системный стек — `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`
+- `-webkit-font-smoothing: antialiased` — обязательно на `body`
+- **Размеры:** `.82rem` — второстепенные элементы (табы, бейджи), `.83rem` — инпуты/кнопки тулбара, `.9rem` — основной интерфейс, `.95rem` — primary кнопки, `1rem+` — заголовки
+- **Веса:** `400` — обычный текст, `500` — навигация/табы, `600` — кнопки/важные подписи, `700` — бренд/счётчики
+
+## Высота элементов управления (тулбар)
+
+**Все** интерактивные элементы в одной строке тулбара должны иметь одинаковую высоту через `--ctrl-h: 36px`:
+
+```css
+/* Правило: height = var(--ctrl-h), padding по вертикали = 0 */
+input, .btn-compact, .view-toggle, .filter-tabs { height: var(--ctrl-h); }
+.view-btn { height: 100%; width: var(--ctrl-h); }
+.filter-tab { height: calc(var(--ctrl-h) - 6px); } /* внутри контейнера с 3px padding */
+```
+
+## Кнопки
+
+### Primary (`.btn-primary`)
+```css
+background: var(--accent); color: #fff; border: none;
+border-radius: 10px; padding: 11px 22px;
+font-size: .95rem; font-weight: 600;
+```
+hover: `opacity: .88; transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow)`
+
+### Secondary (`.btn-secondary`)
+```css
+background: var(--surface-2); border: 1px solid var(--border);
+color: var(--text-dim); border-radius: 10px; padding: 10px 18px;
+font-size: .92rem; font-weight: 600;
+```
+hover: `border-color: var(--accent); color: var(--text)`
+
+### Compact модификатор (`.btn-compact`) — для тулбара
+```css
+height: var(--ctrl-h); padding: 0 16px;
+font-size: .83rem; border-radius: 9px;
+```
+
+## Инпуты
+
+```css
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: 9px;
+color: var(--text);
+height: var(--ctrl-h); /* в тулбаре */
+padding: 0 12px;
+font-size: .83rem;
+```
+focus: `border-color: var(--accent)`
+
+## Карточки
+
+```css
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: var(--radius); /* 14px */
+transition: var(--transition);
+```
+hover: `border-color: rgba(108,92,231,.4); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.3)`
+
+**Цветная полоска** сверху карточки — `4px` высотой, цвет берётся из категории проекта (`.cat-{slug} .project-card-stripe`)
+
+## Табы фильтрации
+
+Таб-группа — это единый контрол с `background: var(--surface); border: 1px solid var(--border); border-radius: 10px; height: var(--ctrl-h); padding: 3px 4px`.
+
+Активный таб: `background: var(--accent); color: #fff`. Счётчик в активном: `background: rgba(255,255,255,.2)`. Счётчик в неактивном: `background: var(--surface-2)`.
+
+## Sidebar
+
+- Ширина развёрнутый: `240px`, свёрнутый: `64px`
+- Логотип: `32×32px`, `border-radius: 10px`, `background: linear-gradient(135deg, var(--accent), #8b7ff0)`
+- Активный nav-item: `background: rgba(108,92,231,.15); color: var(--accent); border-right: 2px solid var(--accent)`
+
+## Модальные окна
+
+```css
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: 16px;
+box-shadow: 0 24px 60px rgba(0,0,0,.6);
+```
+Backdrop: `rgba(0,0,0,.55)`, backdrop-filter: `blur(4px)`
+
+## Бейджи и статусные метки
+
+- Бейдж видео: с видео — `background: rgba(108,92,231,.2); color: var(--accent)`, без — dim
+- Бейдж категории: `background: rgba(R,G,B,.13); color: var(--cat-color)` — вычисляется из hex цвета категории
+- Статус "скрыто": `background: rgba(225,115,85,.1); color: var(--red)`
+
+## Пустые состояния
+
+```html
+<div class="empty-state">
+  <div class="empty-state-icon">🔍</div>
+  <h3>Заголовок</h3>
+  <p>Подсказка</p>
+</div>
+```
+`text-align: center; padding: 60px 20px; color: var(--text-dim)`
+
+## Правила написания CSS для этого проекта
+
+1. **Никогда не задавай высоту кнопок/инпутов через padding-top + padding-bottom** в тулбаре — используй `height: var(--ctrl-h)` и `padding: 0 Npx`
+2. **Все цвета только через переменные** `:root` — не хардкодь hex там, где есть токен
+3. **Скругления:** карточки `var(--radius)` (14px), кнопки/инпуты тулбара `9-10px`, внутренние элементы `6-8px`
+4. **Переходы** только через `var(--transition)`, не используй кастомные duration без причины
+5. **Тёмная тема** — единственная. Не добавляй light-mode без задачи
+6. **Иконки** инлайн SVG — не использовать внешние иконочные шрифты
+7. **Z-index стек:** sidebar `100`, dropdown `200`, modal backdrop `300`, modal `310`
+8. **Dropdown-меню** позиционируются через `document.body` + `getBoundingClientRect()` в абсолютных координатах с `window.scrollY`

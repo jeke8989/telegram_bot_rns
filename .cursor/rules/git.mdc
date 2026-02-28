@@ -1,0 +1,26 @@
+---
+description: Git conventions — commits, branches, push policy
+alwaysApply: true
+---
+
+# Git Rules
+
+## Push Policy
+- NEVER run `git push` without explicit user approval
+- Always provide a brief change summary before commit
+
+## Commit Messages
+- Meaningful messages in Russian
+- Format: `[type] Brief description`
+- Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
+- Example: `feat: Добавлена транскрибация голосовых сообщений`
+
+## Branches
+- `main` — stable version
+- `dev` — development
+- `feature/*` — new features
+- `bugfix/*` — fixes
+
+## Deploy
+- Never deploy to production/staging without explicit user permission
+- All deploy commands require confirmation

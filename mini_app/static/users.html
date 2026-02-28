@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/tokens.css?v=1772292397">
+    <link rel="stylesheet" href="/css/base.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/sidebar.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/buttons.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/inputs.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/badges.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/tabs.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/table.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/empty-state.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/toast.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/pagination.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/modals.css?v=1772292397">
+    <link rel="stylesheet" href="/css/layouts/page-shell.css?v=1772292397">
+    <link rel="stylesheet" href="/css/layouts/responsive.css?v=1772292397">
+    <title>Пользователи</title>
+    <style>
+        .users-hero {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .users-toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .users-toolbar .filter-tabs {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .users-search {
+            width: min(340px, 100%);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px 14px;
+            color: var(--text);
+            font-size: .84rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .users-search:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .users-search::placeholder { color: var(--text-dim); }
+
+        .user-cell { display:flex; align-items:center; gap:12px; }
+        .user-avatar { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:700; color:#fff; flex-shrink:0; }
+        .user-name { font-weight:600; font-size:.88rem; }
+        .user-username { font-size:.78rem; color:var(--text-dim); }
+        .blocked-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            padding: 2px 7px;
+            border-radius: 999px;
+            color: #ffb4a2;
+            background: rgba(225, 115, 85, .14);
+            border: 1px solid rgba(225, 115, 85, .3);
+            vertical-align: middle;
+        }
+
+        .role-select {
+            appearance:none; -webkit-appearance:none;
+            background:var(--surface-2); border:1px solid var(--border);
+            color:var(--text); border-radius:8px;
+            padding:6px 28px 6px 10px; font-size:.8rem; font-weight:600;
+            cursor:pointer; transition:var(--transition);
+            background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b8fa8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat:no-repeat; background-position:right 10px center;
+        }
+        .role-select:hover { border-color:var(--accent); }
+        .role-select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+        .role-select.role-admin { color:var(--accent); }
+        .role-select.role-staff { color:var(--green); }
+        .role-select.role-seller { color:#fd79a8; }
+        .role-select.role-user { color:var(--text-dim); }
+        .role-select:disabled { opacity:.65; cursor:not-allowed; pointer-events:none; }
+
+        .total-count {
+            font-size:.82rem;
+            color:var(--text-dim);
+            padding: 8px 4px 10px;
+        }
+
+        .table-wrap {
+            border-radius: 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,.02) 0%, rgba(255,255,255,0) 100%), var(--surface);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .24);
+        }
+
+        .table-wrap .data-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            backdrop-filter: blur(8px);
+        }
+
+        .table-wrap .data-table tbody tr {
+            transition: background var(--transition), transform var(--transition);
+        }
+
+        .table-wrap .data-table tbody tr:nth-child(even) {
+            background: rgba(255,255,255,.01);
+        }
+
+        .table-wrap .data-table tbody tr:hover {
+            background: rgba(108, 92, 231, .08);
+        }
+
+        .client-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 7px;
+            background: color-mix(in srgb, var(--badge-color) 14%, transparent);
+            color: var(--badge-color);
+            border: 1px solid color-mix(in srgb, var(--badge-color) 28%, transparent);
+        }
+
+        .client-company {
+            font-size: .72rem;
+            color: var(--text-dim);
+            margin-top: 3px;
+        }
+
+        .invite-btn {
+            background:var(--accent); color:#fff; border:none; border-radius:var(--radius-btn);
+            padding:9px 18px; font-size:.85rem; font-weight:600; cursor:pointer;
+            display:inline-flex; align-items:center; gap:8px;
+            transition:var(--transition); white-space:nowrap;
+        }
+        .invite-btn:hover { filter:brightness(1.15); transform:translateY(-1px); }
+        .invite-btn svg { flex-shrink:0; }
+
+        .invite-modal { max-width:440px; }
+        .invite-modal h3 { text-align:center; margin-bottom:8px; }
+        .invite-modal-sub { text-align:center; color:var(--text-dim); font-size:.84rem; margin-bottom:22px; }
+
+        .role-cards { display:flex; flex-direction:column; gap:10px; }
+        .role-card {
+            display:flex; align-items:center; gap:14px; padding:14px 16px;
+            border:1.5px solid var(--border); border-radius:var(--radius-sm);
+            cursor:pointer; transition:var(--transition); background:var(--surface-2);
+        }
+        .role-card:hover { border-color:var(--accent); background:rgba(108,92,231,.08); }
+        .role-card.selected { border-color:var(--accent); background:rgba(108,92,231,.12); box-shadow:0 0 0 3px var(--accent-glow); }
+        .role-card-icon {
+            width:42px; height:42px; border-radius:12px; display:flex; align-items:center;
+            justify-content:center; font-size:1.25rem; flex-shrink:0;
+        }
+        .role-card-icon.staff { background:rgba(0,206,201,.15); }
+        .role-card-icon.seller { background:rgba(253,121,168,.15); }
+        .role-card-icon.user { background:rgba(108,92,231,.15); }
+        .role-card-title { font-weight:700; font-size:.9rem; margin-bottom:2px; }
+        .role-card-desc { font-size:.78rem; color:var(--text-dim); }
+
+        .invite-link-result {
+            display:none; flex-direction:column; align-items:center; gap:14px;
+            padding:16px 0 0;
+        }
+        .invite-link-result.show { display:flex; }
+        .invite-link-result .link-badge {
+            font-size:.78rem; font-weight:600; padding:4px 12px;
+            border-radius:20px; display:inline-block;
+        }
+        .invite-link-result .link-badge.staff { background:rgba(0,206,201,.15); color:var(--green); }
+        .invite-link-result .link-badge.seller { background:rgba(253,121,168,.15); color:#fd79a8; }
+        .invite-link-result .link-badge.user { background:rgba(108,92,231,.15); color:var(--accent); }
+
+        .invite-link-box {
+            width:100%; display:flex; gap:8px; align-items:center;
+        }
+        .invite-link-input {
+            flex:1; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm);
+            padding:10px 14px; color:var(--text); font-size:.82rem; font-family:monospace;
+            outline:none; overflow:hidden; text-overflow:ellipsis;
+        }
+        .invite-link-input:focus { border-color:var(--accent); }
+        .copy-btn {
+            background:var(--accent); color:#fff; border:none; border-radius:var(--radius-btn);
+            padding:10px 16px; font-size:.82rem; font-weight:600; cursor:pointer;
+            transition:var(--transition); white-space:nowrap; display:flex; align-items:center; gap:6px;
+        }
+        .copy-btn:hover { filter:brightness(1.15); }
+        .copy-btn.copied { background:var(--green); }
+
+        @media (max-width:768px) {
+            .container { padding:0 12px 60px; }
+            .users-hero {
+                text-align: left;
+            }
+            .users-toolbar .filter-tabs { min-width: 100%; }
+            .users-search { width: 100%; }
+            th, td { padding:10px 12px; }
+            .user-avatar { width:30px; height:30px; font-size:.75rem; border-radius:8px; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="main-content">
+        <div class="mobile-header">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <span class="mobile-header-title">Пользователи</span>
+        </div>
+
+        <div class="hero users-hero">
+            <div>
+                <h1>Пользователи бота</h1>
+                <p class="hero-sub">Все пользователи, взаимодействовавшие с ботом</p>
+            </div>
+            <button class="invite-btn" id="inviteBtn" onclick="openInviteModal()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                Пригласить
+            </button>
+        </div>
+
+        <div class="container">
+            <div class="users-toolbar">
+                <div class="filter-tabs" id="filterTabs">
+                    <button class="filter-tab active" data-filter="all">Все <span class="filter-count" id="countAll">0</span></button>
+                    <button class="filter-tab" data-filter="admin">Admin <span class="filter-count" id="countAdmin">0</span></button>
+                    <button class="filter-tab" data-filter="staff">Staff <span class="filter-count" id="countStaff">0</span></button>
+                    <button class="filter-tab" data-filter="seller">Seller <span class="filter-count" id="countSeller">0</span></button>
+                    <button class="filter-tab" data-filter="user">User <span class="filter-count" id="countUser">0</span></button>
+                </div>
+                <input class="users-search" id="searchInput" placeholder="Поиск по имени, @username или ID...">
+            </div>
+
+            <div class="total-count" id="totalCount"></div>
+
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Роль</th>
+                            <th>Telegram ID</th>
+                            <th>Клиент</th>
+                            <th>Был в боте</th>
+                            <th>Регистрация</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody">
+                        <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim)">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="pagination" style="display:none"></div>
+
+            <div class="empty-state" id="emptyState" style="display:none">
+                <div class="empty-state-icon">👥</div>
+                <p>Пользователи не найдены</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="inviteOverlay">
+        <div class="modal invite-modal">
+            <h3 id="inviteTitle">Пригласить пользователя</h3>
+            <p class="invite-modal-sub" id="inviteSub">Выберите роль для нового участника</p>
+
+            <div class="role-cards" id="roleCards">
+                <div class="role-card" data-role="staff" onclick="selectRole(this)">
+                    <div class="role-card-icon staff">👨‍💻</div>
+                    <div>
+                        <div class="role-card-title">Сотрудник (Staff)</div>
+                        <div class="role-card-desc">Доступ к проектам, встречам и порталу</div>
+                    </div>
+                </div>
+                <div class="role-card" data-role="seller" onclick="selectRole(this)">
+                    <div class="role-card-icon seller">💼</div>
+                    <div>
+                        <div class="role-card-title">Партнёр (Seller)</div>
+                        <div class="role-card-desc">Создание коммерческих предложений</div>
+                    </div>
+                </div>
+                <div class="role-card" data-role="user" onclick="selectRole(this)">
+                    <div class="role-card-icon user">👤</div>
+                    <div>
+                        <div class="role-card-title">Пользователь (User)</div>
+                        <div class="role-card-desc">Личный кабинет клиента</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="invite-link-result" id="inviteResult">
+                <span class="link-badge" id="resultBadge"></span>
+                <div class="invite-link-box">
+                    <input class="invite-link-input" id="inviteLinkInput" readonly>
+                    <button class="copy-btn" id="copyBtn" onclick="copyInviteLink()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        Копировать
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeInviteModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    let allUsers = [];
+    let currentFilter = 'all';
+    let currentPage = 1;
+    const PAGE_SIZE = 15;
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    function escapeHtml(t) {
+        const d = document.createElement('div');
+        d.textContent = t;
+        return d.innerHTML;
+    }
+
+    function avatarColor(str) {
+        let hash = 0;
+        for (let i = 0; i < (str || '').length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        const colors = ['#6c5ce7','#00cec9','#e17355','#fdcb6e','#74b9ff','#a29bfe','#55efc4','#fab1a0'];
+        return colors[Math.abs(hash) % colors.length];
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    const CLIENT_STATUS_LABELS = { lead: 'Лид', in_progress: 'В работе', client: 'Клиент', archived: 'Архив' };
+    const CLIENT_STATUS_COLORS = { lead: '#fdcb6e', in_progress: '#6c5ce7', client: '#00cec9', archived: '#8b8fa8' };
+
+    function updateCounts() {
+        document.getElementById('countAll').textContent = allUsers.length;
+        document.getElementById('countAdmin').textContent = allUsers.filter(u => u.role === 'admin').length;
+        document.getElementById('countStaff').textContent = allUsers.filter(u => u.role === 'staff').length;
+        document.getElementById('countSeller').textContent = allUsers.filter(u => u.role === 'seller').length;
+        document.getElementById('countUser').textContent = allUsers.filter(u => u.role === 'user').length;
+    }
+
+    function getFiltered() {
+        const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+        let list = currentFilter === 'all' ? allUsers : allUsers.filter(u => u.role === currentFilter);
+        if (q) {
+            list = list.filter(u => {
+                const name = [u.first_name, u.last_name].filter(Boolean).join(' ').toLowerCase();
+                const uname = (u.username || '').toLowerCase();
+                const tid = String(u.telegram_id || '');
+                const company = (u.company || '').toLowerCase();
+                return name.includes(q) || uname.includes(q) || tid.includes(q) || company.includes(q);
+            });
+        }
+        return list;
+    }
+
+    function formatRelative(iso) {
+        if (!iso) return '—';
+        const diff = Date.now() - new Date(iso).getTime();
+        const min = Math.floor(diff / 60000);
+        if (min < 2) return 'только что';
+        if (min < 60) return `${min} мин назад`;
+        const h = Math.floor(min / 60);
+        if (h < 24) return `${h} ч назад`;
+        const d = Math.floor(h / 24);
+        if (d < 7) return `${d} дн назад`;
+        return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    }
+
+    function renderPagination(total) {
+        const pag = document.getElementById('pagination');
+        const totalPages = Math.ceil(total / PAGE_SIZE);
+        if (totalPages <= 1) { pag.style.display = 'none'; return; }
+        pag.style.display = 'flex';
+
+        const range = [];
+        // Always show first, last, current ±2, with ellipsis
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                range.push(i);
+            } else if (range[range.length - 1] !== '...') {
+                range.push('...');
+            }
+        }
+
+        pag.innerHTML = `
+            <button class="page-btn" id="pgPrev" ${currentPage === 1 ? 'disabled' : ''} title="Назад">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            ${range.map(p => p === '...'
+                ? `<span class="page-info">…</span>`
+                : `<button class="page-btn ${p === currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`
+            ).join('')}
+            <button class="page-btn" id="pgNext" ${currentPage === totalPages ? 'disabled' : ''} title="Вперёд">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+        `;
+
+        pag.querySelectorAll('.page-btn[data-page]').forEach(btn => {
+            btn.addEventListener('click', () => { currentPage = +btn.dataset.page; renderUsers(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        });
+        pag.querySelector('#pgPrev')?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderUsers(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+        pag.querySelector('#pgNext')?.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderUsers(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+    }
+
+    function renderUsers() {
+        const tbody = document.getElementById('usersBody');
+        const empty = document.getElementById('emptyState');
+        const filtered = getFiltered();
+        const total = document.getElementById('totalCount');
+
+        const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+        total.textContent = filtered.length < allUsers.length
+            ? `Показано: ${filtered.length} из ${allUsers.length} · Страница ${currentPage} из ${Math.max(1, totalPages)}`
+            : `Всего: ${allUsers.length} пользователей · Страница ${currentPage} из ${Math.max(1, totalPages)}`;
+
+        if (!filtered.length) {
+            tbody.innerHTML = '';
+            empty.style.display = 'block';
+            document.getElementById('pagination').style.display = 'none';
+            return;
+        }
+        empty.style.display = 'none';
+        renderPagination(filtered.length);
+
+        tbody.innerHTML = pageItems.map(u => {
+            const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'Без имени';
+            const initial = (name[0] || '?').toUpperCase();
+            const color = avatarColor(name);
+            const blockedBadge = u.is_blocked
+                ? '<span class="blocked-badge" style="margin-left:4px">заблокирован</span>' : '';
+
+            const clientColor = CLIENT_STATUS_COLORS[u.client_status] || '#8b8fa8';
+            const clientCell = u.client_status
+                ? `<span class="client-badge" style="--badge-color:${clientColor}">${CLIENT_STATUS_LABELS[u.client_status] || u.client_status}</span>${u.company ? `<div class="client-company">${escapeHtml(u.company)}</div>` : ''}`
+                : '<span style="color:var(--text-dim);font-size:.78rem">—</span>';
+
+            const rowLink = u.uuid ? `/client/${u.uuid}` : '';
+            const rowCursor = rowLink ? 'cursor:pointer' : '';
+
+            return `<tr data-tid="${u.telegram_id}" data-href="${rowLink}" style="${rowCursor}">
+                <td>
+                    <div class="user-cell">
+                        <div class="user-avatar" style="background:${color}">${escapeHtml(initial)}</div>
+                        <div>
+                            <div class="user-name">${escapeHtml(name)}${blockedBadge}</div>
+                            ${u.username ? `<div class="user-username">@${escapeHtml(u.username)}</div>` : ''}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    ${u.role === 'admin'
+                        ? `<select class="role-select role-admin" disabled title="Роль admin защищена от изменений">
+                            <option value="admin" selected>admin</option>
+                           </select>`
+                        : `<select class="role-select role-${u.role}" data-tid="${u.telegram_id}" data-original="${u.role}">
+                            <option value="user" ${u.role === 'user' ? 'selected' : ''}>user</option>
+                            <option value="seller" ${u.role === 'seller' ? 'selected' : ''}>seller</option>
+                            <option value="staff" ${u.role === 'staff' ? 'selected' : ''}>staff</option>
+                           </select>`
+                    }
+                </td>
+                <td><span class="tg-id">${u.telegram_id}</span></td>
+                <td>${clientCell}</td>
+                <td class="date-cell" title="${u.last_interaction || ''}">${formatRelative(u.last_interaction)}</td>
+                <td class="date-cell">${formatDate(u.created_at)}</td>
+            </tr>`;
+        }).join('');
+
+        tbody.querySelectorAll('tr[data-href]').forEach(tr => {
+            if (!tr.dataset.href) return;
+            tr.addEventListener('click', e => {
+                if (e.target.closest('.role-select')) return;
+                window.location.href = tr.dataset.href;
+            });
+        });
+
+        tbody.querySelectorAll('.role-select').forEach(sel => {
+            sel.addEventListener('change', async (e) => {
+                const tid = e.target.dataset.tid;
+                const newRole = e.target.value;
+                const original = e.target.dataset.original;
+                try {
+                    const resp = await fetch(`/api/users/${tid}/role`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: newRole }),
+                    });
+                    if (!resp.ok) {
+                        const err = await resp.json();
+                        showToast(err.error || 'Ошибка');
+                        e.target.value = original;
+                        return;
+                    }
+                    e.target.dataset.original = newRole;
+                    e.target.className = `role-select role-${newRole}`;
+                    const user = allUsers.find(u => String(u.telegram_id) === String(tid));
+                    if (user) user.role = newRole;
+                    updateCounts();
+                    showToast(`Роль изменена на ${newRole}`);
+                } catch (err) {
+                    showToast('Ошибка сети');
+                    e.target.value = original;
+                }
+            });
+        });
+    }
+
+    async function loadUsers() {
+        try {
+            const resp = await fetch('/api/users');
+            if (!resp.ok) {
+                if (resp.status === 403) {
+                    document.getElementById('usersBody').innerHTML =
+                        '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--red)">Доступ запрещён</td></tr>';
+                    return;
+                }
+                throw new Error('Failed to load');
+            }
+            allUsers = await resp.json();
+            updateCounts();
+            renderUsers();
+        } catch (err) {
+            document.getElementById('usersBody').innerHTML =
+                '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--red)">Ошибка загрузки</td></tr>';
+        }
+    }
+
+    document.getElementById('filterTabs').addEventListener('click', (e) => {
+        const tab = e.target.closest('.filter-tab');
+        if (!tab) return;
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        currentPage = 1;
+        renderUsers();
+    });
+
+    document.getElementById('searchInput').addEventListener('input', () => {
+        currentPage = 1;
+        renderUsers();
+    });
+
+    // --- Invite modal ---
+    const ROLE_LABELS = { staff: 'Сотрудник', seller: 'Партнёр', user: 'Пользователь' };
+
+    function openInviteModal() {
+        const overlay = document.getElementById('inviteOverlay');
+        document.getElementById('inviteTitle').textContent = 'Пригласить пользователя';
+        document.getElementById('inviteSub').textContent = 'Выберите роль для нового участника';
+        document.getElementById('roleCards').style.display = 'flex';
+        document.getElementById('inviteResult').classList.remove('show');
+        document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+        overlay.classList.add('open');
+    }
+
+    function closeInviteModal() {
+        document.getElementById('inviteOverlay').classList.remove('open');
+    }
+
+    document.getElementById('inviteOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeInviteModal();
+    });
+
+    async function selectRole(card) {
+        document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        const role = card.dataset.role;
+
+        try {
+            const resp = await fetch('/api/users/invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role }),
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                showToast(err.error || 'Ошибка создания ссылки');
+                return;
+            }
+            const data = await resp.json();
+            if (!data.invite_url) {
+                showToast('Не удалось сформировать ссылку');
+                return;
+            }
+
+            document.getElementById('inviteTitle').textContent = 'Ссылка для приглашения';
+            document.getElementById('inviteSub').textContent = 'Отправьте ссылку пользователю — при переходе ему будет назначена выбранная роль';
+
+            const badge = document.getElementById('resultBadge');
+            badge.textContent = ROLE_LABELS[role] || role;
+            badge.className = 'link-badge ' + role;
+
+            document.getElementById('inviteLinkInput').value = data.invite_url;
+            document.getElementById('roleCards').style.display = 'none';
+            document.getElementById('inviteResult').classList.add('show');
+
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Копировать';
+        } catch (err) {
+            showToast('Ошибка сети');
+        }
+    }
+
+    function copyInviteLink() {
+        const input = document.getElementById('inviteLinkInput');
+        navigator.clipboard.writeText(input.value).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.classList.add('copied');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Скопировано!';
+            showToast('Ссылка скопирована');
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Копировать';
+            }, 2500);
+        }).catch(() => {
+            input.select();
+            document.execCommand('copy');
+            showToast('Ссылка скопирована');
+        });
+    }
+
+    loadUsers();
+    </script>
+    <script src="/sidebar.js"></script>
+</body>
+</html>

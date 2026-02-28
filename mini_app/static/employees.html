@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/tokens.css?v=4">
+    <link rel="stylesheet" href="/css/base.css?v=4">
+    <link rel="stylesheet" href="/css/components/sidebar.css?v=4">
+    <link rel="stylesheet" href="/css/components/buttons.css?v=4">
+    <link rel="stylesheet" href="/css/components/table.css?v=4">
+    <link rel="stylesheet" href="/css/components/badges.css?v=4">
+    <link rel="stylesheet" href="/css/components/empty-state.css?v=4">
+    <link rel="stylesheet" href="/css/layouts/page-shell.css?v=4">
+    <link rel="stylesheet" href="/css/layouts/responsive.css?v=4">
+    <title>Сотрудники</title>
+    <style>
+        .emp-cell-name { display:flex; align-items:center; gap:12px; }
+        .emp-avatar {
+            width:36px; height:36px; border-radius:10px; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center;
+            font-size:.85rem; font-weight:700; color:#fff;
+        }
+        .emp-name-block { min-width:0; }
+        .emp-name { font-weight:600; font-size:.88rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .emp-username { font-size:.75rem; color:var(--text-dim); margin-top:1px; }
+
+        .grade-badge {
+            display:inline-flex; align-items:center; gap:4px;
+            font-size:.72rem; font-weight:700; padding:3px 10px;
+            border-radius:20px; white-space:nowrap;
+        }
+        .role-badge {
+            display:inline-flex; align-items:center;
+            font-size:.72rem; font-weight:700; padding:3px 10px;
+            border-radius:20px; white-space:nowrap;
+            background:rgba(108,92,231,.14); color:var(--accent);
+            border:1px solid rgba(108,92,231,.35);
+        }
+        .role-badge.admin { background:rgba(232,67,147,.14); color:#e84393; border-color:rgba(232,67,147,.35); }
+        .role-badge.staff { background:rgba(108,92,231,.14); color:var(--accent); border-color:rgba(108,92,231,.35); }
+
+        .emp-specialty { font-size:.82rem; color:var(--text-dim); }
+
+        .kimai-status { display:flex; align-items:center; gap:6px; font-size:.78rem; }
+        .kimai-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+        .kimai-dot.linked { background:var(--green); }
+        .kimai-dot.unlinked { background:var(--text-dim); opacity:.4; }
+
+        .emp-table { min-width:700px; }
+
+        .section-header {
+            display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;
+        }
+        .section-title { font-size:1rem; font-weight:700; }
+        .section-count {
+            font-size:.78rem; font-weight:600; color:var(--text-dim);
+            background:var(--surface-2); border:1px solid var(--border);
+            padding:2px 10px; border-radius:20px;
+        }
+        .header-actions { margin-left:auto; display:flex; gap:8px; }
+
+        @media (max-width: 768px) {
+            .emp-table th:nth-child(3), .emp-table td:nth-child(3),
+            .emp-table th:nth-child(5), .emp-table td:nth-child(5) { display:none; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="main-content">
+        <div class="mobile-header">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <span class="mobile-header-title">Сотрудники</span>
+        </div>
+
+        <div class="hero">
+            <h1>Сотрудники</h1>
+            <p class="hero-sub">Управление командой, грейдами и интеграциями</p>
+        </div>
+
+        <div class="container">
+            <div class="section-header">
+                <span class="section-title">Команда</span>
+                <span class="section-count" id="empCount">—</span>
+                <div class="header-actions">
+                    <button class="btn-secondary" id="refreshBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                        Обновить
+                    </button>
+                </div>
+            </div>
+
+            <div id="tableContainer">
+                <div class="table-wrap">
+                    <table class="data-table emp-table">
+                        <thead><tr><th>Сотрудник</th><th>Роль</th><th>Специализация</th><th>Грейд</th><th>Kimai</th></tr></thead>
+                        <tbody>
+                            <tr><td><div class="sk" style="height:36px;width:200px;border-radius:10px"></div></td><td><div class="sk" style="height:22px;width:60px;border-radius:20px"></div></td><td><div class="sk" style="height:14px;width:100px"></div></td><td><div class="sk" style="height:22px;width:70px;border-radius:20px"></div></td><td><div class="sk" style="height:14px;width:80px"></div></td></tr>
+                            <tr><td><div class="sk" style="height:36px;width:180px;border-radius:10px"></div></td><td><div class="sk" style="height:22px;width:60px;border-radius:20px"></div></td><td><div class="sk" style="height:14px;width:120px"></div></td><td><div class="sk" style="height:22px;width:70px;border-radius:20px"></div></td><td><div class="sk" style="height:14px;width:80px"></div></td></tr>
+                            <tr><td><div class="sk" style="height:36px;width:160px;border-radius:10px"></div></td><td><div class="sk" style="height:22px;width:60px;border-radius:20px"></div></td><td><div class="sk" style="height:14px;width:90px"></div></td><td><div class="sk" style="height:22px;width:70px;border-radius:20px"></div></td><td><div class="sk" style="height:14px;width:80px"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const GRADES = {
+        Junior: { coef: 1.00, color: '#74b9ff' },
+        Middle: { coef: 1.47, color: '#00cec9' },
+        Senior: { coef: 1.80, color: '#a29bfe' },
+        Lead:   { coef: 2.13, color: '#fd79a8' },
+        COO:    { coef: null, color: '#6c5ce7' },
+        CEO:    { coef: null, color: '#e84393' },
+    };
+
+    function escapeHtml(s) {
+        return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function hexToRgb(hex) {
+        const m = hex.replace('#','').match(/.{2}/g);
+        return m ? m.map(x => parseInt(x,16)).join(',') : '139,143,168';
+    }
+
+    async function authFetch(url, opts) {
+        const res = await fetch(url, opts);
+        if (res.status === 401) { window.location.href = '/login'; throw new Error('unauthorized'); }
+        return res;
+    }
+
+    function renderTable(employees) {
+        const container = document.getElementById('tableContainer');
+        const countEl = document.getElementById('empCount');
+        countEl.textContent = employees.length;
+
+        if (!employees.length) {
+            container.innerHTML = '<div class="empty-state"><h3>Нет сотрудников</h3><p>Добавьте пользователей с ролью staff или admin</p></div>';
+            return;
+        }
+
+        let html = '<div class="table-wrap"><table class="data-table emp-table"><thead><tr>'
+            + '<th>Сотрудник</th><th>Роль</th><th>Специализация</th><th>Грейд</th><th>Kimai</th>'
+            + '</tr></thead><tbody>';
+
+        for (const emp of employees) {
+            const name = [emp.first_name, emp.last_name].filter(Boolean).join(' ') || emp.username || '#' + emp.telegram_id;
+            const initial = name[0].toUpperCase();
+            const grade = emp.staff_grade || '';
+            const gradeInfo = GRADES[grade];
+            const gradeColor = gradeInfo ? gradeInfo.color : '#6c5ce7';
+            const avatarBg = gradeInfo
+                ? 'background:linear-gradient(135deg,' + gradeInfo.color + ',' + gradeInfo.color + '88)'
+                : 'background:linear-gradient(135deg,var(--accent),#8b7ff0)';
+
+            const gradeBadge = grade && gradeInfo
+                ? '<span class="grade-badge" style="background:rgba(' + hexToRgb(gradeInfo.color) + ',.15);color:' + gradeInfo.color + ';border:1px solid rgba(' + hexToRgb(gradeInfo.color) + ',.35)">' + escapeHtml(grade) + (gradeInfo.coef ? ' &times;' + gradeInfo.coef.toFixed(2) : '') + '</span>'
+                : '<span style="color:var(--text-dim);font-size:.78rem">—</span>';
+
+            const kimaiHtml = emp.kimai_user_id
+                ? '<span class="kimai-status"><span class="kimai-dot linked"></span>Привязан</span>'
+                : '<span class="kimai-status"><span class="kimai-dot unlinked"></span>Нет</span>';
+
+            const uuid = emp.uuid || '';
+
+            html += '<tr data-uuid="' + escapeHtml(uuid) + '">'
+                + '<td><div class="emp-cell-name">'
+                + '<div class="emp-avatar" style="' + avatarBg + '">' + escapeHtml(initial) + '</div>'
+                + '<div class="emp-name-block">'
+                + '<div class="emp-name">' + escapeHtml(name) + '</div>'
+                + (emp.username ? '<div class="emp-username">@' + escapeHtml(emp.username) + '</div>' : '')
+                + '</div></div></td>'
+                + '<td><span class="role-badge ' + escapeHtml(emp.role) + '">' + escapeHtml(emp.role) + '</span></td>'
+                + '<td><span class="emp-specialty">' + escapeHtml(emp.staff_specialty || '—') + '</span></td>'
+                + '<td>' + gradeBadge + '</td>'
+                + '<td>' + kimaiHtml + '</td>'
+                + '</tr>';
+        }
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+
+        container.querySelectorAll('tbody tr').forEach(tr => {
+            tr.addEventListener('click', () => {
+                const uuid = tr.dataset.uuid;
+                if (uuid) window.location.href = '/employee/' + uuid;
+            });
+        });
+    }
+
+    async function loadAll() {
+        try {
+            const res = await authFetch('/api/employees');
+            if (!res.ok) throw new Error('Ошибка загрузки');
+            const employees = await res.json();
+            renderTable(employees);
+        } catch (e) {
+            document.getElementById('tableContainer').innerHTML =
+                '<div class="empty-state"><h3>Ошибка загрузки</h3><p>' + escapeHtml(e.message) + '</p></div>';
+        }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', loadAll);
+
+    (async () => {
+        try {
+            const r = await fetch('/api/auth/me');
+            if (!r.ok) { window.location.href = '/login'; return; }
+            const u = await r.json();
+            if (u.role !== 'admin') {
+                document.getElementById('tableContainer').innerHTML =
+                    '<div class="empty-state"><h3>Доступ запрещён</h3><p>Эта страница доступна только администраторам</p></div>';
+                return;
+            }
+            await loadAll();
+        } catch (e) { window.location.href = '/login'; }
+    })();
+    </script>
+    <script src="/sidebar.js"></script>
+</body>
+</html>

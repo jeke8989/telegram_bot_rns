@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет — РусНейроСофт</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/tokens.css?v=1772292397">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #787cf5;
+            --primary-light: rgba(120,124,245,.08);
+            --primary-border: rgba(120,124,245,.2);
+            --bg: #f5f5fa;
+            --surface: #fff;
+            --surface-2: #f0f0f5;
+            --surface-3: #eaeaf0;
+            --border: #e8e9f0;
+            --text: #1a1a2e;
+            --text-dim: #6b7085;
+            --text-light: #9b9fb5;
+            --accent: #787cf5;
+            --accent-glow: rgba(120,124,245,.15);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --shadow: 0 2px 16px rgba(26,26,46,.06);
+            --shadow-md: 0 4px 24px rgba(26,26,46,.08);
+            --green: #00cec9;
+            --green-bg: rgba(0,206,201,.08);
+            --amber: #f59e0b;
+            --amber-bg: rgba(245,158,11,.08);
+            --coral: #e17355;
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+        /* NAV */
+        .nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--border); }
+        .nav-inner { max-width:960px; margin:0 auto; padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; }
+        .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
+        .nav-logo img { width:32px; height:32px; border-radius:8px; }
+        .nav-logo span { font-weight:700; font-size:15px; }
+        .nav-right { display:flex; align-items:center; gap:12px; }
+        .nav-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:100px; background:var(--primary-light); color:var(--primary); font-size:13px; font-weight:600; text-decoration:none; border:none; cursor:pointer; transition:.2s; }
+        .nav-btn:hover { background:var(--primary); color:#fff; }
+        .nav-btn svg { width:14px; height:14px; }
+
+        /* STAFF BAR */
+        .staff-bar { display:none; background:linear-gradient(90deg,#1a1030,#2d1b69); color:rgba(255,255,255,.85); font-size:13px; font-weight:600; }
+        .staff-bar-inner { max-width:960px; margin:0 auto; padding:8px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .staff-bar-left { display:flex; align-items:center; gap:8px; }
+        .staff-bar-dot { width:8px; height:8px; border-radius:50%; background:var(--amber); box-shadow:0 0 6px rgba(245,158,11,.5); }
+        .staff-bar-back { color:rgba(255,255,255,.5); text-decoration:none; font-size:13px; font-weight:500; transition:color .2s; }
+        .staff-bar-back:hover { color:#fff; }
+
+        /* LOADING / ERROR */
+        .loading-page { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; gap:16px; color:var(--text-dim); font-size:14px; font-weight:500; }
+        .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .7s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .error-page { display:none; min-height:80vh; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; text-align:center; }
+        .error-icon { width:80px; height:80px; border-radius:50%; background:var(--primary-light); display:flex; align-items:center; justify-content:center; margin-bottom:24px; }
+        .error-icon svg { width:36px; height:36px; color:var(--primary); }
+        .error-page h2 { font-size:22px; font-weight:800; margin-bottom:8px; }
+        .error-page p { color:var(--text-dim); font-size:15px; margin-bottom:24px; line-height:1.5; }
+        .error-btn { display:inline-flex; align-items:center; gap:8px; padding:12px 28px; border-radius:100px; background:var(--primary); color:#fff; font-size:14px; font-weight:600; text-decoration:none; transition:opacity .2s; }
+        .error-btn:hover { opacity:.85; }
+
+        /* HERO */
+        .hero { background:linear-gradient(135deg,#1a1030 0%,#2d1b69 50%,#1e1245 100%); padding:40px 24px 48px; color:#fff; position:relative; overflow:hidden; }
+        .hero::before { content:''; position:absolute; top:-50%; right:-20%; width:500px; height:500px; background:radial-gradient(circle,rgba(120,124,245,.15),transparent 70%); pointer-events:none; }
+        .hero-inner { max-width:960px; margin:0 auto; position:relative; z-index:1; }
+        .hero-welcome { font-size:14px; font-weight:500; color:rgba(255,255,255,.5); margin-bottom:4px; }
+        .hero-company { font-size:12px; font-weight:600; color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; }
+        .hero-name { font-size:clamp(22px,4vw,32px); font-weight:800; line-height:1.2; letter-spacing:-.5px; }
+
+        /* PROJECT TABS */
+        .project-tabs { max-width:960px; margin:0 auto; padding:0 24px; }
+        .project-tabs-bar { display:flex; gap:4px; overflow-x:auto; padding:16px 0 0; -webkit-overflow-scrolling:touch; }
+        .project-tabs-bar::-webkit-scrollbar { display:none; }
+        .project-tab { padding:10px 20px; border-radius:12px 12px 0 0; background:var(--surface); border:1px solid var(--border); border-bottom:none; font-size:14px; font-weight:600; color:var(--text-dim); cursor:pointer; white-space:nowrap; transition:.2s; position:relative; top:1px; }
+        .project-tab:hover { color:var(--text); }
+        .project-tab.active { color:var(--primary); background:var(--bg); border-color:var(--primary-border); }
+
+        /* CONTENT */
+        .content { max-width:960px; margin:0 auto; padding:0 24px 48px; }
+
+        /* STATS ROW */
+        .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:20px 0; }
+        .stat-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); padding:18px; text-align:center; transition:transform .2s,box-shadow .2s; }
+        .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+        .stat-icon { width:36px; height:36px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px; font-size:16px; }
+        .stat-icon.i-budget { background:var(--primary-light); }
+        .stat-icon.i-hours { background:var(--green-bg); }
+        .stat-icon.i-modules { background:var(--amber-bg); }
+        .stat-icon.i-meetings { background:rgba(225,115,85,.08); }
+        .stat-value { font-size:22px; font-weight:800; letter-spacing:-.5px; margin-bottom:2px; }
+        .stat-label { font-size:11px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; }
+
+        /* CARDS */
+        .section { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); padding:24px; margin-bottom:16px; }
+        .section-hdr { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+        .section-icon { width:36px; height:36px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .section-icon svg { width:18px; height:18px; }
+        .section-icon.purple { background:var(--primary-light); color:var(--primary); }
+        .section-icon.green { background:var(--green-bg); color:var(--green); }
+        .section-icon.amber { background:var(--amber-bg); color:var(--amber); }
+        .section-title { font-size:16px; font-weight:700; }
+        .section-badge { margin-left:auto; font-size:12px; font-weight:600; color:var(--text-dim); background:var(--bg); padding:4px 10px; border-radius:100px; }
+
+        /* CHARTS ROW */
+        .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+        .chart-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); padding:24px; }
+        .chart-title { font-size:14px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .chart-title-dot { width:8px; height:8px; border-radius:50%; }
+        .chart-wrap { position:relative; max-height:260px; }
+
+        /* MODULES */
+        .module-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg); }
+        .module-row + .module-row { margin-top:6px; }
+        .module-num { width:28px; height:28px; border-radius:8px; background:var(--primary-light); color:var(--primary); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .module-info { flex:1; min-width:0; }
+        .module-name { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .module-bar { height:6px; border-radius:3px; background:var(--border); margin-top:6px; overflow:hidden; }
+        .module-bar-fill { height:100%; border-radius:3px; transition:width .6s ease; }
+        .module-hours { font-size:13px; font-weight:600; color:var(--text-dim); white-space:nowrap; flex-shrink:0; }
+
+        /* DOCS */
+        .doc-link { display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--bg); border-radius:var(--radius-sm); border:1px solid var(--border); text-decoration:none; color:var(--text); transition:.2s; cursor:pointer; }
+        .doc-link + .doc-link { margin-top:8px; }
+        .doc-link:hover { border-color:var(--primary-border); background:var(--primary-light); }
+        .doc-icon { width:40px; height:40px; border-radius:var(--radius-sm); background:var(--primary-light); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--primary); }
+        .doc-icon svg { width:20px; height:20px; }
+        .doc-info { flex:1; min-width:0; }
+        .doc-name { font-size:14px; font-weight:600; }
+        .doc-meta { font-size:12px; color:var(--text-dim); margin-top:2px; }
+        .doc-arrow { color:var(--text-light); flex-shrink:0; transition:transform .2s; }
+        .doc-link:hover .doc-arrow { color:var(--primary); transform:translateX(3px); }
+        .doc-arrow svg { width:16px; height:16px; }
+
+        /* CHAT */
+        .chat-section { padding:0; overflow:hidden; }
+        .chat-section .section-hdr { padding:24px 24px 0; margin-bottom:0; }
+        .chat-wrap { --bg:#fff; --surface:#f5f5fa; --border:#e8e9f0; --text:#1a1a2e; --text-dim:#6b7085; --accent:#787cf5; }
+        .chat-wrap .cw-wrap { border:none; border-radius:0; }
+        .chat-wrap .cw-header { display:none; }
+        .chat-wrap .cw-msg-in { background:#f0f0f5; color:#1a1a2e; }
+        .chat-wrap .cw-msg-out { background:rgba(120,124,245,.1); color:#1a1a2e; }
+        .chat-wrap .cw-input-bar { border-top:1px solid #e8e9f0; }
+        .chat-wrap .cw-input { background:#f5f5fa; border-color:#e8e9f0; color:#1a1a2e; }
+        .chat-wrap .cw-empty { color:#6b7085; }
+
+        /* HERO DESC */
+        .hero-desc { font-size:14px; color:rgba(255,255,255,.55); margin-top:10px; line-height:1.6; max-width:600px; }
+        .hero-badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+        .hero-badge { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); border-radius:100px; font-size:12px; font-weight:600; color:rgba(255,255,255,.7); }
+
+        /* STAGES STEPPER */
+        .stages-list { display:flex; flex-direction:column; gap:0; }
+        .stage-item { position:relative; padding-left:36px; padding-bottom:24px; }
+        .stage-item:last-child { padding-bottom:0; }
+        .stage-line { position:absolute; left:14px; top:28px; bottom:0; width:2px; background:var(--border); }
+        .stage-item:last-child .stage-line { display:none; }
+        .stage-dot { position:absolute; left:7px; top:4px; width:16px; height:16px; border-radius:50%; background:var(--primary-light); border:2px solid var(--primary); }
+        .stage-hdr { font-size:14px; font-weight:700; margin-bottom:6px; }
+        .stage-tasks { display:flex; flex-direction:column; gap:3px; }
+        .stage-task { font-size:13px; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
+        .stage-task-hours { font-weight:600; color:var(--text); margin-left:auto; white-space:nowrap; }
+        .stage-cost { font-size:13px; font-weight:600; color:var(--primary); margin-top:6px; }
+
+        /* ROLES BREAKDOWN */
+        .role-row { display:flex; align-items:center; gap:12px; padding:6px 0; }
+        .role-label { font-size:13px; font-weight:600; width:80px; flex-shrink:0; }
+        .role-bar { flex:1; height:8px; border-radius:4px; background:var(--border); overflow:hidden; }
+        .role-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+        .role-hours { font-size:13px; font-weight:600; color:var(--text-dim); width:50px; text-align:right; flex-shrink:0; }
+
+        /* PERSPECTIVES */
+        .persp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .persp-card { padding:16px; background:var(--bg); border-radius:var(--radius-sm); border:1px solid var(--border); }
+        .persp-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+        .persp-desc { font-size:13px; color:var(--text-dim); line-height:1.5; }
+
+        /* PAYMENT FUNNEL */
+        .pay-list { display:flex; flex-direction:column; gap:0; }
+        .pay-item { display:flex; align-items:center; gap:14px; padding:14px 16px; border-bottom:1px solid var(--border); position:relative; }
+        .pay-item:last-child { border-bottom:none; }
+        .pay-item.active { background:var(--primary-light); border-radius:var(--radius-sm); border:1px solid var(--primary-border); margin:0 -1px; }
+        .pay-num { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+        .pay-num.active { background:var(--primary); color:#fff; }
+        .pay-num.pending { background:var(--border); color:var(--text-dim); }
+        .pay-info { flex:1; min-width:0; }
+        .pay-name { font-size:14px; font-weight:600; }
+        .pay-hours { font-size:12px; color:var(--text-dim); }
+        .pay-cost { font-size:16px; font-weight:700; white-space:nowrap; flex-shrink:0; }
+        .pay-status { font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+        .pay-status.current { background:var(--primary-light); color:var(--primary); }
+        .pay-status.waiting { background:var(--bg); color:var(--text-light); }
+        .pay-cta { margin-top:16px; padding:20px; background:linear-gradient(135deg,rgba(120,124,245,.06),rgba(167,139,250,.06)); border:1px solid var(--primary-border); border-radius:var(--radius); text-align:center; }
+        .pay-cta-title { font-size:15px; font-weight:700; margin-bottom:4px; }
+        .pay-cta-desc { font-size:13px; color:var(--text-dim); margin-bottom:14px; }
+        .pay-cta-btn { display:inline-flex; align-items:center; gap:8px; padding:12px 28px; border-radius:100px; background:var(--primary); color:#fff; font-size:14px; font-weight:600; text-decoration:none; transition:opacity .2s; }
+        .pay-cta-btn:hover { opacity:.85; }
+        .pay-cta-btn svg { width:16px; height:16px; }
+        .pay-total { display:flex; justify-content:space-between; padding:14px 16px; font-weight:700; border-top:2px solid var(--border); margin-top:4px; }
+
+        /* PROMO BANNER */
+        .promo-banner { background:linear-gradient(135deg,#1a1030 0%,#2d1b69 50%,#1e1245 100%); border-radius:var(--radius); padding:28px 28px 24px; margin:20px 0 4px; position:relative; overflow:hidden; color:#fff; }
+        .promo-banner::before { content:''; position:absolute; top:-40%; right:-10%; width:300px; height:300px; background:radial-gradient(circle,rgba(120,124,245,.2),transparent 70%); pointer-events:none; }
+        .promo-banner::after { content:''; position:absolute; bottom:-30%; left:-10%; width:250px; height:250px; background:radial-gradient(circle,rgba(167,139,250,.15),transparent 70%); pointer-events:none; }
+        .promo-inner { position:relative; z-index:1; }
+        .promo-tag { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; background:rgba(245,158,11,.15); border:1px solid rgba(245,158,11,.3); border-radius:100px; font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px; }
+        .promo-title { font-size:clamp(18px,3.5vw,24px); font-weight:800; line-height:1.3; margin-bottom:6px; }
+        .promo-subtitle { font-size:14px; color:rgba(255,255,255,.55); margin-bottom:20px; }
+        .promo-prices { display:flex; align-items:baseline; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+        .promo-price-old { font-size:18px; font-weight:600; color:rgba(255,255,255,.35); text-decoration:line-through; }
+        .promo-price-new { font-size:28px; font-weight:800; color:#fbbf24; }
+        .promo-saving { font-size:13px; font-weight:600; color:rgba(0,206,201,.9); background:rgba(0,206,201,.12); padding:4px 10px; border-radius:6px; }
+        .promo-timer { display:flex; gap:10px; margin-bottom:20px; }
+        .promo-timer-block { display:flex; flex-direction:column; align-items:center; min-width:56px; padding:10px 8px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:10px; }
+        .promo-timer-num { font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
+        .promo-timer-label { font-size:10px; font-weight:600; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+        .promo-cta { display:inline-flex; align-items:center; gap:8px; padding:13px 30px; border-radius:100px; background:linear-gradient(135deg,#f59e0b,#f97316); color:#fff; font-size:14px; font-weight:700; text-decoration:none; border:none; cursor:pointer; transition:opacity .2s,transform .15s; box-shadow:0 4px 20px rgba(245,158,11,.3); }
+        .promo-cta:hover { opacity:.9; transform:translateY(-1px); }
+        .promo-cta svg { width:16px; height:16px; }
+        .promo-expired-msg { font-size:14px; color:rgba(255,255,255,.4); font-weight:600; }
+        .promo-staff-note { display:inline-block; margin-top:12px; font-size:11px; color:rgba(255,255,255,.3); background:rgba(255,255,255,.06); padding:4px 10px; border-radius:6px; }
+        .promo-banner.expired { opacity:.6; }
+        .promo-banner.expired .promo-cta { display:none; }
+        .promo-banner.expired .promo-prices { opacity:.5; }
+        @media (max-width:640px) {
+            .promo-banner { padding:22px 18px 20px; }
+            .promo-timer { gap:6px; }
+            .promo-timer-block { min-width:48px; padding:8px 6px; }
+            .promo-timer-num { font-size:18px; }
+            .promo-price-new { font-size:22px; }
+        }
+
+        /* EMPTY */
+        .empty-state { text-align:center; padding:40px 16px; color:var(--text-dim); }
+        .empty-state .empty-icon { font-size:40px; margin-bottom:12px; }
+        .empty-state p { font-size:14px; line-height:1.5; }
+
+        /* FOOTER */
+        .footer { max-width:960px; margin:0 auto; padding:24px 24px 40px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+        .footer-copy { font-size:13px; color:var(--text-light); }
+        .footer-copy a { color:var(--text-dim); text-decoration:none; font-weight:600; }
+        .footer-copy a:hover { color:var(--primary); }
+        .footer-links { display:flex; gap:20px; }
+        .footer-links a { font-size:13px; color:var(--text-dim); text-decoration:none; font-weight:500; transition:color .2s; }
+        .footer-links a:hover { color:var(--primary); }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation:fadeUp .45s ease both; }
+
+        /* RESPONSIVE */
+        @media (max-width:768px) {
+            .stats { grid-template-columns:repeat(2,1fr); }
+            .charts-row { grid-template-columns:1fr; }
+        }
+        @media (max-width:640px) {
+            .nav-inner { padding:0 16px; }
+            .hero { padding:32px 16px 40px; }
+            .content { padding:0 12px 32px; }
+            .project-tabs { padding:0 12px; }
+            .stats { grid-template-columns:repeat(2,1fr); gap:8px; }
+            .stat-card { padding:14px 10px; }
+            .persp-grid { grid-template-columns:1fr; }
+            .stat-value { font-size:18px; }
+            .section { padding:18px 16px; }
+            .footer { padding:20px 12px 32px; flex-direction:column; text-align:center; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="https://rusneurosoft.ru" target="_blank" class="nav-logo">
+            <img src="/img/logo-icon.png" alt="РусНейроСофт"><span>РусНейроСофт</span>
+        </a>
+        <div class="nav-right">
+            <a href="#chat" class="nav-btn" id="navChatBtn" onclick="event.preventDefault(); var c=document.getElementById('cabinetChat'); if(c){c.scrollIntoView({behavior:'smooth',block:'center'}); c.querySelector('.cw-input')?.focus();}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+                Написать нам
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="staff-bar" id="staffBar">
+    <div class="staff-bar-inner">
+        <div class="staff-bar-left"><div class="staff-bar-dot"></div><span>Просмотр кабинета клиента</span></div>
+        <a href="javascript:history.back()" class="staff-bar-back" id="staffBackLink">&larr; Назад</a>
+    </div>
+</div>
+
+<style>@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}.sk{background:linear-gradient(90deg,#e8e9f0 25%,#f0f0f5 50%,#e8e9f0 75%);background-size:800px 100%;animation:shimmer 1.5s infinite linear;border-radius:8px}</style>
+<div id="loadingState" class="loading-page" style="min-height:auto;padding:0;gap:0;align-items:stretch">
+    <div style="background:linear-gradient(135deg,#1a1030 0%,#2d1b69 50%,#1e1245 100%);padding:40px 24px 48px"><div style="max-width:960px;margin:0 auto"><div style="height:14px;width:100px;background:rgba(255,255,255,.08);border-radius:6px;margin-bottom:12px"></div><div style="height:28px;width:220px;background:rgba(255,255,255,.12);border-radius:8px"></div></div></div>
+    <div style="max-width:960px;margin:0 auto;padding:20px 24px;width:100%">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:18px;text-align:center"><div class="sk" style="width:36px;height:36px;border-radius:10px;margin:0 auto 10px"></div><div class="sk" style="height:22px;width:60%;margin:0 auto 6px"></div><div class="sk" style="height:10px;width:50%;margin:0 auto"></div></div><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:18px;text-align:center"><div class="sk" style="width:36px;height:36px;border-radius:10px;margin:0 auto 10px"></div><div class="sk" style="height:22px;width:55%;margin:0 auto 6px"></div><div class="sk" style="height:10px;width:45%;margin:0 auto"></div></div><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:18px;text-align:center"><div class="sk" style="width:36px;height:36px;border-radius:10px;margin:0 auto 10px"></div><div class="sk" style="height:22px;width:50%;margin:0 auto 6px"></div><div class="sk" style="height:10px;width:55%;margin:0 auto"></div></div><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:18px;text-align:center"><div class="sk" style="width:36px;height:36px;border-radius:10px;margin:0 auto 10px"></div><div class="sk" style="height:22px;width:45%;margin:0 auto 6px"></div><div class="sk" style="height:10px;width:50%;margin:0 auto"></div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px"><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:24px"><div class="sk" style="height:14px;width:120px;margin-bottom:16px"></div><div class="sk" style="height:160px;border-radius:10px"></div></div><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:24px"><div class="sk" style="height:14px;width:140px;margin-bottom:16px"></div><div class="sk" style="height:160px;border-radius:10px"></div></div></div>
+        <div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:24px"><div class="sk" style="height:16px;width:100px;margin-bottom:16px"></div><div class="sk" style="height:48px;border-radius:10px;margin-bottom:6px"></div><div class="sk" style="height:48px;border-radius:10px;margin-bottom:6px"></div><div class="sk" style="height:48px;border-radius:10px"></div></div>
+    </div>
+</div>
+
+<div id="errorState" class="error-page">
+    <div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+    <h2>Кабинет не найден</h2>
+    <p>Проверьте ссылку или свяжитесь с вашим менеджером</p>
+    <a href="https://t.me/IT_anasta" target="_blank" class="error-btn">Связаться с менеджером</a>
+</div>
+
+<div id="mainContent" style="display:none">
+    <section class="hero">
+        <div class="hero-inner">
+            <p class="hero-welcome" id="heroWelcome"></p>
+            <p class="hero-company" id="heroCompany" style="display:none"></p>
+            <h1 class="hero-name" id="heroName">Личный кабинет</h1>
+        </div>
+    </section>
+
+    <div id="projectTabsWrap" class="project-tabs" style="display:none">
+        <div class="project-tabs-bar" id="projectTabsBar"></div>
+    </div>
+
+    <div class="content" id="dashboardArea"></div>
+
+    <footer class="footer">
+        <div class="footer-copy">&copy; 2026 <a href="https://rusneurosoft.ru" target="_blank">РусНейроСофт</a></div>
+        <div class="footer-links">
+            <a href="https://t.me/IT_anasta" target="_blank">Telegram</a>
+            <a href="mailto:info@rusneurosoft.ru">info@rusneurosoft.ru</a>
+        </div>
+    </footer>
+</div>
+
+<script src="/chat-widget.js"></script>
+<script>
+(function() {
+    'use strict';
+
+    var COLORS = ['#787cf5','#00cec9','#f59e0b','#e17355','#a78bfa','#34d399','#fb923c','#38bdf8','#f472b6','#94a3b8'];
+    var STATUS_MAP = { draft:'Черновик', sent:'Отправлено', approved:'Одобрено', in_progress:'В работе', completed:'Завершён' };
+
+    var pathParts = window.location.pathname.split('/');
+    var cabinetToken = pathParts[pathParts.length - 1];
+    if (!cabinetToken) { showError(); return; }
+
+    var DATA = null;
+    var activeProjectIdx = 0;
+    var budgetChart = null;
+    var hoursChart = null;
+    var promoTimerInterval = null;
+
+    fetch('/api/cabinet/' + cabinetToken)
+        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(data) { try { DATA = data; init(); } catch(e) { console.error('Cabinet init error:', e); document.getElementById('errorState').querySelector('p').textContent = e.message + ' | ' + (e.stack||'').split('\n')[1]; showError(); } })
+        .catch(function() { showError(); });
+
+    function showError() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('errorState').style.display = 'flex';
+    }
+
+    function esc(t) { var d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
+    function fmtCost(v, c) { if (!v) return '—'; var n = Number(v); return isNaN(n) ? v : (c||'$') + n.toLocaleString('ru-RU'); }
+    function plural(n, one, two, five) { var a = Math.abs(n)%100, n1=a%10; if(a>10&&a<20) return five; if(n1>1&&n1<5) return two; return n1===1?one:five; }
+
+    function init() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('mainContent').style.display = '';
+
+        var client = DATA.client || {};
+        var isStaff = DATA.is_staff === true;
+        var staff = DATA.staff || {};
+
+        if (client.name) document.getElementById('heroWelcome').textContent = 'Добро пожаловать, ' + client.name;
+        else document.getElementById('heroWelcome').textContent = 'Добро пожаловать';
+        if (client.company) { var el = document.getElementById('heroCompany'); el.textContent = client.company; el.style.display = ''; }
+
+        if (isStaff) {
+            document.getElementById('staffBar').style.display = 'block';
+            var bl = document.getElementById('staffBackLink');
+            var urlParams = new URLSearchParams(window.location.search);
+            var fromParam = urlParams.get('from');
+            var proposalToken = urlParams.get('proposal_token');
+            if (fromParam === 'proposal' && proposalToken) {
+                bl.href = '/proposal-edit/' + proposalToken;
+                bl.textContent = '\u2190 К предложению';
+            } else if (client.uuid) {
+                bl.href = '/client/' + client.uuid;
+                bl.textContent = '\u2190 Карточка клиента';
+            }
+        }
+
+        var projects = DATA.projects || [];
+        var standalone = DATA.standalone_proposals || [];
+
+        if (projects.length === 0 && standalone.length === 0) {
+            document.getElementById('heroName').textContent = 'Ваш кабинет';
+            renderEmpty(isStaff, staff);
+            return;
+        }
+
+        if (projects.length === 0 && standalone.length > 0) {
+            var virtualProject = buildVirtualProject(standalone);
+            projects = [virtualProject];
+            DATA.projects = projects;
+        }
+
+        if (projects.length > 0) {
+            document.getElementById('heroName').textContent = projects[0].name || 'Ваш проект';
+            document.title = (projects[0].name || 'Проект') + ' — Личный кабинет';
+        }
+
+        if (projects.length > 1) {
+            document.getElementById('projectTabsWrap').style.display = '';
+            renderTabs(projects);
+        }
+
+        renderDashboard(projects[0], isStaff, staff);
+    }
+
+    function buildVirtualProject(proposals) {
+        var totalH = 0, totalC = 0, allMods = [], currency = '$';
+        var first = proposals[0] || {};
+        proposals.forEach(function(p) {
+            var th = p.total_hours;
+            totalH += Number((typeof th === 'object' && th) ? (th.max || th.min || 0) : (th || 0));
+            var tc = p.total_cost;
+            totalC += Number((typeof tc === 'object' && tc) ? (tc.max || tc.min || 0) : (tc || 0));
+            (p.modules||[]).forEach(function(m) { allMods.push(m); });
+            if (p.currency) currency = p.currency;
+        });
+        return {
+            id: 0, name: first.project_name || 'Ваш проект',
+            description: first.project_description_short || '',
+            meeting_count: 0, created_at: null,
+            proposals: proposals, total_hours: totalH, total_cost: totalC,
+            currency: currency, modules: allMods,
+            stages: first.stages || [],
+            payment_phases: first.payment_phases || [],
+            timeline_weeks: first.timeline_weeks,
+            timeline_months: first.timeline_months,
+            team_size: first.team_size,
+            preparation_phase: first.preparation_phase,
+            perspectives: first.perspectives || [],
+            totals: first.totals || {},
+            hourly_rate: first.hourly_rate || 0,
+            creator: first.creator,
+            is_virtual: true,
+        };
+    }
+
+    function renderTabs(projects) {
+        var bar = document.getElementById('projectTabsBar');
+        var html = '';
+        projects.forEach(function(p, i) {
+            html += '<div class="project-tab' + (i===0?' active':'') + '" data-idx="' + i + '">' + esc(p.name || 'Проект '+(i+1)) + '</div>';
+        });
+        bar.innerHTML = html;
+        bar.addEventListener('click', function(e) {
+            var tab = e.target.closest('.project-tab');
+            if (!tab) return;
+            var idx = parseInt(tab.dataset.idx);
+            if (idx === activeProjectIdx) return;
+            activeProjectIdx = idx;
+            bar.querySelectorAll('.project-tab').forEach(function(t,i) { t.classList.toggle('active', i===idx); });
+            var proj = DATA.projects[idx];
+            document.getElementById('heroName').textContent = proj.name || 'Проект';
+            document.title = (proj.name || 'Проект') + ' — Личный кабинет';
+            renderDashboard(proj, DATA.is_staff, DATA.staff || {});
+        });
+    }
+
+    function resolveRange(v) {
+        if (!v) return 0;
+        if (typeof v === 'object') return Number(v.max || v.min || 0);
+        return Number(v) || 0;
+    }
+
+    function renderDashboard(project, isStaff, staff) {
+        if (budgetChart) { budgetChart.destroy(); budgetChart = null; }
+        if (hoursChart) { hoursChart.destroy(); hoursChart = null; }
+
+        var area = document.getElementById('dashboardArea');
+        var modules = project.modules || [];
+        var proposals = project.proposals || [];
+        var totalH = resolveRange(project.total_hours);
+        var totalC = resolveRange(project.total_cost);
+        var currency = project.currency || '$';
+        var meetingCount = project.meeting_count || 0;
+        var isKPMode = project.is_virtual === true;
+        var timeline = project.timeline_months || project.timeline_weeks;
+        var teamSize = project.team_size;
+        var perspectives = project.perspectives || [];
+        var stages = project.stages || [];
+        var paymentPhases = project.payment_phases || [];
+        var totals = project.totals || {};
+        var creator = project.creator;
+
+        // Hero badges
+        var heroInner = document.querySelector('.hero-inner');
+        var oldBadges = heroInner.querySelector('.hero-badges');
+        if (oldBadges) oldBadges.remove();
+        var oldDesc = heroInner.querySelector('.hero-desc');
+        if (oldDesc) oldDesc.remove();
+
+        if (project.description) {
+            var descEl = document.createElement('p');
+            descEl.className = 'hero-desc';
+            descEl.textContent = project.description;
+            heroInner.appendChild(descEl);
+        }
+
+        var badgesHtml = '';
+        if (timeline) {
+            var tw = resolveRange(timeline);
+            if (tw) {
+                var label = project.timeline_months ? plural(tw, 'месяц', 'месяца', 'месяцев') : plural(tw, 'неделя', 'недели', 'недель');
+                badgesHtml += '<span class="hero-badge">📅 ' + tw + ' ' + label + '</span>';
+            }
+        }
+        if (teamSize) {
+            var ts = resolveRange(teamSize);
+            if (ts) badgesHtml += '<span class="hero-badge">👥 ' + ts + ' ' + plural(ts, 'специалист', 'специалиста', 'специалистов') + '</span>';
+        }
+        if (modules.length) badgesHtml += '<span class="hero-badge">📦 ' + modules.length + ' ' + plural(modules.length, 'модуль', 'модуля', 'модулей') + '</span>';
+        if (!isKPMode && meetingCount) badgesHtml += '<span class="hero-badge">🎥 ' + meetingCount + ' ' + plural(meetingCount, 'встреча', 'встречи', 'встреч') + '</span>';
+
+        if (badgesHtml) {
+            var badgeDiv = document.createElement('div');
+            badgeDiv.className = 'hero-badges';
+            badgeDiv.innerHTML = badgesHtml;
+            heroInner.appendChild(badgeDiv);
+        }
+
+        var html = '';
+
+        // Promo banner
+        var promo = DATA.promo || {};
+        var promoActive = promo.enabled && promo.expires_at && !promo.expired;
+        var promoShow = promo.enabled && promo.started_at;
+        if (promoShow && totalC) {
+            var discPct = promo.discount_percent || 10;
+            var discountedTotal = Math.round(totalC * (1 - discPct / 100));
+            var saving = Math.round(totalC - discountedTotal);
+            var expiredClass = promo.expired ? ' expired' : '';
+            html += '<div class="promo-banner fade-up' + expiredClass + '" id="promoBanner">';
+            html += '<div class="promo-inner">';
+            html += '<div class="promo-tag">⚡ Ограниченное предложение</div>';
+            html += '<div class="promo-title">Скидка ' + discPct + '% на разработку проекта</div>';
+            html += '<div class="promo-subtitle">Специальные условия для быстрого старта вашего проекта</div>';
+            html += '<div class="promo-prices">';
+            html += '<span class="promo-price-old">' + fmtCost(totalC, currency) + '</span>';
+            html += '<span class="promo-price-new">' + fmtCost(discountedTotal, currency) + '</span>';
+            html += '<span class="promo-saving">Экономия ' + fmtCost(saving, currency) + '</span>';
+            html += '</div>';
+            if (!promo.expired) {
+                html += '<div class="promo-timer" id="promoTimer">';
+                html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoDays">00</span><span class="promo-timer-label">дней</span></div>';
+                html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoHours">00</span><span class="promo-timer-label">часов</span></div>';
+                html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoMins">00</span><span class="promo-timer-label">минут</span></div>';
+                html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoSecs">00</span><span class="promo-timer-label">секунд</span></div>';
+                html += '</div>';
+                html += '<button class="promo-cta" onclick="var p=document.querySelector(\'.pay-item.active\');if(p){p.scrollIntoView({behavior:\'smooth\',block:\'center\'});}">Забронировать скидку <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>';
+            } else {
+                html += '<div class="promo-expired-msg">Срок действия предложения истёк</div>';
+            }
+            
+            html += '</div></div>';
+        }
+
+        // Stats
+        var timelineLabel = '—';
+        if (timeline) {
+            var tw2 = resolveRange(timeline);
+            if (tw2) timelineLabel = tw2 + (project.timeline_months ? ' мес' : ' нед');
+        }
+        html += '<div class="stats fade-up">';
+        html += statCard('i-budget', '💰', fmtCost(totalC, currency), 'Стоимость');
+        html += statCard('i-modules', '📦', modules.length || '—', plural(modules.length, 'модуль', 'модуля', 'модулей'));
+        html += statCard('i-meetings', '📅', timelineLabel, 'Срок');
+        if (!isKPMode && meetingCount) {
+            html += statCard('i-hours', '🎥', meetingCount, plural(meetingCount, 'встреча', 'встречи', 'встреч'));
+        } else {
+            html += statCard('i-hours', '📋', stages.length || '—', plural(stages.length || 0, 'этап', 'этапа', 'этапов'));
+        }
+        html += '</div>';
+
+        // Chart — module distribution only
+        if (modules.length >= 2) {
+            html += '<div class="charts-row fade-up">';
+            html += '<div class="chart-card" style="grid-column:1/-1;max-width:500px;margin:0 auto"><div class="chart-title"><div class="chart-title-dot" style="background:var(--primary)"></div>Структура проекта</div><div class="chart-wrap"><canvas id="chartBudget"></canvas></div></div>';
+            html += '</div>';
+        }
+
+        // Stages stepper
+        if (stages.length) {
+            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>';
+            html += '<div class="section-title">Этапы разработки</div>';
+            html += '<div class="section-badge">' + stages.length + ' ' + plural(stages.length, 'этап', 'этапа', 'этапов') + '</div></div>';
+            html += '<div class="stages-list">';
+            stages.forEach(function(s, i) {
+                var tasks = s.tasks || [];
+                var phaseHours = 0; tasks.forEach(function(t) { phaseHours += Number(t.hours || 0); });
+                html += '<div class="stage-item"><div class="stage-dot"></div><div class="stage-line"></div>';
+                html += '<div class="stage-hdr">' + esc(s.name || 'Этап ' + (i + 1)) + '</div>';
+                if (tasks.length) {
+                    html += '<div class="stage-tasks">';
+                    tasks.forEach(function(t) {
+                        html += '<div class="stage-task"><span>' + esc(t.name || '') + '</span>';
+                        if (t.hours) html += '<span class="stage-task-hours">' + t.hours + ' ч</span>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+                if (phaseHours) html += '<div class="stage-cost">' + phaseHours + ' часов</div>';
+                html += '</div>';
+            });
+            html += '</div></div>';
+        }
+
+        // Payment funnel
+        if (paymentPhases.length) {
+            var contactLink = 'https://t.me/IT_anasta';
+            if (creator && creator.telegram) {
+                var tg = String(creator.telegram).replace('@', '');
+                contactLink = 'https://t.me/' + tg;
+            }
+            var payTotal = 0;
+            paymentPhases.forEach(function(pp) { payTotal += Number(pp.cost || 0); });
+
+            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>';
+            html += '<div class="section-title">Этапы оплаты</div>';
+            if (promoActive) {
+                html += '<div class="section-badge" style="background:rgba(245,158,11,.1);color:#f59e0b">Скидка ' + (promo.discount_percent||10) + '%</div>';
+            }
+            html += '</div>';
+            html += '<div class="pay-list">';
+            paymentPhases.forEach(function(pp, i) {
+                var isFirst = i === 0;
+                var phaseCost = Number(pp.cost || 0);
+                var discountedCost = promoActive ? Math.round(phaseCost * (1 - (promo.discount_percent||10) / 100)) : phaseCost;
+                html += '<div class="pay-item' + (isFirst ? ' active' : '') + '">';
+                html += '<div class="pay-num ' + (isFirst ? 'active' : 'pending') + '">' + (i + 1) + '</div>';
+                html += '<div class="pay-info"><div class="pay-name">' + esc(pp.name) + '</div><div class="pay-hours">' + pp.hours + ' ч</div></div>';
+                if (promoActive) {
+                    html += '<div class="pay-cost"><span style="text-decoration:line-through;color:var(--text-light);font-size:13px;font-weight:500;margin-right:6px">' + fmtCost(phaseCost, currency) + '</span>' + fmtCost(discountedCost, currency) + '</div>';
+                } else {
+                    html += '<div class="pay-cost">' + fmtCost(phaseCost, currency) + '</div>';
+                }
+                html += '<div class="pay-status ' + (isFirst ? 'current' : 'waiting') + '">' + (isFirst ? 'К оплате' : 'Ожидает') + '</div>';
+                html += '</div>';
+                if (isFirst) {
+                    html += '<div class="pay-cta">';
+                    html += '<div class="pay-cta-title">Оплатите первый этап — и мы начнём работу</div>';
+                    html += '<div class="pay-cta-desc">Мы приступим к работе в течение 1-2 рабочих дней после оплаты</div>';
+                    html += '<a href="' + contactLink + '" target="_blank" class="pay-cta-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>Связаться для оплаты</a>';
+                    html += '</div>';
+                }
+            });
+            html += '</div>';
+            if (promoActive) {
+                var discTotal = Math.round(payTotal * (1 - (promo.discount_percent||10) / 100));
+                var totalSaving = Math.round(payTotal - discTotal);
+                html += '<div class="pay-total"><span>Итого</span><span><span style="text-decoration:line-through;color:var(--text-light);font-size:14px;font-weight:500;margin-right:8px">' + fmtCost(payTotal, currency) + '</span>' + fmtCost(discTotal, currency) + '</span></div>';
+                html += '<div style="display:flex;justify-content:flex-end;padding:4px 16px 8px;font-size:13px;font-weight:600;color:#00cec9">Экономия: ' + fmtCost(totalSaving, currency) + '</div>';
+            } else {
+                html += '<div class="pay-total"><span>Итого</span><span>' + fmtCost(payTotal, currency) + '</span></div>';
+            }
+            html += '</div>';
+        }
+
+        // Modules
+        if (modules.length) {
+            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>';
+            html += '<div class="section-title">Модули проекта</div>';
+            html += '<div class="section-badge">' + (totalH ? Math.round(totalH) + ' ч' : modules.length + ' шт') + '</div></div>';
+            var maxH = 0;
+            modules.forEach(function(m) {
+                var t = m.total || {};
+                var h = resolveRange(t) || Number(m.total_hours || m.hours || 0);
+                if (h > maxH) maxH = h;
+            });
+            modules.forEach(function(m, i) {
+                var name = m.name || m.module || 'Модуль ' + (i + 1);
+                var t = m.total || {};
+                var h = resolveRange(t) || Number(m.total_hours || m.hours || 0);
+                var pct = maxH > 0 ? (h / maxH * 100) : 0;
+                var color = COLORS[i % COLORS.length];
+                html += '<div class="module-row">';
+                html += '<div class="module-num">' + (i + 1) + '</div>';
+                html += '<div class="module-info"><div class="module-name">' + esc(name) + '</div>';
+                html += '<div class="module-bar"><div class="module-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
+                if (h) html += '<div class="module-hours">' + Math.round(h) + ' ч</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+
+        // Perspectives
+        if (perspectives.length) {
+            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>';
+            html += '<div class="section-title">Перспективы развития</div></div>';
+            html += '<div class="persp-grid">';
+            perspectives.forEach(function(p) {
+                html += '<div class="persp-card"><div class="persp-title">' + esc(p.title || '') + '</div>';
+                html += '<div class="persp-desc">' + esc(p.description || '') + '</div></div>';
+            });
+            html += '</div></div>';
+        }
+
+        // Documents
+        if (proposals.length) {
+            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>';
+            html += '<div class="section-title">Документы</div><div class="section-badge">' + proposals.length + '</div></div>';
+            proposals.forEach(function(p) {
+                var pName = p.project_name || 'Коммерческое предложение';
+                var pStatus = STATUS_MAP[p.status] || p.status || 'Черновик';
+                html += '<a class="doc-link" href="/p/' + esc(p.token) + '" target="_blank">';
+                html += '<div class="doc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>';
+                html += '<div class="doc-info"><div class="doc-name">' + esc(pName) + '</div><div class="doc-meta">' + esc(pStatus) + '</div></div>';
+                html += '<div class="doc-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div></a>';
+            });
+            html += '</div>';
+        }
+
+        // Chat
+        var chatTitle = isStaff ? 'Чат с клиентом' : 'Чат с командой';
+        html += '<div class="section chat-section fade-up"><div class="section-hdr"><div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>';
+        html += '<div class="section-title">' + esc(chatTitle) + '</div></div>';
+        html += '<div class="chat-wrap" id="cabinetChat" style="height:420px"></div></div>';
+
+        area.innerHTML = html;
+
+        // Init chart
+        if (modules.length >= 2) {
+            renderCharts(modules);
+        }
+
+        // Init chat
+        ChatWidget.init({
+            container: '#cabinetChat',
+            messagesUrl: '/api/cabinet/' + cabinetToken + '/messages',
+            sendUrl: '/api/cabinet/' + cabinetToken + '/messages',
+            headerTitle: chatTitle,
+            headerSub: isStaff ? ('Вы: ' + (staff.name || 'Менеджер')) : 'Мы ответим в ближайшее время',
+            pollInterval: 5000,
+        });
+        scrollToChatIfNeeded();
+        startPromoTimer();
+    }
+
+    function startPromoTimer() {
+        if (promoTimerInterval) clearInterval(promoTimerInterval);
+        var promo = DATA.promo || {};
+        if (!promo.enabled || !promo.expires_at || promo.expired) return;
+        var expiresAt = new Date(promo.expires_at).getTime();
+        function tick() {
+            var now = Date.now();
+            var diff = expiresAt - now;
+            if (diff <= 0) {
+                clearInterval(promoTimerInterval);
+                var banner = document.getElementById('promoBanner');
+                if (banner) { banner.classList.add('expired'); }
+                var d = document.getElementById('promoDays'); if (d) d.textContent = '00';
+                var h = document.getElementById('promoHours'); if (h) h.textContent = '00';
+                var m = document.getElementById('promoMins'); if (m) m.textContent = '00';
+                var s = document.getElementById('promoSecs'); if (s) s.textContent = '00';
+                return;
+            }
+            var days = Math.floor(diff / 86400000);
+            var hours = Math.floor((diff % 86400000) / 3600000);
+            var mins = Math.floor((diff % 3600000) / 60000);
+            var secs = Math.floor((diff % 60000) / 1000);
+            var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+            var d = document.getElementById('promoDays'); if (d) d.textContent = pad(days);
+            var h = document.getElementById('promoHours'); if (h) h.textContent = pad(hours);
+            var m = document.getElementById('promoMins'); if (m) m.textContent = pad(mins);
+            var s = document.getElementById('promoSecs'); if (s) s.textContent = pad(secs);
+        }
+        tick();
+        promoTimerInterval = setInterval(tick, 1000);
+    }
+
+    function scrollToChatIfNeeded() {
+        if (window.location.hash === '#chat') {
+            setTimeout(function() {
+                var c = document.getElementById('cabinetChat');
+                if (c) { c.scrollIntoView({ behavior: 'smooth', block: 'center' }); c.querySelector('.cw-input')?.focus(); }
+            }, 300);
+        }
+    }
+
+    function statCard(iconCls, emoji, value, label) {
+        return '<div class="stat-card"><div class="stat-icon ' + iconCls + '">' + emoji + '</div><div class="stat-value">' + value + '</div><div class="stat-label">' + label + '</div></div>';
+    }
+
+    function renderCharts(modules) {
+        var labels = [], hours = [], colors = [];
+        modules.forEach(function(m, i) {
+            labels.push(m.name || m.module || 'Модуль ' + (i + 1));
+            var h = resolveRange(m.total) || Number(m.total_hours || m.hours || 0);
+            hours.push(Math.round(h));
+            colors.push(COLORS[i % COLORS.length]);
+        });
+
+        var canvasB = document.getElementById('chartBudget');
+        if (canvasB) {
+            budgetChart = new Chart(canvasB, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: hours, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 12, family: 'Manrope', weight: '500' }, color: '#6b7085' } },
+                    },
+                },
+            });
+        }
+
+        var canvasH = document.getElementById('chartHours');
+        if (canvasH) {
+            hoursChart = new Chart(canvasH, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: hours, backgroundColor: colors, borderRadius: 6, borderSkipped: false, barThickness: 24 }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { font: { size: 11, family: 'Manrope' }, color: '#6b7085' } },
+                        y: { grid: { display: false }, ticks: { font: { size: 12, family: 'Manrope', weight: '600' }, color: '#1a1a2e' } },
+                    },
+                },
+            });
+        }
+    }
+
+    function renderRoles(totals) {
+        var rolesArea = document.getElementById('rolesArea');
+        if (!rolesArea) return;
+        var ROLE_LABELS = { pm: 'PM', design: 'Дизайн', frontend: 'Frontend', backend: 'Backend', qa: 'QA' };
+        var ROLE_COLORS = { pm: '#787cf5', design: '#f59e0b', frontend: '#00cec9', backend: '#e17355', qa: '#a78bfa' };
+        var roles = ['pm', 'design', 'frontend', 'backend', 'qa'];
+        var maxVal = 0;
+        roles.forEach(function(r) {
+            var v = resolveRange(totals[r]);
+            if (v > maxVal) maxVal = v;
+        });
+        var h = '';
+        roles.forEach(function(r) {
+            var v = resolveRange(totals[r]);
+            if (!v) return;
+            var pct = maxVal > 0 ? (v / maxVal * 100) : 0;
+            h += '<div class="role-row">';
+            h += '<div class="role-label">' + ROLE_LABELS[r] + '</div>';
+            h += '<div class="role-bar"><div class="role-bar-fill" style="width:' + pct + '%;background:' + ROLE_COLORS[r] + '"></div></div>';
+            h += '<div class="role-hours">' + Math.round(v) + ' ч</div>';
+            h += '</div>';
+        });
+        rolesArea.innerHTML = h;
+    }
+
+    function renderEmpty(isStaff, staff) {
+        var area = document.getElementById('dashboardArea');
+        var chatTitle = isStaff ? 'Чат с клиентом' : 'Чат с командой';
+        var html = '';
+
+        // Promo banner in empty state
+        var promo = DATA.promo || {};
+        if (promo.enabled && promo.started_at) {
+            var discPct = promo.discount_percent || 10;
+            var expiredClass = promo.expired ? ' expired' : '';
+            html += '<div class="promo-banner fade-up' + expiredClass + '" id="promoBanner" style="margin:20px 0 4px">';
+            html += '<div class="promo-inner">';
+            html += '<div class="promo-tag">⚡ Ограниченное предложение</div>';
+            html += '<div class="promo-title">Скидка ' + discPct + '% на разработку проекта</div>';
+            html += '<div class="promo-subtitle">Специальные условия для быстрого старта вашего проекта</div>';
+            if (!promo.expired) {
+                html += '<div class="promo-timer" id="promoTimer">';
+                html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoDays">00</span><span class="promo-timer-label">дней</span></div>';
+                html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoHours">00</span><span class="promo-timer-label">часов</span></div>';
+                html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoMins">00</span><span class="promo-timer-label">минут</span></div>';
+                html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoSecs">00</span><span class="promo-timer-label">секунд</span></div>';
+                html += '</div>';
+            } else {
+                html += '<div class="promo-expired-msg">Срок действия предложения истёк</div>';
+            }
+            html += '</div></div>';
+        }
+
+        html += '<div class="empty-state fade-up" style="margin:32px 0"><div class="empty-icon">📋</div><p>Проекты скоро появятся.<br>Мы уже работаем над вашим предложением!</p></div>';
+        html += '<div class="section chat-section fade-up"><div class="section-hdr"><div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>';
+        html += '<div class="section-title">' + esc(chatTitle) + '</div></div>';
+        html += '<div class="chat-wrap" id="cabinetChat" style="height:420px"></div></div>';
+        area.innerHTML = html;
+        ChatWidget.init({
+            container: '#cabinetChat',
+            messagesUrl: '/api/cabinet/' + cabinetToken + '/messages',
+            sendUrl: '/api/cabinet/' + cabinetToken + '/messages',
+            headerTitle: chatTitle,
+            headerSub: isStaff ? ('Вы: ' + (staff.name||'Менеджер')) : 'Мы ответим в ближайшее время',
+            pollInterval: 5000,
+        });
+        scrollToChatIfNeeded();
+        startPromoTimer();
+    }
+})();
+</script>
+</body>
+</html>

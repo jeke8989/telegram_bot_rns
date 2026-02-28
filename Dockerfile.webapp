@@ -2,17 +2,25 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install system dependencies (ffmpeg needed by pydub for audio processing)
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies (webapp-only, excludes heavy bot-only packages)
+COPY requirements-webapp.txt .
+RUN pip install --no-cache-dir --timeout 120 -r requirements-webapp.txt
 
 # Copy application files
 COPY mini_app/ /app/
+RUN mkdir -p /app/app
 COPY app/database.py /app/app/
 COPY app/config.py /app/app/
-
-# Create app directory if it doesn't exist
-RUN mkdir -p /app/app
+COPY app/zoom_client.py /app/app/
+COPY app/lark_client.py /app/app/
+COPY app/zoom_ws_listener.py /app/app/
+COPY app/embeddings.py /app/app/
+COPY app/s3_client.py /app/app/
 
 EXPOSE 8080
 

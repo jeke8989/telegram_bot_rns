@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/tokens.css?v=1772292397">
+    <link rel="stylesheet" href="/css/base.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/buttons.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/cards.css?v=1772292397">
+    <title>Кабинет продажника</title>
+    <style>
+        :root {
+            --seller: #fd79a8;
+            --seller-glow: rgba(253,121,168,.2);
+        }
+
+        /* ── Page hero ── */
+        .page-hero {
+            background: linear-gradient(135deg, rgba(253,121,168,.12) 0%, rgba(108,92,231,.08) 100%);
+            border: 1px solid rgba(253,121,168,.2);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .hero-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--seller), #f9a8d4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .hero-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+        .hero-sub { font-size: .9rem; color: var(--text-dim); }
+        .hero-name { color: var(--seller); }
+
+        /* ── Stats ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value { font-size: 2rem; font-weight: 700; color: var(--seller); line-height: 1; margin-bottom: 6px; }
+        .stat-label { font-size: .78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; }
+
+        /* ── Section grid ── */
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* ── Coming soon ── */
+        .coming-soon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 28px 20px;
+            color: var(--text-dim);
+            text-align: center;
+        }
+        .coming-soon-icon { font-size: 2rem; opacity: .5; }
+        .coming-soon-title { font-size: .88rem; font-weight: 600; color: var(--text); }
+        .coming-soon-desc { font-size: .78rem; line-height: 1.5; max-width: 220px; }
+        .badge-soon {
+            font-size: .65rem; font-weight: 700; letter-spacing: .5px;
+            text-transform: uppercase;
+            background: rgba(253,121,168,.12);
+            color: var(--seller);
+            padding: 3px 8px; border-radius: 6px;
+        }
+
+        /* ── Card sub-elements ── */
+        .card-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+        .card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .card-title { font-size: .95rem; font-weight: 600; }
+        .card-body { padding: 16px 20px; }
+
+        /* ── Inline tables ── */
+        .seller-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+        .seller-table th { text-align: left; color: var(--text-dim); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .3px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+        .seller-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .seller-table tr:last-child td { border-bottom: none; }
+        .seller-table a { color: var(--seller); text-decoration: none; }
+        .seller-table a:hover { text-decoration: underline; }
+        .status-pill { font-size: .7rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; white-space: nowrap; }
+        .status-pill.draft { background: rgba(139,143,168,.15); color: var(--text-dim); }
+        .status-pill.sent { background: rgba(108,92,231,.15); color: var(--accent); }
+        .status-pill.accepted { background: rgba(0,206,201,.15); color: var(--green); }
+        .status-pill.rejected { background: rgba(225,115,85,.15); color: var(--red); }
+        .empty-msg { text-align: center; padding: 24px 16px; color: var(--text-dim); font-size: .85rem; }
+
+        .seller-page { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
+        .seller-page .card:hover { transform: none; box-shadow: none; }
+
+        @media (max-width: 768px) {
+            .page-hero { flex-direction: column; text-align: center; padding: 20px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <main class="seller-page">
+        <!-- Hero -->
+        <div class="page-hero">
+            <div class="hero-icon">🤝</div>
+            <div>
+                <div class="hero-title">Добро пожаловать, <span class="hero-name" id="heroName">Продажник</span></div>
+                <div class="hero-sub">Ваш рабочий кабинет — здесь появятся инструменты для работы с клиентами и сделками</div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statProposals">—</div>
+                <div class="stat-label">Предложений</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statClients">—</div>
+                <div class="stat-label">Клиентов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:var(--text-dim)">⏳</div>
+                <div class="stat-label">Сделок в работе</div>
+            </div>
+        </div>
+
+        <!-- My Proposals -->
+        <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+                <div class="card-icon" style="background:rgba(108,92,231,.12)">📄</div>
+                <span class="card-title">Мои предложения</span>
+            </div>
+            <div class="card-body" id="proposalsBody" style="padding:0;overflow-x:auto">
+                <div class="empty-msg">Загрузка...</div>
+            </div>
+        </div>
+
+        <!-- My Clients -->
+        <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+                <div class="card-icon" style="background:rgba(0,206,201,.12)">👤</div>
+                <span class="card-title">Мои клиенты</span>
+            </div>
+            <div class="card-body" id="clientsBody" style="padding:0;overflow-x:auto">
+                <div class="empty-msg">Загрузка...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/pages/seller.js"></script>
+</body>
+</html>

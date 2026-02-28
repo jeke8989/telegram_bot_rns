@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{OG_TITLE}}</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+    <meta name="author" content="РусНейроСофт">
+    <meta name="theme-color" content="#787cf5">
+    <link rel="canonical" href="{{OG_URL}}">
+    <meta property="og:title" content="{{OG_TITLE}}">
+    <meta property="og:description" content="{{OG_DESCRIPTION}}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{OG_URL}}">
+    <meta property="og:image" content="{{OG_IMAGE}}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="РусНейроСофт">
+    <meta property="og:locale" content="ru_RU">
+    <meta name="description" content="{{OG_DESCRIPTION}}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{OG_TITLE}}">
+    <meta name="twitter:description" content="{{OG_DESCRIPTION}}">
+    <meta name="twitter:image" content="{{OG_IMAGE}}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/tokens.css?v=1772292397">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "РусНейроСофт",
+        "alternateName": "RusNeuroSoft",
+        "url": "https://rusneurosoft.ru",
+        "logo": "https://portal.rusneurosoft.ru/img/logo-icon.png",
+        "description": "Разработка цифровых продуктов для бизнеса — от идеи до запуска.",
+        "email": "info@rusneurosoft.ru",
+        "telephone": "+375445114555",
+        "address": { "@type": "PostalAddress", "addressCountry": "BY" },
+        "sameAs": ["https://t.me/IT_anasta", "https://t.me/RusNeuroSoft_bot"]
+    }
+    </script>
+    <style>
+        :root {
+            --primary: #787cf5;
+            --text: #1a1a2e;
+            --text-muted: #6b6b8d;
+            --white: #ffffff;
+            --bg: #ffffff;
+            --surface: #ffffff;
+            --surface-2: #f8f8fc;
+            --surface-3: #f0f0f5;
+            --border: #e8e8f0;
+            --text-dim: #6b6b8d;
+            --accent: #787cf5;
+            --accent-glow: rgba(120, 124, 245, .25);
+            --font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+        /* === Section common === */
+        .section-header { text-align: center; margin-bottom: 56px; }
+        .section-title { font-weight: 700; font-size: clamp(28px, 4vw, 44px); color: var(--text); margin-bottom: 16px; letter-spacing: -0.5px; }
+        .section-desc { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 620px; margin: 0 auto; }
+
+        /* === Hero === */
+        .hero { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; background: #0a0a1e; overflow: hidden; position: relative; }
+        .hero-bg { position: absolute; inset: 0; z-index: 0; }
+        .hero-bg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,30,.55) 0%, rgba(10,10,30,.40) 50%, rgba(10,10,30,.60) 100%); }
+        .hero-content { position: relative; z-index: 1; text-align: center; max-width: 900px; margin: 0 auto; padding: 60px 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .hero-top { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; }
+        .hero-top img { width: 40px; height: 40px; border-radius: 10px; }
+        .hero-top-name { font-weight: 700; font-size: 18px; color: #fff; }
+        .hero-title { font-weight: 700; font-size: clamp(32px, 5.5vw, 60px); line-height: 1.1; letter-spacing: -1.5px; color: #fff; margin-bottom: 16px; }
+        .hero-subtitle { font-weight: 500; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: rgba(255,255,255,.6); margin-bottom: 8px; max-width: 640px; }
+        .hero-tagline { font-size: 15px; color: rgba(255,255,255,.45); margin-bottom: 32px; }
+        .hero-cta { display: inline-flex; align-items: center; gap: 10px; padding: 16px 36px; background: linear-gradient(135deg, #787cf5, #a78bfa); color: #fff; font-size: 16px; font-weight: 700; border-radius: 14px; text-decoration: none; border: none; cursor: pointer; transition: box-shadow .3s, opacity .3s; box-shadow: 0 8px 32px rgba(120,124,245,.35); }
+        .hero-cta:hover { box-shadow: 0 12px 40px rgba(120,124,245,.5); opacity: .95; }
+        .hero-cta svg { width: 20px; height: 20px; }
+        .hero-divider { width: 60px; height: 2px; background: rgba(255,255,255,.18); border-radius: 1px; margin: 28px auto; }
+
+        /* === Deliverables === */
+        .deliverables-section { background: var(--white); padding: 80px 0 60px; }
+        .deliverables-body { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+        .deliverables-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        .deliverable-card { background: linear-gradient(180deg, #f9f9ff 0%, #f3f2ff 100%); border-radius: 20px; padding: 32px 24px; text-align: center; position: relative; overflow: hidden; transition: transform .25s, box-shadow .25s; }
+        .deliverable-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), #a78bfa); border-radius: 20px 20px 0 0; }
+        .deliverable-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(120,124,245,.12); }
+        .deliverable-icon { width: 56px; height: 56px; border-radius: 16px; background: rgba(120,124,245,.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 26px; }
+        .deliverable-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+        .deliverable-desc { font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+
+        /* === Mid CTA === */
+        .mid-cta { text-align: center; padding: 32px 24px; }
+        .mid-cta-btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 32px; background: linear-gradient(135deg, #787cf5, #a78bfa); color: #fff; font-size: 15px; font-weight: 700; border-radius: 12px; text-decoration: none; border: none; cursor: pointer; transition: box-shadow .3s, opacity .3s; box-shadow: 0 4px 20px rgba(120,124,245,.25); }
+        .mid-cta-btn:hover { box-shadow: 0 8px 32px rgba(120,124,245,.4); opacity: .95; }
+        .mid-cta-btn svg { width: 18px; height: 18px; }
+        .mid-cta-sub { font-size: 13px; color: var(--text-muted); margin-top: 10px; }
+
+        /* === Portfolio === */
+        .portfolio-section { background: linear-gradient(180deg, #f8f8fc 0%, #f0f0ff 100%); padding: 80px 0; }
+        .portfolio-body { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+        .portfolio-list { display: flex; flex-direction: column; gap: 32px; }
+        .portfolio-case { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; padding: 40px; background: #fff; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.03); transition: box-shadow .3s; }
+        .portfolio-case:hover { box-shadow: 0 4px 12px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.05); }
+        .portfolio-case:nth-child(even) { direction: rtl; }
+        .portfolio-case:nth-child(even) > * { direction: ltr; }
+        .portfolio-info { display: flex; flex-direction: column; gap: 4px; }
+        .portfolio-case-tag { display: inline-block; width: 48px; height: 3px; background: var(--primary); border-radius: 2px; margin-bottom: 12px; }
+        .portfolio-case-name { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1.2; margin-bottom: 8px; }
+        .portfolio-case-desc { font-size: 14px; line-height: 1.6; color: var(--text-muted); margin-bottom: 20px; }
+        .portfolio-metrics { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+        .portfolio-metric { display: flex; flex-direction: column; gap: 2px; }
+        .portfolio-metric-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.3; }
+        .portfolio-metric-title strong { color: var(--primary); font-weight: 800; }
+        .portfolio-metric-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .portfolio-link { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; transition: gap .25s; }
+        .portfolio-link:hover { gap: 12px; color: #6366f1; }
+        .portfolio-link svg { width: 16px; height: 16px; transition: transform .25s; }
+        .portfolio-link:hover svg { transform: translateX(2px); }
+        .portfolio-visual { display: flex; align-items: center; justify-content: center; height: 320px; background: linear-gradient(135deg, #f4f3ff 0%, #eceaff 100%); border-radius: 16px; overflow: hidden; padding: 20px; }
+        .portfolio-visual img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.08)); }
+
+        /* === Architecture / Modules === */
+        .arch-section { background: #f8f8fc; padding: 80px 0; }
+        .arch-body { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+        .arch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .arch-card { background: var(--white); border-radius: 20px; padding: 32px 28px; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.03); transition: box-shadow .3s; }
+        .arch-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.06); }
+        .arch-card-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; }
+        .arch-card-num { font-weight: 800; font-size: 14px; color: var(--primary); background: rgba(120,124,245,.1); padding: 4px 10px; border-radius: 8px; flex-shrink: 0; }
+        .arch-card-name { font-weight: 700; font-size: 17px; color: var(--text); line-height: 1.3; }
+        .arch-module { padding: 10px 0; border-top: 1px solid #f0f0f5; }
+        .arch-module:first-child { border-top: none; }
+        .arch-module-name { font-weight: 600; font-size: 14px; color: var(--text); display: flex; align-items: flex-start; gap: 8px; }
+        .arch-module-name::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 6px; }
+        .arch-module-count { font-size: 11px; color: var(--text-muted); padding-left: 14px; margin-top: 2px; }
+
+        /* === Timeline / Stages === */
+        .timeline-section { background: var(--white); padding: 80px 0; }
+        .timeline-body { max-width: 800px; margin: 0 auto; padding: 0 48px; }
+        .timeline-list { display: flex; flex-direction: column; gap: 0; }
+        .timeline-item { position: relative; padding-left: 48px; padding-bottom: 40px; }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-line { position: absolute; left: 19px; top: 36px; bottom: 0; width: 2px; background: #e8e8f0; }
+        .timeline-item:last-child .timeline-line { display: none; }
+        .timeline-dot { position: absolute; left: 8px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(120,124,245,.12); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; }
+        .timeline-dot-inner { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+        .timeline-name { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .timeline-tasks { display: flex; flex-direction: column; gap: 4px; }
+        .timeline-task { font-size: 14px; color: var(--text-muted); line-height: 1.5; padding-left: 16px; position: relative; }
+        .timeline-task::before { content: ''; position: absolute; left: 0; top: 8px; width: 5px; height: 5px; border-radius: 50%; background: #d0d0e0; }
+
+        /* === Pricing === */
+        .pricing-section { background: var(--white); padding: 80px 0; }
+        .pricing-body { max-width: 800px; margin: 0 auto; padding: 0 48px; }
+        .pricing-hero { background: linear-gradient(135deg, #f8f8fc 0%, #f0f0ff 100%); border-radius: 24px; padding: 48px; text-align: center; margin-bottom: 32px; }
+        .pricing-label { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+        .pricing-value { font-weight: 800; font-size: clamp(36px, 5vw, 56px); color: var(--primary); letter-spacing: -1px; line-height: 1.1; margin-bottom: 16px; }
+        .pricing-note { font-size: 15px; color: var(--text-muted); line-height: 1.6; }
+        .pricing-phases { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; }
+        .pricing-phase { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-bottom: 1px solid #f0f0f5; }
+        .pricing-phase:last-child { border-bottom: none; }
+        .pricing-phase-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(120,124,245,.1); color: var(--primary); font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .pricing-phase-info { flex: 1; }
+        .pricing-phase-name { font-size: 15px; font-weight: 600; color: var(--text); }
+        .pricing-phase-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .pricing-phase-cost { font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; }
+        .pricing-guarantee { background: linear-gradient(135deg, rgba(120,124,245,.06), rgba(167,139,250,.06)); border: 1px solid rgba(120,124,245,.15); border-radius: 16px; padding: 24px; text-align: center; }
+        .pricing-guarantee-text { font-size: 14px; color: var(--text); line-height: 1.6; }
+        .pricing-guarantee-text strong { color: var(--primary); }
+
+        /* === Workflow === */
+        .workflow-section { background: #f8f8fc; padding: 80px 0; }
+        .workflow-body { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+        .workflow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .workflow-card { background: linear-gradient(180deg, #fff 0%, #fafaff 100%); border-radius: 20px; padding: 32px 28px 28px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; }
+        .workflow-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), #a78bfa); border-radius: 20px 20px 0 0; }
+        .workflow-card-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+        .workflow-card-title { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.3; }
+        .workflow-card-desc { font-size: 14px; line-height: 1.65; color: var(--text-muted); }
+        .workflow-card-list { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+        .workflow-card-list-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: var(--text); }
+        .workflow-card-list-item svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; color: var(--primary); }
+
+        /* === Team === */
+        .team-section { background: var(--white); padding: 80px 0; }
+        .team-body { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+        .team-leads { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+        .team-lead { background: var(--white); border-radius: 20px; padding: 32px; display: flex; gap: 24px; align-items: flex-start; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.03); }
+        .team-lead-photo { width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0; overflow: hidden; border: 3px solid #f0f0f8; }
+        .team-lead-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .team-lead-info { flex: 1; }
+        .team-lead-name { font-weight: 700; font-size: 18px; color: var(--text); margin-bottom: 4px; }
+        .team-lead-role { font-weight: 600; font-size: 12px; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .3px; }
+        .team-lead-desc { font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+        .team-summary { text-align: center; font-size: 15px; color: var(--text-muted); line-height: 1.6; padding: 20px; background: #f8f8fc; border-radius: 16px; }
+
+        /* === FAQ === */
+        .faq-section { background: #f8f8fc; padding: 80px 0; }
+        .faq-body { max-width: 800px; margin: 0 auto; padding: 0 48px; }
+        .faq-list { display: flex; flex-direction: column; gap: 12px; }
+        .faq-item { border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.02); }
+        .faq-header { background: var(--white); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; transition: background .2s; }
+        .faq-header:hover { background: #fafaff; }
+        .faq-question { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; padding-right: 16px; }
+        .faq-toggle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #e8e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color .3s, transform .3s; }
+        .faq-toggle svg { width: 14px; height: 14px; color: var(--text-muted); transition: transform .3s; }
+        .faq-item.open .faq-toggle { border-color: var(--primary); }
+        .faq-item.open .faq-toggle svg { transform: rotate(180deg); color: var(--primary); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.16, 1, .3, 1); background: var(--white); }
+        .faq-item.open .faq-answer { max-height: 500px; }
+        .faq-answer-inner { padding: 0 24px 20px; font-size: 14px; line-height: 1.7; color: var(--text-muted); }
+
+        /* === Book Call === */
+        .book-section { background: #f8f7fc; padding: 80px 0; }
+        .book-body { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+        .book-header { text-align: center; margin-bottom: 48px; }
+        .book-title { font-size: 38px; font-weight: 800; color: #1a1a2e; line-height: 1.2; margin-bottom: 16px; }
+        .book-subtitle { font-size: 17px; color: #64748b; line-height: 1.65; max-width: 520px; margin: 0 auto; }
+        .book-calendly-wrap { background: #fff; border-radius: 20px; box-shadow: 0 4px 32px rgba(120,124,245,.08), 0 1px 4px rgba(0,0,0,.04); overflow: visible; max-width: 1000px; margin: 0 auto; }
+        .book-calendly-wrap #calendlyWidget { min-width: 320px; height: 700px; border-radius: 20px; overflow: hidden; }
+
+        /* === Perspectives === */
+        .perspectives-section { background: linear-gradient(180deg, #f8f8fc 0%, #f0f0ff 100%); padding: 80px 0; }
+        .perspectives-body { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+        .perspectives-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .perspective-card { display: flex; gap: 16px; align-items: flex-start; padding: 24px; background: var(--white); border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.03), 0 2px 8px rgba(0,0,0,.02); transition: transform .25s, box-shadow .25s; border-left: 3px solid transparent; }
+        .perspective-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.05); }
+        .perspective-icon { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .perspective-icon svg { width: 22px; height: 22px; }
+        .perspective-content { flex: 1; }
+        .perspective-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+        .perspective-text { font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+
+        /* === CTA === */
+        .cta-section { background: linear-gradient(135deg, #1a1030 0%, #2d1b69 50%, #1a1030 100%); padding: 80px 0; position: relative; overflow: hidden; }
+        .cta-section::before { content: ''; position: absolute; top: -50%; left: -20%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(120,124,245,.15) 0%, transparent 70%); border-radius: 50%; }
+        .cta-body { max-width: 800px; margin: 0 auto; padding: 0 48px; text-align: center; position: relative; z-index: 1; }
+        .cta-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; background: rgba(120,124,245,.15); border: 1px solid rgba(120,124,245,.25); border-radius: 100px; color: #a78bfa; font-size: 13px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 24px; }
+        .cta-title { font-size: 40px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 20px; }
+        .cta-desc { font-size: 17px; color: rgba(255,255,255,.65); line-height: 1.7; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .cta-main-btn { display: inline-flex; align-items: center; gap: 12px; padding: 20px 48px; background: linear-gradient(135deg, #787cf5, #a78bfa); color: #fff; font-size: 17px; font-weight: 700; border-radius: 16px; text-decoration: none; transition: box-shadow .3s, opacity .3s; box-shadow: 0 8px 32px rgba(120,124,245,.35); border: none; cursor: pointer; }
+        .cta-main-btn:hover { box-shadow: 0 12px 40px rgba(120,124,245,.5); opacity: .95; }
+        .cta-main-btn svg { width: 22px; height: 22px; }
+        .cta-alt { margin-top: 20px; font-size: 14px; color: rgba(255,255,255,.45); }
+        .cta-alt a { color: rgba(255,255,255,.7); text-decoration: none; font-weight: 600; transition: color .2s; }
+        .cta-alt a:hover { color: #fff; }
+        .cta-fallback { margin-top: 32px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,.08); display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; }
+        .cta-fallback-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: rgba(255,255,255,.45); }
+        .cta-fallback-item a { color: rgba(255,255,255,.6); text-decoration: none; transition: color .2s; }
+        .cta-fallback-item a:hover { color: #fff; }
+        .cta-fallback-item svg { width: 16px; height: 16px; opacity: .5; }
+
+        /* === Loading / Error === */
+        .loading-screen, .error-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; background: #0a0a1e; }
+        .spinner { width: 40px; height: 40px; border: 2px solid rgba(255,255,255,.1); border-top-color: rgba(255,255,255,.6); border-radius: 50%; animation: spin .7s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-screen p { color: rgba(255,255,255,.4); font-size: 14px; }
+        .error-screen h2 { color: #fff; font-size: 24px; font-weight: 700; }
+        .error-screen p { color: rgba(255,255,255,.4); }
+
+        /* === Reveal === */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s cubic-bezier(.16, 1, .3, 1), transform .8s cubic-bezier(.16, 1, .3, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: .15s; }
+        .reveal-delay-2 { transition-delay: .3s; }
+
+        /* === Floating CTA === */
+        .float-cta { position: fixed; bottom: 28px; right: 28px; z-index: 9999; display: none; align-items: center; gap: 10px; background: linear-gradient(135deg, #787cf5 0%, #9b6dff 100%); color: #fff; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 15px; padding: 14px 22px 14px 18px; border-radius: 50px; border: none; cursor: pointer; text-decoration: none; box-shadow: 0 4px 24px rgba(120,124,245,.45), 0 1px 6px rgba(0,0,0,.12); animation: floatPulse 2.4s ease-in-out infinite; transition: transform .18s, box-shadow .18s; white-space: nowrap; }
+        .float-cta.visible { display: flex; }
+        .float-cta:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 36px rgba(120,124,245,.6), 0 2px 10px rgba(0,0,0,.15); animation-play-state: paused; }
+        .float-cta-icon { width: 36px; height: 36px; background: rgba(255,255,255,.18); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .float-cta-icon svg { width: 18px; height: 18px; }
+        .float-cta-text { display: flex; flex-direction: column; gap: 1px; }
+        .float-cta-label { font-size: 15px; font-weight: 700; }
+        .float-cta-sub { font-size: 11px; font-weight: 500; opacity: .82; }
+        .float-cta-badge { position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; background: #ff5a5f; border-radius: 50%; border: 2px solid #fff; animation: floatBadge 2.4s ease-in-out infinite; }
+        @keyframes floatPulse { 0%, 100% { box-shadow: 0 4px 24px rgba(120,124,245,.45); } 50% { box-shadow: 0 4px 40px rgba(120,124,245,.75), 0 0 0 8px rgba(120,124,245,.12); } }
+        @keyframes floatBadge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); opacity: .7; } }
+
+        /* === Responsive === */
+        @media (max-width: 900px) {
+            .book-calendly-wrap #calendlyWidget { height: 950px; }
+            .deliverables-grid { grid-template-columns: repeat(2, 1fr); }
+            .portfolio-case { grid-template-columns: 1fr; gap: 28px; padding: 28px; }
+            .portfolio-case:nth-child(even) { direction: ltr; }
+            .portfolio-visual { height: 260px; }
+            .arch-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px; }
+            .workflow-grid { grid-template-columns: 1fr; gap: 16px; }
+            .team-leads { grid-template-columns: 1fr; gap: 16px; }
+            .perspectives-grid { gap: 16px; }
+            .section-header { margin-bottom: 36px; }
+            .section-title { font-size: 26px; }
+            .section-desc { font-size: 14px; }
+            .deliverables-body, .portfolio-body, .arch-body, .timeline-body, .pricing-body, .workflow-body, .team-body, .faq-body, .book-body, .perspectives-body, .cta-body { padding: 0 24px; }
+            .deliverables-section, .portfolio-section, .arch-section, .timeline-section, .pricing-section, .workflow-section, .team-section, .faq-section, .book-section, .perspectives-section, .cta-section { padding: 56px 0 48px; }
+            .cta-title { font-size: 28px; }
+        }
+        @media (max-width: 640px) {
+            .hero { min-height: auto; }
+            .hero-content { padding: 48px 20px 40px; }
+            .hero-top img { width: 32px; height: 32px; border-radius: 8px; }
+            .hero-top-name { font-size: 15px; }
+            .hero-title { font-size: 28px; letter-spacing: -.8px; }
+            .hero-subtitle { font-size: 15px; }
+            .hero-cta { padding: 14px 28px; font-size: 15px; }
+            .deliverables-grid { grid-template-columns: 1fr; gap: 14px; }
+            .deliverable-card { padding: 22px 18px; }
+            .arch-grid { grid-template-columns: 1fr !important; gap: 12px; }
+            .arch-card { padding: 20px 16px; border-radius: 14px; }
+            .arch-card-name { font-size: 15px; }
+            .timeline-body { padding: 0 16px; }
+            .pricing-hero { padding: 32px 20px; border-radius: 16px; }
+            .pricing-value { font-size: 28px; }
+            .portfolio-body, .deliverables-body, .arch-body, .workflow-body, .team-body, .faq-body, .book-body, .perspectives-body, .cta-body { padding: 0 16px; }
+            .deliverables-section, .portfolio-section, .arch-section, .timeline-section, .pricing-section, .workflow-section, .team-section, .faq-section, .book-section, .perspectives-section, .cta-section { padding: 36px 0 32px; }
+            .portfolio-case { padding: 20px; gap: 20px; border-radius: 14px; }
+            .portfolio-case-name { font-size: 22px; }
+            .portfolio-visual { height: 220px; border-radius: 12px; }
+            .workflow-card { padding: 20px 18px 18px; border-radius: 14px; gap: 10px; }
+            .workflow-card-title { font-size: 16px; }
+            .workflow-card-desc { font-size: 13px; }
+            .team-lead { padding: 20px 16px; border-radius: 14px; gap: 14px; }
+            .team-lead-photo { width: 56px; height: 56px; }
+            .team-lead-name { font-size: 16px; }
+            .faq-header { padding: 16px 18px; }
+            .faq-question { font-size: 14px; }
+            .book-title { font-size: 24px; }
+            .book-subtitle { font-size: 14px; }
+            .book-calendly-wrap #calendlyWidget { height: 1100px; }
+            .perspectives-grid { grid-template-columns: 1fr; gap: 12px; }
+            .perspective-card { padding: 16px; gap: 12px; border-radius: 12px; }
+            .cta-title { font-size: 24px; }
+            .cta-main-btn { padding: 16px 32px; font-size: 15px; }
+            .cta-fallback { gap: 16px; flex-direction: column; align-items: center; }
+            .float-cta { bottom: 16px; right: 16px; padding: 12px 18px 12px 14px; font-size: 14px; }
+            .float-cta-icon { width: 30px; height: 30px; }
+            .float-cta-icon svg { width: 15px; height: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <noscript>
+        <div style="max-width:800px;margin:60px auto;padding:0 24px;font-family:Manrope,sans-serif;color:#1a1a2e;">
+            <h1>РусНейроСофт — Предложение по разработке</h1>
+            <p>Разработка цифровых продуктов для бизнеса — от идеи до запуска. Обсудите проект: <a href="https://t.me/IT_anasta">@IT_anasta</a></p>
+        </div>
+    </noscript>
+    <div id="loading" class="loading-screen"><div class="spinner"></div><p>Загрузка...</p></div>
+    <div id="error" class="error-screen" style="display:none;"><h2>Предложение не найдено</h2><p>Проверьте правильность ссылки</p></div>
+
+    <div id="content" style="display:none;">
+
+        <!-- 1. Hero -->
+        <header role="banner">
+        <section class="hero">
+            <div class="hero-bg">
+                <img src="/img/hero-meeting.png" alt="РусНейроСофт — разработка цифровых продуктов">
+            </div>
+            <div class="hero-content">
+                <div class="hero-top reveal">
+                    <img src="/img/logo-icon.png" alt="РусНейроСофт">
+                    <span class="hero-top-name" id="heroCompany">РусНейроСофт</span>
+                </div>
+                <h1 class="hero-title reveal reveal-delay-1" id="heroTitle"></h1>
+                <div class="hero-subtitle reveal reveal-delay-1" id="heroSubtitle" style="display:none;"></div>
+                <div class="hero-tagline reveal reveal-delay-2" id="heroTagline">Готовое решение для вашего бизнеса — от идеи до запуска</div>
+                <div class="hero-divider reveal reveal-delay-2"></div>
+                <button class="hero-cta reveal reveal-delay-2" id="heroCta" onclick="scrollToBook()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                    Обсудить проект — 30 мин, бесплатно
+                </button>
+            </div>
+        </section>
+        </header>
+
+        <main role="main">
+
+        <!-- 2. Что вы получите -->
+        <section class="deliverables-section">
+            <div class="deliverables-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Что вы получите</h2>
+                    <p class="section-desc reveal reveal-delay-1">Не просто код — а готовый продукт, который решает задачи вашего бизнеса</p>
+                </div>
+                <div class="deliverables-grid reveal reveal-delay-2">
+                    <div class="deliverable-card">
+                        <div class="deliverable-icon">🚀</div>
+                        <div class="deliverable-title">Готовый продукт</div>
+                        <div class="deliverable-desc">Работающее приложение, протестированное и запущенное на вашем домене. Всё под ключ.</div>
+                    </div>
+                    <div class="deliverable-card">
+                        <div class="deliverable-icon">📊</div>
+                        <div class="deliverable-title">Личный кабинет</div>
+                        <div class="deliverable-desc">Вы видите прогресс в реальном времени и общаетесь с командой напрямую.</div>
+                    </div>
+                    <div class="deliverable-card">
+                        <div class="deliverable-icon">📋</div>
+                        <div class="deliverable-title">Документация</div>
+                        <div class="deliverable-desc">Подробная документация и обучение — ваша команда быстро разберётся.</div>
+                    </div>
+                    <div class="deliverable-card">
+                        <div class="deliverable-icon">🛡️</div>
+                        <div class="deliverable-title">Поддержка</div>
+                        <div class="deliverable-desc">Месяц бесплатной поддержки после запуска. Исправим всё, что потребуется.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="mid-cta reveal" id="midCta1">
+            <button class="mid-cta-btn" onclick="scrollToBook()">
+                Обсудить проект
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <div class="mid-cta-sub">30 минут · без обязательств</div>
+        </div>
+
+        <!-- 3. Портфолио -->
+        <section class="portfolio-section">
+            <div class="portfolio-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Результаты наших клиентов</h2>
+                    <p class="section-desc reveal reveal-delay-1">Реальные проекты, которые уже приносят результат</p>
+                </div>
+                <div class="portfolio-list">
+                    <div class="portfolio-case reveal reveal-delay-1">
+                        <div class="portfolio-info">
+                            <div class="portfolio-case-tag"></div>
+                            <div class="portfolio-case-name">Rank Authority</div>
+                            <div class="portfolio-case-desc">ИИ-платформа для продвижения бизнеса в поисковых системах</div>
+                            <div class="portfolio-metrics">
+                                <div class="portfolio-metric">
+                                    <div class="portfolio-metric-title">В <strong>12 раз</strong> больше заявок из поиска</div>
+                                    <div class="portfolio-metric-text">Автоматическая оптимизация страниц вместо ручной работы</div>
+                                </div>
+                                <div class="portfolio-metric">
+                                    <div class="portfolio-metric-title"><strong>40%</strong> экономия на продвижении</div>
+                                    <div class="portfolio-metric-text">Команда сократила ручную работу вдвое и сфокусировалась на стратегии</div>
+                                </div>
+                            </div>
+                            <a href="https://rusneurosoft.ru/cases/rank-authority" target="_blank" class="portfolio-link">Подробнее <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                        </div>
+                        <div class="portfolio-visual">
+                            <img src="/img/case-rank-authority.png" alt="Rank Authority">
+                        </div>
+                    </div>
+
+                    <div class="portfolio-case reveal reveal-delay-1">
+                        <div class="portfolio-info">
+                            <div class="portfolio-case-tag"></div>
+                            <div class="portfolio-case-name">L:UMA</div>
+                            <div class="portfolio-case-desc">Мобильный банкинг с умным финансовым помощником</div>
+                            <div class="portfolio-metrics">
+                                <div class="portfolio-metric">
+                                    <div class="portfolio-metric-title">Пользователи копят на <strong>27%</strong> больше</div>
+                                    <div class="portfolio-metric-text">Умные подсказки помогают контролировать расходы и больше откладывать</div>
+                                </div>
+                                <div class="portfolio-metric">
+                                    <div class="portfolio-metric-title"><strong>4.8/5</strong> оценка пользователей</div>
+                                    <div class="portfolio-metric-text">Удобный интерфейс и полезные рекомендации</div>
+                                </div>
+                            </div>
+                            <a href="https://rusneurosoft.ru/cases/luma" target="_blank" class="portfolio-link">Подробнее <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                        </div>
+                        <div class="portfolio-visual">
+                            <img src="/img/case-luma.png" alt="L:UMA">
+                        </div>
+                    </div>
+
+                    <div class="portfolio-case reveal reveal-delay-1">
+                        <div class="portfolio-info">
+                            <div class="portfolio-case-tag"></div>
+                            <div class="portfolio-case-name">Бизнес-Мост</div>
+                            <div class="portfolio-case-desc">Площадка для покупки и продажи готового бизнеса</div>
+                            <div class="portfolio-metrics">
+                                <div class="portfolio-metric">
+                                    <div class="portfolio-metric-title">Обработка документов за <strong>5 минут</strong> вместо месяца</div>
+                                    <div class="portfolio-metric-text">ИИ автоматически распознаёт и проверяет документы компаний</div>
+                                </div>
+                                <div class="portfolio-metric">
+                                    <div class="portfolio-metric-title"><strong>50%</strong> рост продуктивности команды</div>
+                                    <div class="portfolio-metric-text">Менеджеры переключились с рутины на переговоры и сделки</div>
+                                </div>
+                            </div>
+                            <a href="https://rusneurosoft.ru/cases/dealbridge" target="_blank" class="portfolio-link">Подробнее <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                        </div>
+                        <div class="portfolio-visual">
+                            <img src="/img/case-dealbridge.png" alt="Бизнес-Мост">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="mid-cta reveal">
+            <button class="mid-cta-btn" onclick="scrollToBook()">
+                Хочу так же — обсудить проект
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+        </div>
+
+        <!-- 4. Из чего состоит проект (Architecture / Modules) -->
+        <section class="arch-section" id="archSection" style="display:none;">
+            <div class="arch-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Из чего состоит ваш проект</h2>
+                    <p class="section-desc reveal reveal-delay-1">Каждый блок можно запускать отдельно — вы видите результат на каждом этапе</p>
+                </div>
+                <div class="arch-grid reveal reveal-delay-1" id="archGrid"></div>
+            </div>
+        </section>
+
+        <!-- 5. Сроки и этапы -->
+        <section class="timeline-section" id="timelineSection" style="display:none;">
+            <div class="timeline-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Как мы будем работать</h2>
+                    <p class="section-desc reveal reveal-delay-1" id="timelineDesc">Понятный план с чёткими этапами — вы всегда знаете, что происходит</p>
+                </div>
+                <div class="timeline-list reveal reveal-delay-1" id="timelineList"></div>
+            </div>
+        </section>
+
+        <!-- 6. Стоимость -->
+        <section class="pricing-section" id="pricingSection" style="display:none;">
+            <div class="pricing-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Стоимость проекта</h2>
+                    <p class="section-desc reveal reveal-delay-1">Фиксированная цена. Оплата по этапам. Никаких сюрпризов.</p>
+                </div>
+                <div class="pricing-hero reveal reveal-delay-1">
+                    <div class="pricing-label">Стоимость разработки</div>
+                    <div class="pricing-value" id="pricingCost"></div>
+                    <div class="pricing-note">Оплата поэтапно — вы платите только за готовый результат</div>
+                </div>
+                <div class="pricing-phases reveal reveal-delay-2" id="pricingPhases" style="display:none;"></div>
+                <div class="pricing-guarantee reveal reveal-delay-2">
+                    <div class="pricing-guarantee-text">
+                        <strong>Как это работает:</strong> мы разбиваем проект на этапы. Вы принимаете каждый этап и оплачиваете следующий только после того, как довольны результатом.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="mid-cta reveal" id="midCtaPricing" style="display:none;">
+            <button class="mid-cta-btn" onclick="scrollToBook()">
+                Обсудить условия и сроки
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <div class="mid-cta-sub">Ответим на все вопросы по стоимости</div>
+        </div>
+
+        <!-- 7. Как мы работаем -->
+        <section class="workflow-section">
+            <div class="workflow-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Почему с нами удобно</h2>
+                    <p class="section-desc reveal reveal-delay-1">Никаких сюрпризов. Полная прозрачность. Вы всегда в курсе.</p>
+                </div>
+                <div class="workflow-grid reveal reveal-delay-1">
+                    <div class="workflow-card">
+                        <span class="workflow-card-num">1</span>
+                        <div class="workflow-card-title">Вы всегда в курсе</div>
+                        <div class="workflow-card-desc">Каждую неделю мы показываем, что сделано, и присылаем демо. Вы видите прогресс своими глазами.</div>
+                        <div class="workflow-card-list">
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Еженедельные отчёты и демонстрации</span></div>
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Личный кабинет с прогрессом проекта</span></div>
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Прямая связь с командой в чате</span></div>
+                        </div>
+                    </div>
+                    <div class="workflow-card">
+                        <span class="workflow-card-num">2</span>
+                        <div class="workflow-card-title">Вы контролируете</div>
+                        <div class="workflow-card-desc">Вы принимаете каждый этап перед оплатой следующего. Не нравится — переделаем.</div>
+                        <div class="workflow-card-list">
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Утверждение дизайна до начала разработки</span></div>
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Приёмка каждого этапа отдельно</span></div>
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Гибкое управление приоритетами</span></div>
+                        </div>
+                    </div>
+                    <div class="workflow-card">
+                        <span class="workflow-card-num">3</span>
+                        <div class="workflow-card-title">Вы защищены</div>
+                        <div class="workflow-card-desc">Поэтапная оплата, договор, гарантия на исправление багов после запуска.</div>
+                        <div class="workflow-card-list">
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Оплата только за готовый результат</span></div>
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>1 месяц бесплатной поддержки</span></div>
+                            <div class="workflow-card-list-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Весь код — ваша собственность</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Команда -->
+        <section class="team-section">
+            <div class="team-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Кто будет работать над проектом</h2>
+                    <p class="section-desc reveal reveal-delay-1">Опытная команда, которая доведёт проект от идеи до запуска</p>
+                </div>
+                <div class="team-leads reveal reveal-delay-1">
+                    <div class="team-lead">
+                        <div class="team-lead-photo"><img src="/img/team-evgeniy.png" alt="Евгений Кукушкин"></div>
+                        <div class="team-lead-info">
+                            <div class="team-lead-name">Евгений Кукушкин</div>
+                            <div class="team-lead-role">CEO</div>
+                            <div class="team-lead-desc">Согласует договор и условия оплаты. Контролирует процесс разработки и запуск проекта.</div>
+                        </div>
+                    </div>
+                    <div class="team-lead">
+                        <div class="team-lead-photo"><img src="/img/team-anastasia-coo.png" alt="Анастасия Синькевич"></div>
+                        <div class="team-lead-info">
+                            <div class="team-lead-name">Анастасия Синькевич</div>
+                            <div class="team-lead-role">COO</div>
+                            <div class="team-lead-desc">Управляет командой разработки. Следит за сроками, качеством и выполнением задач.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-summary reveal reveal-delay-2">В команде <strong>8 специалистов</strong>: backend- и frontend-разработчики, UX/UI дизайнеры, тестировщик и менеджер проекта — все с опытом от 2 до 9 лет.</div>
+            </div>
+        </section>
+
+        <!-- 9. FAQ -->
+        <section class="faq-section">
+            <div class="faq-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Частые вопросы</h2>
+                </div>
+                <div class="faq-list reveal reveal-delay-1">
+                    <div class="faq-item">
+                        <div class="faq-header" onclick="this.parentElement.classList.toggle('open')">
+                            <span class="faq-question">А если мне не понравится результат?</span>
+                            <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        </div>
+                        <div class="faq-answer"><div class="faq-answer-inner">Мы показываем дизайн до начала разработки и согласовываем каждый этап. Если что-то не так — переделаем. Вы платите за следующий этап только после приёмки текущего.</div></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-header" onclick="this.parentElement.classList.toggle('open')">
+                            <span class="faq-question">А если сроки затянутся?</span>
+                            <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        </div>
+                        <div class="faq-answer"><div class="faq-answer-inner">Сроки фиксируем в договоре. Каждую неделю показываем прогресс, поэтому вы сразу видите, если что-то идёт не так. Мы заинтересованы закончить вовремя так же, как и вы.</div></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-header" onclick="this.parentElement.classList.toggle('open')">
+                            <span class="faq-question">Что будет после запуска?</span>
+                            <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        </div>
+                        <div class="faq-answer"><div class="faq-answer-inner">1 месяц бесплатной поддержки — исправим любые баги. После этого можем продолжить сопровождение по отдельному договору или передать проект вашей команде с полной документацией.</div></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-header" onclick="this.parentElement.classList.toggle('open')">
+                            <span class="faq-question">Можно начать с малого?</span>
+                            <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        </div>
+                        <div class="faq-answer"><div class="faq-answer-inner">Да. Мы можем начать с MVP — минимальной рабочей версии с ключевыми функциями. Это позволит быстро запуститься, получить обратную связь от пользователей и потом дорабатывать.</div></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-header" onclick="this.parentElement.classList.toggle('open')">
+                            <span class="faq-question">Как происходит оплата?</span>
+                            <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        </div>
+                        <div class="faq-answer"><div class="faq-answer-inner">Оплата поэтапная. Мы разбиваем проект на блоки, вы оплачиваете каждый после приёмки. Первый платёж — аванс за старт работы. Принимаем банковский перевод и криптовалюту.</div></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-header" onclick="this.parentElement.classList.toggle('open')">
+                            <span class="faq-question">У меня уже есть продукт — можно доработать?</span>
+                            <div class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+                        </div>
+                        <div class="faq-answer"><div class="faq-answer-inner">Да, мы берёмся за доработку существующих проектов. Проведём аудит, оценим объём работ и предложим план. Бесплатная оценка — напишите нам.</div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        </main>
+
+        <!-- 10. Забронировать звонок (Calendly) -->
+        <section class="book-section" id="bookSection" style="display:none">
+            <div class="book-body">
+                <div class="book-header">
+                    <h2 class="book-title section-title reveal">Давайте обсудим ваш проект</h2>
+                    <p class="book-subtitle reveal reveal-delay-1">30 минут, без обязательств. Расскажем план, ответим на все вопросы и определим первые шаги</p>
+                </div>
+                <div class="book-calendly-wrap reveal reveal-delay-2">
+                    <div id="calendlyWidget" style="min-width:320px;height:700px;"></div>
+                </div>
+            </div>
+        </section>
+        <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+
+        <!-- 11. Перспективы 2.0 -->
+        <section class="perspectives-section" id="perspSection" style="display:none;">
+            <div class="perspectives-body">
+                <div class="section-header">
+                    <h2 class="section-title reveal">Что дальше — версия 2.0</h2>
+                    <p class="section-desc reveal reveal-delay-1">После запуска мы поможем развивать продукт — вот что можно добавить</p>
+                </div>
+                <div class="perspectives-grid reveal reveal-delay-1" id="perspGrid"></div>
+            </div>
+        </section>
+
+        <!-- 12. Финальный CTA -->
+        <footer role="contentinfo">
+        <section class="cta-section">
+            <div class="cta-body">
+                <div class="cta-badge reveal">Следующий шаг</div>
+                <h2 class="cta-title reveal reveal-delay-1">Готовы обсудить проект?</h2>
+                <p class="cta-desc reveal reveal-delay-1">Расскажите о вашей идее — мы подготовим план, назовём сроки и поможем запуститься</p>
+                <button class="cta-main-btn reveal reveal-delay-2" onclick="scrollToBook()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                    Записаться на звонок
+                </button>
+                <div class="cta-alt reveal reveal-delay-2" id="ctaTelegramAlt"></div>
+                <div class="cta-fallback reveal reveal-delay-2" id="ctaFallback"></div>
+            </div>
+        </section>
+        </footer>
+
+    </div>
+
+    <script>
+    (function(){
+        'use strict';
+
+        var token = window.location.pathname.split('/').pop();
+        var $loading = document.getElementById('loading');
+        var $error = document.getElementById('error');
+        var $content = document.getElementById('content');
+
+        window.scrollToBook = function() {
+            var s = document.getElementById('bookSection');
+            if (s && s.style.display !== 'none') {
+                s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                var cta = document.getElementById('ctaTelegramAlt');
+                if (cta) {
+                    var link = cta.querySelector('a');
+                    if (link) window.open(link.href, '_blank');
+                }
+            }
+        };
+
+        fetch('/api/proposal/' + token)
+            .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+            .then(render)
+            .catch(function(e) {
+                console.error('Load error:', e);
+                $loading.style.display = 'none';
+                $error.style.display = 'flex';
+            });
+
+        function render(d) {
+            var est = d.estimation || {};
+            var cfg = d.config_data || {};
+            var companyName = cfg.company_name || 'РусНейроСофт';
+            var projectName = est.project_name || d.project_name || 'Проект';
+
+            document.title = projectName + ' — ' + companyName;
+            document.getElementById('heroTitle').textContent = projectName;
+            document.getElementById('heroCompany').textContent = companyName;
+
+            if (d.client_name) {
+                var sub = document.getElementById('heroSubtitle');
+                sub.style.display = '';
+                sub.textContent = 'Для ' + d.client_name;
+            }
+
+            if (est.project_description_short) {
+                document.getElementById('heroTagline').textContent = est.project_description_short;
+            }
+
+            var creator = cfg.creator || {};
+            var creatorEmail = creator.email || cfg.company_email || 'info@rusneurosoft.ru';
+            var creatorPhone = creator.phone || cfg.company_phone || '';
+            var creatorTelegram = creator.telegram || '';
+            var creatorCalendly = creator.calendly_url || '';
+
+            // Telegram alt link in CTA
+            if (creatorTelegram) {
+                var tgU = String(creatorTelegram).replace('@', '');
+                document.getElementById('ctaTelegramAlt').innerHTML = 'Или <a href="https://t.me/' + tgU + '" target="_blank">напишите нам в Telegram</a>';
+            }
+
+            // Fallback contacts
+            var fallbackHtml = '';
+            if (creatorEmail) fallbackHtml += '<div class="cta-fallback-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:' + creatorEmail + '">' + creatorEmail + '</a></div>';
+            if (creatorPhone) {
+                var phoneClean = creatorPhone.replace(/[\s\(\)\-]/g, '');
+                fallbackHtml += '<div class="cta-fallback-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg><a href="tel:' + phoneClean + '">' + creatorPhone + '</a></div>';
+            }
+            if (creatorTelegram) {
+                var tgUsername = creatorTelegram.replace('@', '');
+                fallbackHtml += '<div class="cta-fallback-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg><a href="https://t.me/' + tgUsername + '" target="_blank">' + creatorTelegram + '</a></div>';
+            }
+            document.getElementById('ctaFallback').innerHTML = fallbackHtml;
+
+            // Calendly
+            if (creatorCalendly) {
+                var bookSection = document.getElementById('bookSection');
+                if (bookSection) {
+                    bookSection.style.display = '';
+                    var floatCta = document.getElementById('floatCta');
+                    if (floatCta) floatCta.classList.add('visible');
+                    var calUrl = creatorCalendly;
+                    function initCalendly() {
+                        if (window.Calendly) {
+                            Calendly.initInlineWidget({ url: calUrl, parentElement: document.getElementById('calendlyWidget'), prefill: {}, utm: {} });
+                        } else { setTimeout(initCalendly, 300); }
+                    }
+                    initCalendly();
+                }
+            }
+
+            // Modules / Architecture
+            var modules = est.modules || [];
+            if (modules.length > 0) {
+                var archSection = document.getElementById('archSection');
+                var archGrid = document.getElementById('archGrid');
+                archSection.style.display = '';
+
+                var cols = Math.min(modules.length, 4);
+                if (cols === 1) archGrid.style.gridTemplateColumns = '1fr';
+                else if (cols === 2) archGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                else archGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+
+                modules.forEach(function(mod, i) {
+                    var card = document.createElement('div');
+                    card.className = 'arch-card';
+                    var num = String(i + 1).padStart(2, '0');
+                    var header = '<div class="arch-card-header"><span class="arch-card-num">' + num + '</span><span class="arch-card-name">' + esc(mod.name || '') + '</span></div>';
+                    var items = mod.sub_items || [];
+                    var maxShow = 3;
+                    var itemsHtml = '';
+                    items.slice(0, maxShow).forEach(function(item) {
+                        var text = (typeof item === 'string') ? item : (item.name || item.title || '');
+                        if (text) itemsHtml += '<div class="arch-module"><div class="arch-module-name">' + esc(text) + '</div></div>';
+                    });
+                    if (items.length > maxShow) {
+                        itemsHtml += '<div class="arch-module-count">и ещё ' + (items.length - maxShow) + ' ' + pluralize(items.length - maxShow, 'задача', 'задачи', 'задач') + '</div>';
+                    }
+                    card.innerHTML = header + itemsHtml;
+                    archGrid.appendChild(card);
+                });
+            }
+
+            // Timeline / Stages
+            var stagesData = est.stages || [];
+            if (stagesData.length > 0) {
+                document.getElementById('timelineSection').style.display = '';
+                var timeline = est.timeline_weeks || est.timeline_months || {};
+                if (timeline.min || timeline.max) {
+                    var tw = Math.round(((timeline.min || 0) + (timeline.max || 0)) / 2);
+                    var unit = est.timeline_months ? pluralize(tw, 'месяц', 'месяца', 'месяцев') : pluralize(tw, 'неделя', 'недели', 'недель');
+                    document.getElementById('timelineDesc').textContent = 'Ориентировочный срок — ' + tw + ' ' + unit + '. Вот из каких этапов состоит работа:';
+                }
+                var tl = document.getElementById('timelineList');
+                stagesData.forEach(function(stage) {
+                    var item = document.createElement('div');
+                    item.className = 'timeline-item';
+                    var tasksHtml = '';
+                    var tasks = stage.tasks || [];
+                    var shownTasks = tasks.slice(0, 5);
+                    shownTasks.forEach(function(t) {
+                        if (t.name) tasksHtml += '<div class="timeline-task">' + esc(t.name) + '</div>';
+                    });
+                    if (tasks.length > 5) tasksHtml += '<div class="timeline-task" style="color:var(--primary);font-weight:600">и ещё ' + (tasks.length - 5) + ' задач</div>';
+                    item.innerHTML = '<div class="timeline-dot"><div class="timeline-dot-inner"></div></div><div class="timeline-line"></div><div class="timeline-name">' + esc(stage.name || '') + '</div><div class="timeline-tasks">' + tasksHtml + '</div>';
+                    tl.appendChild(item);
+                });
+            }
+
+            // Pricing
+            var totals = est.totals || {};
+            var totalCost = totals.total_cost || {};
+            var currency = d.currency || '$';
+            if (totalCost.min || totalCost.max) {
+                document.getElementById('pricingSection').style.display = '';
+                document.getElementById('midCtaPricing').style.display = '';
+                var avgCost = Math.round(((totalCost.min || 0) + (totalCost.max || 0)) / 2);
+                document.getElementById('pricingCost').textContent = formatNum(avgCost) + currency;
+
+                // Payment phases from stages
+                if (stagesData.length > 1) {
+                    var phasesEl = document.getElementById('pricingPhases');
+                    phasesEl.style.display = '';
+                    var totalStageHours = 0;
+                    stagesData.forEach(function(s) { (s.tasks || []).forEach(function(t) { totalStageHours += (t.hours || 0); }); });
+                    stagesData.forEach(function(s, i) {
+                        var stageHours = 0;
+                        (s.tasks || []).forEach(function(t) { stageHours += (t.hours || 0); });
+                        var pct = totalStageHours > 0 ? stageHours / totalStageHours : 1 / stagesData.length;
+                        var phaseCost = Math.round(avgCost * pct);
+                        var phase = document.createElement('div');
+                        phase.className = 'pricing-phase';
+                        phase.innerHTML = '<div class="pricing-phase-num">' + (i + 1) + '</div><div class="pricing-phase-info"><div class="pricing-phase-name">' + esc(s.name) + '</div></div><div class="pricing-phase-cost">' + formatNum(phaseCost) + currency + '</div>';
+                        phasesEl.appendChild(phase);
+                    });
+                }
+            }
+
+            // Perspectives
+            var perspectives = est.perspectives || [];
+            if (perspectives.length > 0) {
+                document.getElementById('perspSection').style.display = '';
+                var perspGrid = document.getElementById('perspGrid');
+                var iconColors = [
+                    { bg: 'rgba(120,124,245,.12)', color: '#787cf5' },
+                    { bg: 'rgba(45,55,72,.10)', color: '#2d3748' },
+                    { bg: 'rgba(99,179,237,.12)', color: '#4299e1' },
+                    { bg: 'rgba(72,187,120,.12)', color: '#38a169' },
+                    { bg: 'rgba(237,137,54,.12)', color: '#dd6b20' },
+                    { bg: 'rgba(120,124,245,.12)', color: '#787cf5' }
+                ];
+                var icons = [
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>',
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>'
+                ];
+                perspectives.forEach(function(item, i) {
+                    var ic = iconColors[i % iconColors.length];
+                    var card = document.createElement('div');
+                    card.className = 'perspective-card';
+                    card.style.borderLeftColor = ic.color;
+                    var title = '', desc = '';
+                    if (typeof item === 'string') {
+                        var parts = item.split(/[:\.\—\-–](.+)/);
+                        if (parts.length >= 2 && parts[0].length < 60) { title = parts[0].trim(); desc = parts[1].trim(); }
+                        else title = item;
+                    } else if (typeof item === 'object') { title = item.title || item.name || ''; desc = item.description || item.text || ''; }
+                    card.innerHTML = '<div class="perspective-icon" style="background:' + ic.bg + ';color:' + ic.color + '">' + icons[i % icons.length] + '</div><div class="perspective-content"><div class="perspective-title">' + esc(title) + '</div>' + (desc ? '<div class="perspective-text">' + esc(desc) + '</div>' : '') + '</div>';
+                    perspGrid.appendChild(card);
+                });
+            }
+
+            // LD+JSON
+            var proposalSchema = {
+                "@context": "https://schema.org", "@type": "WebPage",
+                "name": projectName + ' — ' + companyName,
+                "description": "Предложение по разработке проекта «" + projectName + "» от " + companyName,
+                "url": window.location.href, "inLanguage": "ru"
+            };
+            var ldScript = document.createElement('script');
+            ldScript.type = 'application/ld+json';
+            ldScript.textContent = JSON.stringify(proposalSchema);
+            document.head.appendChild(ldScript);
+
+            $loading.style.display = 'none';
+            $content.style.display = 'block';
+
+            requestAnimationFrame(function() {
+                var els = document.querySelectorAll('.reveal');
+                if (!('IntersectionObserver' in window)) { els.forEach(function(el) { el.classList.add('visible'); }); return; }
+                var obs = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) { if (entry.isIntersecting) { entry.target.classList.add('visible'); obs.unobserve(entry.target); } });
+                }, { threshold: 0.05 });
+                els.forEach(function(el) { obs.observe(el); });
+            });
+        }
+
+        function esc(t) { var d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
+        function formatNum(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+        function pluralize(n, one, few, many) { var abs = Math.abs(n) % 100; var n1 = abs % 10; if (abs > 10 && abs < 20) return many; if (n1 > 1 && n1 < 5) return few; if (n1 === 1) return one; return many; }
+    })();
+    </script>
+    <script src="/sidebar.js"></script>
+
+    <!-- Floating CTA -->
+    <button class="float-cta" id="floatCta" aria-label="Записаться на звонок" onclick="scrollToBook()">
+        <span class="float-cta-badge"></span>
+        <span class="float-cta-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+        </span>
+        <span class="float-cta-text">
+            <span class="float-cta-label">Записаться на звонок</span>
+            <span class="float-cta-sub">30 минут · бесплатно</span>
+        </span>
+    </button>
+</body>
+</html>

@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/tokens.css?v=3">
+    <link rel="stylesheet" href="/css/base.css?v=3">
+    <link rel="stylesheet" href="/css/components/sidebar.css?v=3">
+    <link rel="stylesheet" href="/css/components/buttons.css?v=3">
+    <link rel="stylesheet" href="/css/components/cards.css?v=3">
+    <link rel="stylesheet" href="/css/components/inputs.css?v=3">
+    <link rel="stylesheet" href="/css/components/modals.css?v=3">
+    <link rel="stylesheet" href="/css/components/badges.css?v=3">
+    <link rel="stylesheet" href="/css/components/toast.css?v=3">
+    <link rel="stylesheet" href="/css/layouts/page-shell.css?v=3">
+    <link rel="stylesheet" href="/css/layouts/responsive.css?v=3">
+    <title>Карточка клиента</title>
+    <style>
+        .top-breadcrumb { padding:12px 24px; border-bottom:1px solid var(--border); background:var(--bg); display:flex; align-items:center; gap:6px; font-size:.82rem; color:var(--text-dim); }
+        .top-breadcrumb a { color:var(--text-dim); text-decoration:none; transition:color var(--transition); }
+        .top-breadcrumb a:hover { color:var(--accent); }
+        .breadcrumb-sep { opacity:.4; }
+        .breadcrumb-current { color:var(--text); font-weight:600; }
+
+        .page-container { max-width:1100px; margin:0 auto; padding:28px 24px; display:flex; flex-direction:column; gap:18px; }
+
+        /* === Client header card === */
+        .client-header-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; display:flex; flex-direction:column; gap:16px; }
+
+        /* Pipeline stepper */
+        .pipeline-stepper { display:flex; gap:4px; }
+        .pipeline-step { flex:1; padding:10px 8px; border-radius:var(--radius-sm); text-align:center; font-size:.8rem; font-weight:600; cursor:pointer; transition:var(--transition); border:1.5px solid var(--border); background:var(--surface-2); color:var(--text-dim); position:relative; }
+        .pipeline-step:hover { border-color:var(--accent); color:var(--text); }
+        .pipeline-step.active.lead { background:rgba(253,203,110,.12); color:#fdcb6e; border-color:rgba(253,203,110,.5); }
+        .pipeline-step.active.in_progress { background:rgba(108,92,231,.12); color:#6c5ce7; border-color:rgba(108,92,231,.5); }
+        .pipeline-step.active.client { background:rgba(0,206,201,.12); color:#00cec9; border-color:rgba(0,206,201,.5); }
+        .pipeline-step.active.archived { background:rgba(139,143,168,.12); color:#8b8fa8; border-color:rgba(139,143,168,.4); }
+
+        /* Status indicators row */
+        .status-indicators { display:flex; gap:10px; flex-wrap:wrap; align-items:stretch; }
+
+        /* Indicator chip */
+        .indicator-chip { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface-2); font-size:.82rem; font-weight:500; transition:var(--transition); }
+        .indicator-chip svg { width:16px; height:16px; flex-shrink:0; }
+
+        /* Bot status */
+        .bot-indicator { flex:1; min-width:180px; }
+        .bot-indicator.ok { border-color:rgba(0,206,201,.35); }
+        .bot-indicator.ok .bot-dot { background:#00cec9; box-shadow:0 0 6px rgba(0,206,201,.5); }
+        .bot-indicator.blocked { border-color:rgba(225,115,85,.35); }
+        .bot-indicator.blocked .bot-dot { background:#e17355; box-shadow:0 0 6px rgba(225,115,85,.5); }
+        .bot-indicator.unknown { border-color:var(--border); }
+        .bot-indicator.unknown .bot-dot { background:var(--text-dim); }
+        .bot-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+        .bot-label { flex:1; }
+        .bot-label-title { font-weight:600; font-size:.82rem; }
+        .bot-label-sub { font-size:.72rem; color:var(--text-dim); margin-top:1px; }
+        .bot-refresh { background:none; border:none; color:var(--text-dim); cursor:pointer; padding:4px; border-radius:4px; transition:var(--transition); display:flex; }
+        .bot-refresh:hover { color:var(--accent); background:rgba(108,92,231,.08); }
+        .bot-refresh.spinning svg { animation:spin .6s linear infinite; }
+
+        /* Block toggle chip */
+        .block-chip { cursor:pointer; user-select:none; }
+        .block-chip.active { border-color:rgba(225,115,85,.4); background:rgba(225,115,85,.08); }
+        .block-chip.active .block-icon { color:var(--red); }
+        .block-chip:hover { border-color:var(--red); }
+        .block-icon { color:var(--text-dim); transition:color var(--transition); }
+        .block-label { font-weight:600; font-size:.82rem; }
+
+        /* Client actions row */
+        .client-actions-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+        /* Proposal row with discount */
+        .proposal-row { display:flex; gap:8px; align-items:stretch; }
+        .discount-btn { display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim); font-size:.78rem; font-weight:600; cursor:pointer; transition:var(--transition); white-space:nowrap; font-family:inherit; }
+        .discount-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(108,92,231,.06); }
+        .discount-btn .discount-val { font-variant-numeric:tabular-nums; }
+        .discount-btn .discount-val:not(.dim) { color:var(--green); }
+        .discount-btn .discount-val.dim { color:var(--text-dim); opacity:.6; }
+        .discount-badge { display:inline-block; padding:2px 8px; border-radius:var(--radius-pill); font-size:.7rem; font-weight:700; background:var(--surface-3); color:var(--text-dim); border:1px solid var(--border); }
+        .discount-badge.active { background:rgba(0,206,201,.1); color:var(--green); border-color:rgba(0,206,201,.3); }
+
+        /* Discount picker modal */
+        .discount-picker { position:fixed; inset:0; z-index:var(--z-modal); display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.55); }
+        .discount-picker.open { display:flex; }
+        .discount-picker-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px 24px; width:380px; max-width:92vw; }
+        .discount-picker-title { font-size:1rem; font-weight:700; margin-bottom:6px; }
+        .discount-picker-sub { font-size:.8rem; color:var(--text-dim); margin-bottom:20px; }
+        .discount-presets { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
+        .discount-preset { padding:10px 0; border-radius:var(--radius-sm); text-align:center; font-size:.9rem; font-weight:700; cursor:pointer; border:1.5px solid var(--border); background:var(--surface-2); color:var(--text-dim); transition:var(--transition); }
+        .discount-preset:hover { border-color:var(--accent); color:var(--text); }
+        .discount-preset.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .discount-preset.zero { font-size:.78rem; }
+        .discount-custom { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+        .discount-custom label { font-size:.78rem; color:var(--text-dim); font-weight:600; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+        .discount-custom-input { flex:1; }
+        .discount-custom input { width:100%; padding:10px 12px; font-size:1rem; font-weight:700; text-align:center; font-family:inherit; }
+        .discount-custom-pct { font-size:1.1rem; font-weight:700; color:var(--text-dim); }
+        .discount-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+        /* Save bar */
+        .save-bar { position:sticky; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); padding:12px 24px; display:flex; justify-content:flex-end; gap:12px; z-index:50; }
+
+        /* Related items */
+        .related-list { display:flex; flex-direction:column; gap:8px; }
+        .related-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--radius-sm); background:var(--surface-2); border:1px solid var(--border); cursor:pointer; transition:var(--transition); }
+        .related-item:hover { border-color:var(--accent); }
+        .related-item-name { font-weight:600; font-size:.88rem; flex:1; color:var(--text); }
+        .related-item-meta { font-size:.76rem; color:var(--text-dim); }
+        .empty-related { text-align:center; padding:28px; color:var(--text-dim); font-size:.86rem; background:var(--surface-2); border-radius:var(--radius-sm); border:1px dashed var(--border); }
+
+        /* Invite link section */
+        .invite-section { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; }
+        .invite-section-header { font-size:.82rem; color:var(--text); font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+        .invite-link-row { display:flex; align-items:stretch; gap:6px; }
+        .invite-link-input { flex:1; font-size:.78rem; font-family:var(--font-mono); padding:8px 10px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); }
+
+        @media (max-width:768px) {
+            .page-container { padding:18px 14px; }
+            .pipeline-stepper { display:grid; grid-template-columns:repeat(2,1fr); }
+            .pipeline-step { font-size:.76rem; padding:9px 6px; }
+            .status-indicators { flex-direction:column; }
+            .client-actions-row { flex-direction:column; }
+            .client-actions-row > * { width:100%; }
+            .client-header-card { padding:18px 16px; }
+            .invite-link-row { flex-direction:column; }
+        }
+        @media (max-width:480px) {
+            .page-container { padding:14px 10px; gap:14px; }
+            .field-grid { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="main-content">
+        <div class="mobile-header">
+            <button class="mobile-menu-btn" id="mobileMenuBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+            <span class="mobile-header-title">Карточка клиента</span>
+        </div>
+        <div class="top-breadcrumb">
+            <a href="/users">Пользователи</a>
+            <span class="breadcrumb-sep">&rsaquo;</span>
+            <span class="breadcrumb-current" id="breadcrumbName">Загрузка...</span>
+        </div>
+
+        <div id="pageContent">
+            <div class="page-container">
+                <div class="client-header-card">
+                    <div class="pipeline-stepper"><div class="sk" style="flex:1;height:44px;border-radius:var(--radius-btn)"></div><div class="sk" style="flex:1;height:44px;border-radius:var(--radius-btn)"></div><div class="sk" style="flex:1;height:44px;border-radius:var(--radius-btn)"></div><div class="sk" style="flex:1;height:44px;border-radius:var(--radius-btn)"></div></div>
+                    <div class="sk" style="height:120px;border-radius:var(--radius-btn)"></div>
+                </div>
+                <div class="card"><div class="sk" style="height:24px;width:220px;margin-bottom:20px;border-radius:6px"></div><div class="field-grid"><div class="field-group"><div class="sk" style="height:10px;width:120px;margin-bottom:8px"></div><div class="sk" style="height:44px;border-radius:var(--radius-btn)"></div></div><div class="field-group"><div class="sk" style="height:10px;width:80px;margin-bottom:8px"></div><div class="sk" style="height:44px;border-radius:var(--radius-btn)"></div></div><div class="field-group"><div class="sk" style="height:10px;width:50px;margin-bottom:8px"></div><div class="sk" style="height:44px;border-radius:var(--radius-btn)"></div></div><div class="field-group"><div class="sk" style="height:10px;width:70px;margin-bottom:8px"></div><div class="sk" style="height:44px;border-radius:var(--radius-btn)"></div></div><div class="field-group"><div class="sk" style="height:10px;width:80px;margin-bottom:8px"></div><div class="sk" style="height:44px;border-radius:var(--radius-btn)"></div></div><div class="field-group"><div class="sk" style="height:10px;width:90px;margin-bottom:8px"></div><div class="sk" style="height:44px;border-radius:var(--radius-btn)"></div></div></div></div>
+                <div class="card"><div class="sk" style="height:24px;width:250px;margin-bottom:20px;border-radius:6px"></div><div class="sk" style="height:60px;border-radius:var(--radius-btn);margin-bottom:10px"></div><div class="sk" style="height:60px;border-radius:var(--radius-btn)"></div></div>
+                <div class="card"><div class="sk" style="height:24px;width:140px;margin-bottom:20px;border-radius:6px"></div><div class="sk" style="height:60px;border-radius:var(--radius-btn)"></div></div>
+            </div>
+        </div>
+
+        <div class="save-bar" id="saveBar" style="display:none">
+            <button class="btn-secondary" onclick="loadClient()">Отмена</button>
+            <button class="btn-primary" id="saveBtn">Сохранить</button>
+        </div>
+    </div>
+
+    <!-- Create project modal -->
+    <div class="modal-overlay" id="createProjectModal">
+        <div class="modal">
+            <h3>Создать проект</h3>
+            <div style="margin-bottom:14px">
+                <label style="display:block;font-size:.78rem;color:var(--text-dim);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Название проекта</label>
+                <input class="field-input" id="cpName" placeholder="Название проекта">
+            </div>
+            <div style="margin-bottom:14px">
+                <label style="display:block;font-size:.78rem;color:var(--text-dim);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Описание</label>
+                <textarea class="field-input" id="cpDesc" rows="2" placeholder="Краткое описание"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cpCancel">Отмена</button>
+                <button class="btn-green" id="cpCreate">Создать проект</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discount picker modal -->
+    <div class="discount-picker" id="discountPicker">
+        <div class="discount-picker-card">
+            <div class="discount-picker-title">Скидка на КП</div>
+            <div class="discount-picker-sub" id="discountProposalName"></div>
+            <div class="discount-presets" id="discountPresets">
+                <div class="discount-preset zero" data-val="0">Без скидки</div>
+                <div class="discount-preset" data-val="5">5%</div>
+                <div class="discount-preset" data-val="10">10%</div>
+                <div class="discount-preset" data-val="15">15%</div>
+                <div class="discount-preset" data-val="20">20%</div>
+                <div class="discount-preset" data-val="25">25%</div>
+                <div class="discount-preset" data-val="30">30%</div>
+                <div class="discount-preset" data-val="50">50%</div>
+            </div>
+            <div class="discount-custom">
+                <label>Своё значение</label>
+                <div class="discount-custom-input">
+                    <input class="field-input" type="number" id="discountCustomInput" min="0" max="100" placeholder="0">
+                </div>
+                <span class="discount-custom-pct">%</span>
+            </div>
+            <div class="discount-actions">
+                <button class="btn-secondary" id="discountCancel">Отмена</button>
+                <button class="btn-primary" id="discountSave">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    const CLIENT_ID = window.location.pathname.split('/')[2];
+    const STATUS_LABELS = { lead:'Лид', in_progress:'В работе', client:'Клиент', archived:'Архив' };
+    const STATUSES = ['lead','in_progress','client','archived'];
+    let clientData = null;
+
+    function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function formatDate(iso) { if (!iso) return '\u2014'; return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'}); }
+    function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+    async function authFetch(url, opts) {
+        const res = await fetch(url, opts);
+        if (res.status===401) { window.location.href='/login'; throw new Error('unauthorized'); }
+        return res;
+    }
+
+    let clientFirstLoad = true;
+    async function loadClient() {
+        document.getElementById('saveBar').style.display = 'none';
+        if (!clientFirstLoad) {
+            document.getElementById('breadcrumbName').textContent = 'Загрузка...';
+            document.getElementById('pageContent').innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Загрузка клиента...</p></div>';
+        }
+        clientFirstLoad = false;
+        if (!CLIENT_ID || CLIENT_ID === 'null' || CLIENT_ID === 'undefined') {
+            document.getElementById('pageContent').innerHTML = '<div class="loading-state"><p style="color:var(--red)">Некорректная ссылка на клиента. Вернитесь в <a href="/users">список пользователей</a>.</p></div>';
+            return;
+        }
+        try {
+            const res = await authFetch('/api/client/' + CLIENT_ID);
+            if (res.status === 404 || res.status === 400) {
+                document.getElementById('pageContent').innerHTML = '<div class="loading-state"><p style="color:var(--red)">Клиент не найден</p></div>';
+                return;
+            }
+            if (!res.ok) throw new Error('server error ' + res.status);
+            clientData = await res.json();
+        } catch (e) {
+            document.getElementById('pageContent').innerHTML = '<div class="loading-state"><p style="color:var(--red)">Ошибка загрузки клиента</p></div>';
+            console.error('loadClient fetch error:', e);
+            return;
+        }
+        try {
+            renderPage();
+        } catch (e) {
+            console.error('renderPage error:', e);
+            document.getElementById('saveBar').style.display = 'none';
+            document.getElementById('pageContent').innerHTML = '<div class="loading-state"><p style="color:var(--red)">Ошибка отображения карточки клиента</p></div>';
+        }
+    }
+
+    function renderPage() {
+        const c = clientData;
+        document.getElementById('breadcrumbName').textContent = c.name;
+        document.title = c.name + ' — Карточка клиента';
+
+        let stepsHtml = '';
+        STATUSES.forEach(s => {
+            stepsHtml += `<div class="pipeline-step ${s} ${c.status===s?'active':''}" data-status="${s}">${STATUS_LABELS[s]}</div>`;
+        });
+
+        let proposalsHtml = '';
+        if (c.proposals && c.proposals.length) {
+            proposalsHtml = '<div class="related-list">';
+            c.proposals.forEach(p => {
+                const typeClass = (p.proposal_type||'').toLowerCase()==='mvp'?'mvp':'full';
+                const statusLabels = { 'draft':'Черновик', 'sent':'Отправлено', 'accepted':'Принято', 'rejected':'Отклонено' };
+                const statusText = statusLabels[p.proposal_status] || p.proposal_status || 'draft';
+                const disc = p.discount_percent || 0;
+                const discBadge = disc > 0
+                    ? `<span class="discount-badge active" title="Скидка ${disc}%">-${disc}%</span>`
+                    : `<span class="discount-badge" title="Нет скидки">0%</span>`;
+                proposalsHtml += `
+                    <div class="proposal-row">
+                        <div class="related-item" onclick="window.location.href='/proposal/${escapeHtml(p.token)}/edit'" style="flex:1">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--accent);opacity:.7"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <div class="related-item-name">${escapeHtml(p.project_name||'Без названия')}</div>
+                            <span class="type-badge ${typeClass}">${(p.proposal_type||'').toUpperCase()||'—'}</span>
+                            <span class="status-badge ${p.proposal_status||'draft'}">${statusText}</span>
+                            <span class="related-item-meta">${formatDate(p.created_at)}</span>
+                        </div>
+                        <button class="discount-btn" data-token="${escapeHtml(p.token)}" data-discount="${disc}" title="Настроить скидку">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                            ${disc > 0 ? '<span class="discount-val">-' + disc + '%</span>' : '<span class="discount-val dim">Скидка</span>'}
+                        </button>
+                    </div>`;
+            });
+            proposalsHtml += '</div>';
+        } else {
+            proposalsHtml = '<div class="empty-related">Пока нет коммерческих предложений</div>';
+        }
+
+        let projectsHtml = '';
+        if (c.projects && c.projects.length) {
+            projectsHtml = '<div class="related-list">';
+            c.projects.forEach(pr => {
+                projectsHtml += `
+                    <div class="related-item" onclick="window.location.href='/project/${escapeHtml(pr.public_token)}'">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--green);opacity:.7"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <div class="related-item-name">${escapeHtml(pr.name)}</div>
+                        <span class="meta-pill">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            ${pr.meeting_count||0}
+                        </span>
+                        <span class="related-item-meta">${formatDate(pr.created_at)}</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--text-dim);opacity:.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>`;
+            });
+            projectsHtml += '</div>';
+        } else {
+            projectsHtml = '<div class="empty-related">💼 Пока нет проектов</div>';
+        }
+
+        const cabinetBtn = c.cabinet_token
+            ? `<a href="/cabinet/${escapeHtml(c.cabinet_token)}" target="_blank" class="btn-secondary" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:.84rem;padding:10px 18px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Кабинет клиента
+               </a>`
+            : '';
+
+        const inviteLinkSection = c.invite_link
+            ? `<div class="invite-section">
+                <div class="invite-section-header">
+                    ${c.telegram_id 
+                        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Клиент зарегистрирован' 
+                        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Ссылка для регистрации'}
+                </div>
+                <div class="invite-link-row">
+                    <input class="invite-link-input" id="inviteLinkField" readonly value="${escapeHtml(c.invite_link)}">
+                    <button class="btn-secondary" id="copyInviteLinkBtn" style="padding:10px 16px;font-size:.82rem;white-space:nowrap;display:inline-flex;align-items:center;gap:6px" title="Копировать">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        Копировать
+                    </button>
+                </div>
+               </div>`
+            : '';
+
+        // Promo removed from client card — managed per proposal
+
+        const blockChipHtml = `
+            <div class="indicator-chip block-chip ${c.is_blocked ? 'active' : ''}" id="blockChip" title="${c.is_blocked ? 'Разблокировать пользователя' : 'Заблокировать пользователя'}">
+                <svg class="block-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                <span class="block-label">${c.is_blocked ? 'Заблокирован' : 'Активен'}</span>
+            </div>`;
+
+        const botStatusHtml = c.telegram_id ? `
+            <div class="indicator-chip bot-indicator unknown" id="botIndicator">
+                <div class="bot-dot"></div>
+                <div class="bot-label">
+                    <div class="bot-label-title">Telegram-бот</div>
+                    <div class="bot-label-sub" id="botStatusText">Проверка...</div>
+                </div>
+                <button class="bot-refresh" id="botRefreshBtn" title="Проверить связь">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                </button>
+            </div>` : '';
+
+        document.getElementById('pageContent').innerHTML = `
+        <div class="page-container">
+            <div class="client-header-card">
+                <div class="pipeline-stepper" id="pipelineStepper">${stepsHtml}</div>
+                <div class="status-indicators">
+                    ${blockChipHtml}
+                    ${botStatusHtml}
+                </div>
+                <div class="client-actions-row">
+                    ${cabinetBtn}
+                </div>
+                ${inviteLinkSection}
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Контактная информация
+                </div>
+                <div class="field-grid">
+                    <div class="field-group"><label>Имя / контактное лицо</label><input class="field-input" id="fName" value="${escapeHtml(c.name||'')}" placeholder="Иван Иванов"></div>
+                    <div class="field-group"><label>Компания</label><input class="field-input" id="fCompany" value="${escapeHtml(c.company||'')}" placeholder="ООО «Компания»"></div>
+                    <div class="field-group"><label>Email</label><input class="field-input" id="fEmail" type="email" value="${escapeHtml(c.email||'')}" placeholder="email@example.com"></div>
+                    <div class="field-group"><label>Телефон</label><input class="field-input" id="fPhone" value="${escapeHtml(c.phone||'')}" placeholder="+7 (999) 123-45-67"></div>
+                    <div class="field-group"><label>Telegram</label><input class="field-input" id="fTelegram" value="${escapeHtml(c.telegram||'')}" placeholder="@username" readonly tabindex="-1" style="opacity:.55;cursor:default"></div>
+                    <div class="field-group"><label>Должность</label><input class="field-input" id="fPosition" value="${escapeHtml(c.position||'')}" placeholder="CEO, CTO, ..."></div>
+                    <div class="field-group"><label>Сайт</label><input class="field-input" id="fWebsite" value="${escapeHtml(c.website||'')}" placeholder="https://example.com"></div>
+                    <div class="field-group"><label>Адрес</label><input class="field-input" id="fAddress" value="${escapeHtml(c.address||'')}" placeholder="г. Москва, ул. Примерная, д. 1"></div>
+                    <div class="field-group full-width"><label>Заметки</label><textarea class="field-input" id="fNotes" rows="3" placeholder="Дополнительная информация о клиенте...">${escapeHtml(c.notes||'')}</textarea></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="justify-content:space-between; align-items:center">
+                    <span style="display:flex;align-items:center;gap:10px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>Коммерческие предложения</span>
+                        ${c.proposals && c.proposals.length ? `<span class="meta-pill">${c.proposals.length}</span>` : ''}
+                    </span>
+                </div>
+                ${proposalsHtml}
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="justify-content:space-between; align-items:center">
+                    <span style="display:flex;align-items:center;gap:10px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <span>Проекты</span>
+                        ${c.projects && c.projects.length ? `<span class="meta-pill">${c.projects.length}</span>` : ''}
+                    </span>
+                    <button class="btn-green" id="createProjectBtn" style="font-size:.84rem;padding:10px 16px;display:inline-flex;align-items:center;gap:8px">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Создать проект
+                    </button>
+                </div>
+                ${projectsHtml}
+            </div>
+
+            ${c.telegram_id ? `
+                <div class="card" style="padding:0;overflow:hidden">
+                    <div style="padding:20px 24px;border-bottom:1px solid var(--border);background:var(--surface-2)">
+                        <div class="card-title" style="margin:0">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            Чат с клиентом
+                        </div>
+                    </div>
+                    <div id="clientChat" style="height:480px"></div>
+                </div>` : ''}
+        </div>`;
+
+        document.getElementById('saveBar').style.display = 'flex';
+
+        // Pipeline step click — inside pageContent, recreated each render, safe
+        document.getElementById('pipelineStepper').addEventListener('click', async e => {
+            const step = e.target.closest('.pipeline-step');
+            if (!step || step.dataset.status === clientData.status) return;
+            try {
+                const res = await authFetch('/api/client/'+CLIENT_ID+'/status', {
+                    method:'PATCH', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({status: step.dataset.status}),
+                });
+                if (res.ok) { clientData.status = step.dataset.status; renderPage(); showToast('Статус обновлён'); }
+            } catch {}
+        });
+
+        // createProjectBtn is inside pageContent, recreated each render, safe
+        document.getElementById('createProjectBtn').addEventListener('click', () => {
+            document.getElementById('cpName').value = clientData.name || '';
+            document.getElementById('createProjectModal').classList.add('open');
+        });
+
+        // Block chip click handler
+        const blockChip = document.getElementById('blockChip');
+        if (blockChip) {
+            blockChip.addEventListener('click', async () => {
+                const newBlocked = !clientData.is_blocked;
+                const confirmMsg = newBlocked
+                    ? 'Заблокировать пользователя? Он не сможет взаимодействовать с ботом.'
+                    : 'Разблокировать пользователя?';
+                if (!confirm(confirmMsg)) return;
+                try {
+                    const res = await authFetch('/api/client/' + CLIENT_ID + '/block', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ blocked: newBlocked }),
+                    });
+                    if (res.ok) {
+                        clientData.is_blocked = newBlocked;
+                        renderPage();
+                        showToast(newBlocked ? 'Пользователь заблокирован' : 'Пользователь разблокирован');
+                    }
+                } catch (e) { console.error('Block toggle error:', e); }
+            });
+        }
+
+        // Bot status check
+        if (c.telegram_id) { checkBotStatus(); }
+
+        const refreshBtn = document.getElementById('botRefreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', (e) => { e.stopPropagation(); checkBotStatus(); });
+        }
+
+        // Init chat widget if client has telegram_id
+        if (c.telegram_id && document.getElementById('clientChat')) {
+            ChatWidget.init({
+                container: '#clientChat',
+                messagesUrl: '/api/client/' + CLIENT_ID + '/messages',
+                sendUrl: '/api/client/' + CLIENT_ID + '/messages',
+                fetchFn: authFetch,
+                headerTitle: 'Чат с ' + (c.name || 'клиентом'),
+                headerSub: 'Сообщения доставляются в Telegram клиенту',
+                pollInterval: 5000,
+            });
+        }
+    }
+
+    // Persistent element listeners — set up once, outside renderPage
+    document.getElementById('saveBtn').addEventListener('click', () => saveClient());
+
+    const cpModal = document.getElementById('createProjectModal');
+    document.getElementById('cpCancel').addEventListener('click', () => cpModal.classList.remove('open'));
+    cpModal.addEventListener('click', e => { if (e.target === cpModal) cpModal.classList.remove('open'); });
+    document.getElementById('cpCreate').addEventListener('click', async () => {
+        const btn = document.getElementById('cpCreate');
+        btn.disabled = true; btn.textContent = 'Создание...';
+        try {
+            const res = await authFetch('/api/client/'+CLIENT_ID+'/create-project', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    name: document.getElementById('cpName').value.trim(),
+                    description: document.getElementById('cpDesc').value.trim(),
+                }),
+            });
+            if (res.ok) {
+                const proj = await res.json();
+                cpModal.classList.remove('open');
+                showToast('Проект создан');
+                window.location.href = '/project/' + proj.public_token;
+            } else {
+                const err = await res.json().catch(()=>({}));
+                alert('Ошибка: '+(err.error||res.status));
+            }
+        } catch { alert('Ошибка при создании проекта'); }
+        finally { btn.disabled = false; btn.textContent = 'Создать проект'; }
+    });
+
+    async function saveClient() {
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true; btn.textContent = 'Сохранение...';
+        try {
+            const body = {
+                name: document.getElementById('fName').value.trim(),
+                company: document.getElementById('fCompany').value.trim(),
+                email: document.getElementById('fEmail').value.trim(),
+                phone: document.getElementById('fPhone').value.trim(),
+                telegram: document.getElementById('fTelegram').value.trim(),
+                position: document.getElementById('fPosition').value.trim(),
+                website: document.getElementById('fWebsite').value.trim(),
+                address: document.getElementById('fAddress').value.trim(),
+                notes: document.getElementById('fNotes').value.trim(),
+            };
+            if (!body.name) { document.getElementById('fName').focus(); return; }
+            const res = await authFetch('/api/client/'+CLIENT_ID, {
+                method:'PATCH', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(body),
+            });
+            if (res.ok) {
+                Object.assign(clientData, body);
+                document.getElementById('breadcrumbName').textContent = body.name;
+                showToast('Изменения сохранены');
+            } else {
+                const err = await res.json().catch(()=>({}));
+                alert('Ошибка: '+(err.error||res.status));
+            }
+        } catch { alert('Ошибка при сохранении'); }
+        finally { btn.disabled = false; btn.textContent = 'Сохранить'; }
+    }
+
+
+
+    document.addEventListener('click', e => {
+        if (e.target.closest('#copyInviteLinkBtn')) {
+            const input = document.getElementById('inviteLinkField');
+            if (!input) return;
+            navigator.clipboard.writeText(input.value).then(() => {
+                const btn = document.getElementById('copyInviteLinkBtn');
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Скопировано';
+                setTimeout(() => {
+                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Копировать';
+                }, 2000);
+            });
+        }
+    });
+
+    // === Discount picker ===
+    let _discountToken = null;
+    const discountPicker = document.getElementById('discountPicker');
+    const discountInput = document.getElementById('discountCustomInput');
+    const discountPresets = document.getElementById('discountPresets');
+
+    function openDiscountPicker(token, currentDiscount, proposalName) {
+        _discountToken = token;
+        document.getElementById('discountProposalName').textContent = proposalName || 'Коммерческое предложение';
+        discountInput.value = currentDiscount || '';
+        discountPresets.querySelectorAll('.discount-preset').forEach(p => {
+            p.classList.toggle('active', parseInt(p.dataset.val) === (currentDiscount || 0));
+        });
+        discountPicker.classList.add('open');
+        discountInput.focus();
+    }
+
+    discountPresets.addEventListener('click', e => {
+        const preset = e.target.closest('.discount-preset');
+        if (!preset) return;
+        const val = parseInt(preset.dataset.val);
+        discountInput.value = val;
+        discountPresets.querySelectorAll('.discount-preset').forEach(p => p.classList.remove('active'));
+        preset.classList.add('active');
+    });
+
+    discountInput.addEventListener('input', () => {
+        const val = parseInt(discountInput.value) || 0;
+        discountPresets.querySelectorAll('.discount-preset').forEach(p => {
+            p.classList.toggle('active', parseInt(p.dataset.val) === val);
+        });
+    });
+
+    document.getElementById('discountCancel').addEventListener('click', () => {
+        discountPicker.classList.remove('open');
+        _discountToken = null;
+    });
+    discountPicker.addEventListener('click', e => {
+        if (e.target === discountPicker) { discountPicker.classList.remove('open'); _discountToken = null; }
+    });
+
+    document.getElementById('discountSave').addEventListener('click', async () => {
+        if (!_discountToken) return;
+        const val = Math.max(0, Math.min(100, parseInt(discountInput.value) || 0));
+        const btn = document.getElementById('discountSave');
+        btn.disabled = true; btn.textContent = 'Сохранение...';
+        try {
+            const res = await authFetch('/api/proposal/' + _discountToken + '/discount', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ discount_percent: val }),
+            });
+            if (res.ok) {
+                const prop = clientData.proposals.find(p => p.token === _discountToken);
+                if (prop) prop.discount_percent = val;
+                discountPicker.classList.remove('open');
+                _discountToken = null;
+                renderPage();
+                showToast(val > 0 ? 'Скидка ' + val + '% установлена' : 'Скидка убрана');
+            }
+        } catch (e) { console.error('Discount save error:', e); }
+        finally { btn.disabled = false; btn.textContent = 'Сохранить'; }
+    });
+
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('.discount-btn');
+        if (btn) {
+            e.stopPropagation();
+            const token = btn.dataset.token;
+            const discount = parseInt(btn.dataset.discount) || 0;
+            const prop = clientData && clientData.proposals ? clientData.proposals.find(p => p.token === token) : null;
+            openDiscountPicker(token, discount, prop ? prop.project_name : '');
+        }
+    });
+
+    async function checkBotStatus() {
+        const indicator = document.getElementById('botIndicator');
+        const text = document.getElementById('botStatusText');
+        const btn = document.getElementById('botRefreshBtn');
+        if (!indicator || !text) return;
+        indicator.className = 'indicator-chip bot-indicator unknown';
+        text.textContent = 'Проверка...';
+        if (btn) btn.classList.add('spinning');
+        try {
+            const res = await authFetch('/api/client/' + CLIENT_ID + '/bot-status');
+            const data = await res.json();
+            if (data.can_message) {
+                indicator.className = 'indicator-chip bot-indicator ok';
+                text.textContent = 'Бот доступен — можно писать';
+            } else {
+                indicator.className = 'indicator-chip bot-indicator blocked';
+                const reasons = {
+                    'bot_blocked_by_user': 'Пользователь заблокировал бота',
+                    'user_not_started_bot': 'Пользователь не запускал бота',
+                    'no_telegram': 'Нет Telegram ID',
+                    'no_bot_token': 'Бот не настроен',
+                };
+                text.textContent = reasons[data.reason] || 'Недоступен';
+            }
+        } catch (e) {
+            indicator.className = 'indicator-chip bot-indicator unknown';
+            text.textContent = 'Ошибка проверки';
+        }
+        if (btn) btn.classList.remove('spinning');
+    }
+
+    (async () => {
+        loadClient();
+    })();
+    </script>
+    <script src="/chat-widget.js"></script>
+    <script src="/sidebar.js"></script>
+</body>
+</html>

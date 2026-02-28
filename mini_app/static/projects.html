@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/tokens.css?v=1772292397">
+    <link rel="stylesheet" href="/css/base.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/sidebar.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/buttons.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/cards.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/inputs.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/modals.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/badges.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/tabs.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/table.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/empty-state.css?v=1772292397">
+    <link rel="stylesheet" href="/css/components/toast.css?v=1772292397">
+    <link rel="stylesheet" href="/css/layouts/page-shell.css?v=1772292397">
+    <link rel="stylesheet" href="/css/layouts/responsive.css?v=1772292397">
+    <title>Проекты</title>
+    <style>
+        /* ── Projects section ── */
+        .projects-section { margin-bottom: 48px; }
+
+        .projects-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            flex-wrap: nowrap;
+        }
+        .search-box {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .search-box svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+        .search-box input {
+            height: var(--ctrl-h);
+            padding: 0 12px 0 32px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            color: var(--text);
+            font-size: .83rem;
+            outline: none;
+            width: 180px;
+            transition: var(--transition);
+        }
+        .search-box input:focus { border-color: var(--accent); width: 220px; }
+        .search-box input::placeholder { color: var(--text-dim); }
+
+        /* ── View toggle ── */
+        .view-toggle {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            overflow: hidden;
+            flex-shrink: 0;
+            height: var(--ctrl-h);
+        }
+        .view-btn {
+            width: var(--ctrl-h);
+            height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .view-btn:hover { background: var(--surface-2); color: var(--text); }
+        .view-btn.active { background: var(--accent); color: #fff; }
+        .view-btn svg { width: 15px; height: 15px; }
+
+        /* ── Projects grid ── */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+        }
+        .project-card {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+        .project-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 6px 28px var(--accent-glow);
+        }
+        .project-card.hidden-from-staff { opacity: .5; border-style: dashed; }
+        .project-card.hidden-from-staff:hover { opacity: .7; }
+
+        .project-card-stripe {
+            height: 4px;
+            width: 100%;
+            flex-shrink: 0;
+        }
+        .project-card-body { padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+        .card-top-right {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 5;
+        }
+        .video-count-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 9px;
+            font-size: .74rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .video-count-badge.has-videos {
+            background: rgba(108,92,231,.15);
+            border-color: rgba(108,92,231,.35);
+            color: var(--accent);
+        }
+
+        .project-card-icon-wrap {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            margin-bottom: 4px;
+        }
+        .project-card-icon-wrap svg { width: 20px; height: 20px; }
+
+        .project-card-name {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.3;
+            padding-right: 60px;
+        }
+        .project-card-desc {
+            color: var(--text-dim);
+            font-size: .82rem;
+            line-height: 1.5;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .project-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 18px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+        .project-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: .72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+        .project-type-badge svg { width: 10px; height: 10px; flex-shrink: 0; }
+        .project-type-badge.editable { cursor: pointer; }
+        .project-type-badge.editable:hover { opacity: .85; }
+
+        /* ── Category dropdown ── */
+        .cat-dropdown {
+            position: absolute;
+            z-index: 200;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,.5);
+            padding: 6px;
+            min-width: 160px;
+        }
+        .cat-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .15s;
+        }
+        .cat-dropdown-item:hover { background: var(--surface-2); }
+        .cat-dropdown-item.current { opacity: .45; cursor: default; }
+        .cat-dropdown-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── Visibility toggle ── */
+        .visibility-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 8px 3px 10px;
+            cursor: default;
+        }
+        .visibility-toggle.is-hidden {
+            background: rgba(225,115,85,.1);
+            border-color: rgba(225,115,85,.3);
+        }
+        .toggle-label {
+            font-size: .7rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+            line-height: 1;
+        }
+        .visibility-toggle.is-hidden .toggle-label { color: var(--red); }
+        .toggle-switch {
+            position: relative;
+            width: 28px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input { display: none; }
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+        .toggle-thumb {
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 11px; height: 11px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform var(--transition);
+            pointer-events: none;
+        }
+        .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(13px); }
+
+        /* ── List view ── */
+        .projects-list { display: flex; flex-direction: column; gap: 6px; }
+        .project-list-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+            position: relative;
+        }
+        .project-list-row:hover { border-color: var(--accent); background: rgba(108,92,231,.04); }
+        .project-list-row.hidden-from-staff { opacity: .5; border-style: dashed; }
+        .project-list-type-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .project-list-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .project-list-icon svg { width: 15px; height: 15px; }
+        .project-list-info { flex: 1; min-width: 0; }
+        .project-list-name { font-weight: 600; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .project-list-desc { font-size: .78rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .project-list-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .project-list-arrow { color: var(--text-dim); flex-shrink: 0; }
+        .project-list-arrow svg { width: 14px; height: 14px; }
+
+        /* ── Unlinked meetings table ── */
+        .unlinked-section { margin-bottom: 48px; }
+
+        .meetings-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .meetings-table th:nth-child(1) { width: 28%; }
+        .meetings-table th:nth-child(2) { width: 22%; }
+        .meetings-table th:nth-child(3) { width: 14%; }
+        .meetings-table th:nth-child(4) { width: 14%; }
+        .meetings-table th:nth-child(5) { width: 14%; }
+        .meetings-table th:nth-child(6) { width: 8%; }
+        .meetings-table thead {
+            background: var(--surface-2);
+        }
+        .meetings-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            border-bottom: 1px solid var(--border);
+        }
+        .meetings-table td {
+            padding: 14px 16px;
+            font-size: .88rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .meetings-table tr:last-child td { border-bottom: none; }
+        .meetings-table tbody tr {
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        .meetings-table tbody tr:hover { background: var(--surface-2); }
+
+        .meeting-topic {
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .meeting-topic a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .meeting-topic a:hover { color: var(--accent); }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: .76rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+        .status-pill {
+            display: inline-block;
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+        .status-pill.finished { background: rgba(0,206,201,.15); color: var(--green); border: 1px solid rgba(0,206,201,.3); }
+        .status-pill.ended { background: rgba(162,155,254,.12); color: #a29bfe; border: 1px solid rgba(162,155,254,.3); }
+        .status-pill.scheduled { background: rgba(253,203,110,.12); color: #fdcb6e; border: 1px solid rgba(253,203,110,.3); }
+
+        .delete-row-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 5px 7px;
+            border-radius: 7px;
+            font-size: 1rem;
+            line-height: 1;
+            transition: var(--transition);
+            opacity: 0;
+        }
+        .meetings-table tbody tr:hover .delete-row-btn { opacity: 1; }
+        .delete-row-btn:hover { color: var(--red) !important; background: rgba(225,115,85,.15); opacity: 1 !important; }
+
+        /* ── Type selector in create modal ── */
+        .type-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: .84rem;
+            transition: var(--transition);
+            user-select: none;
+        }
+        .type-option input[type=radio] { display: none; }
+        .type-option:hover { border-color: var(--accent); }
+        .type-option.selected { border-color: var(--dot, var(--accent)); background: rgba(108,92,231,.08); color: var(--text); }
+        .type-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── Category Manager ── */
+        .cat-manager-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+        }
+        .cat-manager-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .cat-manager-label {
+            flex: 1;
+            font-size: .88rem;
+            font-weight: 500;
+        }
+        .cat-manager-actions { display: flex; gap: 4px; align-items: center; }
+        .cat-visibility-toggle {
+            position: relative;
+            width: 34px; height: 18px;
+            background: rgba(255,255,255,.12);
+            border-radius: 9px;
+            border: none;
+            cursor: pointer;
+            transition: background .2s;
+            flex-shrink: 0;
+            padding: 0;
+        }
+        .cat-visibility-toggle.active { background: var(--accent, #6c5ce7); }
+        .cat-visibility-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 14px; height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform .2s;
+        }
+        .cat-visibility-toggle.active::after { transform: translateX(16px); }
+        .cat-visibility-label {
+            font-size: .7rem;
+            color: rgba(255,255,255,.45);
+            white-space: nowrap;
+        }
+        .cat-visibility-label.hidden-label { color: #e17355; }
+        .cat-btn-edit, .cat-btn-del {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 2px 5px;
+            border-radius: 5px;
+            opacity: .7;
+            transition: opacity .15s;
+        }
+        .cat-btn-edit:hover, .cat-btn-del:hover { opacity: 1; }
+        .color-dot {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color .15s, transform .1s;
+            flex-shrink: 0;
+        }
+        .color-dot.selected, .color-dot:hover { border-color: #fff; transform: scale(1.2); }
+
+        /* ── Mobile overrides (page-specific) ── */
+        @media (max-width: 768px) {
+            .projects-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding-bottom: 2px;
+            }
+            .filter-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                width: 100%;
+                height: auto;
+                padding: 3px 2px;
+                flex-shrink: 1;
+            }
+            .filter-tabs::-webkit-scrollbar { display: none; }
+            .filter-tab { font-size: .8rem; padding: 0 10px; height: 32px; }
+            .toolbar-right {
+                margin-left: 0;
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr auto auto auto;
+                gap: 6px;
+                align-items: center;
+            }
+            .search-box { min-width: 0; }
+            .search-box input { width: 100% !important; font-size: .82rem; }
+            .view-toggle { flex-shrink: 0; }
+            .btn-compact { white-space: nowrap; font-size: .82rem; padding: 0 10px; }
+
+            .projects-grid { grid-template-columns: 1fr; }
+
+            .project-list-row {
+                gap: 10px;
+                padding: 11px 12px;
+                min-height: 54px;
+            }
+            .project-list-icon { width: 28px; height: 28px; border-radius: 7px; }
+            .project-list-icon svg { width: 13px; height: 13px; }
+            .project-list-name { font-size: .86rem; }
+            .project-list-desc { font-size: .74rem; }
+            .project-list-meta { gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 44%; }
+            .project-list-meta .project-type-badge { display: none; }
+            .video-count-badge { font-size: .7rem; padding: 2px 7px; }
+            .project-list-arrow { display: none; }
+
+            .project-card-footer { padding: 8px 14px; }
+
+            .meetings-table { table-layout: auto; }
+            .meetings-table th:nth-child(3),
+            .meetings-table td:nth-child(3),
+            .meetings-table th:nth-child(4),
+            .meetings-table td:nth-child(4),
+            .meetings-table th:nth-child(6),
+            .meetings-table td:nth-child(6) { display: none; }
+            .meetings-table th,
+            .meetings-table td { padding: 9px 10px; font-size: .8rem; }
+            .meetings-table th:nth-child(1),
+            .meetings-table th:nth-child(2),
+            .meetings-table th:nth-child(5) { width: auto; }
+            .meeting-topic { font-size: .83rem; }
+            .meta-pill { font-size: .7rem; padding: 2px 7px; }
+            .status-pill { font-size: .68rem; padding: 2px 7px; }
+
+            .cat-dropdown { min-width: 200px; right: 0; left: auto; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="main-content">
+        <!-- Mobile header -->
+        <div class="mobile-header">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <span class="mobile-header-title">Проекты</span>
+        </div>
+
+        <!-- Hero -->
+        <div class="hero">
+            <h1>Проекты</h1>
+            <p class="hero-sub">Записи встреч, организованные по проектам</p>
+        </div>
+
+        <div class="container">
+        <!-- Projects section -->
+        <div class="projects-section">
+            <div class="projects-toolbar">
+                <div class="filter-tabs" id="filterTabs">
+                    <div class="sk sk-filter-tab"></div><div class="sk sk-filter-tab"></div><div class="sk sk-filter-tab"></div>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="projectSearch" placeholder="Поиск…">
+                    </div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" id="viewGrid" title="Сетка">
+                            <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+                        </button>
+                        <button class="view-btn" id="viewList" title="Список">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="4" x2="14" y2="4"/><line x1="5" y1="8" x2="14" y2="8"/><line x1="5" y1="12" x2="14" y2="12"/><circle cx="2" cy="4" r="1" fill="currentColor" stroke="none"/><circle cx="2" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="2" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
+                        </button>
+                    </div>
+                    <button class="btn-primary btn-compact" id="newProjectBtn">+ Новый проект</button>
+                    <button class="btn-secondary btn-compact" id="manageCategoriesBtn" style="display:none" title="Управление категориями">⚙ Категории</button>
+                </div>
+            </div>
+            <div id="projectsContent">
+                <div class="projects-grid">
+                    <div class="sk-card"><div class="sk-card-stripe sk"></div><div class="sk-card-body"><div class="sk" style="width:40px;height:40px;border-radius:10px;margin-bottom:12px"></div><div class="sk" style="height:16px;width:70%;margin-bottom:10px"></div><div class="sk" style="height:12px;width:50%;margin-bottom:16px"></div></div><div style="padding:10px 18px;border-top:1px solid var(--border)"><div class="sk" style="height:20px;width:60px;border-radius:20px"></div></div></div>
+                    <div class="sk-card"><div class="sk-card-stripe sk"></div><div class="sk-card-body"><div class="sk" style="width:40px;height:40px;border-radius:10px;margin-bottom:12px"></div><div class="sk" style="height:16px;width:60%;margin-bottom:10px"></div><div class="sk" style="height:12px;width:40%;margin-bottom:16px"></div></div><div style="padding:10px 18px;border-top:1px solid var(--border)"><div class="sk" style="height:20px;width:70px;border-radius:20px"></div></div></div>
+                    <div class="sk-card"><div class="sk-card-stripe sk"></div><div class="sk-card-body"><div class="sk" style="width:40px;height:40px;border-radius:10px;margin-bottom:12px"></div><div class="sk" style="height:16px;width:80%;margin-bottom:10px"></div><div class="sk" style="height:12px;width:45%;margin-bottom:16px"></div></div><div style="padding:10px 18px;border-top:1px solid var(--border)"><div class="sk" style="height:20px;width:55px;border-radius:20px"></div></div></div>
+                    <div class="sk-card"><div class="sk-card-stripe sk"></div><div class="sk-card-body"><div class="sk" style="width:40px;height:40px;border-radius:10px;margin-bottom:12px"></div><div class="sk" style="height:16px;width:55%;margin-bottom:10px"></div><div class="sk" style="height:12px;width:35%;margin-bottom:16px"></div></div><div style="padding:10px 18px;border-top:1px solid var(--border)"><div class="sk" style="height:20px;width:65px;border-radius:20px"></div></div></div>
+                    <div class="sk-card"><div class="sk-card-stripe sk"></div><div class="sk-card-body"><div class="sk" style="width:40px;height:40px;border-radius:10px;margin-bottom:12px"></div><div class="sk" style="height:16px;width:65%;margin-bottom:10px"></div><div class="sk" style="height:12px;width:50%;margin-bottom:16px"></div></div><div style="padding:10px 18px;border-top:1px solid var(--border)"><div class="sk" style="height:20px;width:60px;border-radius:20px"></div></div></div>
+                    <div class="sk-card"><div class="sk-card-stripe sk"></div><div class="sk-card-body"><div class="sk" style="width:40px;height:40px;border-radius:10px;margin-bottom:12px"></div><div class="sk" style="height:16px;width:75%;margin-bottom:10px"></div><div class="sk" style="height:12px;width:42%;margin-bottom:16px"></div></div><div style="padding:10px 18px;border-top:1px solid var(--border)"><div class="sk" style="height:20px;width:58px;border-radius:20px"></div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unlinked meetings section -->
+        <div class="unlinked-section">
+            <div class="section-header">
+                <span class="section-title">🎥 Несортированные видео</span>
+                <span class="section-count" id="unlinkedCount">—</span>
+            </div>
+            <div id="unlinkedContent">
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+                    <div style="background:var(--surface-2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:40px"><div class="sk" style="height:12px;width:60px"></div><div class="sk" style="height:12px;width:50px"></div><div class="sk" style="height:12px;width:70px"></div><div class="sk" style="height:12px;width:70px"></div><div class="sk" style="height:12px;width:50px"></div></div>
+                    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px"><div class="sk" style="height:14px;width:30%;border-radius:6px"></div><div class="sk" style="height:22px;width:100px;border-radius:20px"></div><div class="sk" style="height:22px;width:60px;border-radius:20px"></div></div>
+                    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px"><div class="sk" style="height:14px;width:40%;border-radius:6px"></div><div class="sk" style="height:22px;width:100px;border-radius:20px"></div><div class="sk" style="height:22px;width:60px;border-radius:20px"></div></div>
+                    <div style="padding:14px 16px;display:flex;align-items:center;gap:16px"><div class="sk" style="height:14px;width:25%;border-radius:6px"></div><div class="sk" style="height:22px;width:100px;border-radius:20px"></div><div class="sk" style="height:22px;width:60px;border-radius:20px"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div><!-- /main-content -->
+
+    <!-- Delete meeting confirm modal -->
+    <div class="modal-overlay" id="deleteMeetingModal">
+        <div class="modal">
+            <h3>🗑️ Удалить запись?</h3>
+            <p style="color:var(--text-dim);font-size:.9rem;line-height:1.6;margin-bottom:20px">
+                Запись будет удалена из базы данных и из Zoom Cloud.<br>
+                <strong style="color:var(--text)">Это действие нельзя отменить.</strong>
+            </p>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelDeleteBtn">Отмена</button>
+                <button class="btn-primary" id="confirmDeleteBtn" style="background:#e17355">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Manager Modal -->
+    <div class="modal-overlay" id="categoryManagerModal">
+        <div class="modal" style="max-width:440px">
+            <h3>⚙ Управление категориями</h3>
+            <div id="catManagerList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:300px;overflow-y:auto"></div>
+            <div id="addCatForm" style="display:none;border-top:1px solid var(--border);padding-top:14px;margin-bottom:12px">
+                <div class="modal-field">
+                    <label>Название новой категории</label>
+                    <input type="text" id="newCatLabel" placeholder="Например: Партнёры" maxlength="60">
+                </div>
+                <div class="modal-field">
+                    <label>Цвет</label>
+                    <div id="newCatColorPicker" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div>
+                </div>
+                <div class="modal-actions" style="margin-top:12px">
+                    <button class="btn-secondary" id="cancelAddCatBtn">Отмена</button>
+                    <button class="btn-primary" id="confirmAddCatBtn">Создать</button>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:14px">
+                <button class="btn-secondary btn-compact" id="addCatBtn">+ Добавить категорию</button>
+                <button class="btn-secondary" id="closeCatManagerBtn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div class="modal-overlay" id="editCatModal">
+        <div class="modal" style="max-width:380px">
+            <h3>✏️ Редактировать категорию</h3>
+            <div class="modal-field">
+                <label>Название</label>
+                <input type="text" id="editCatLabel" maxlength="60">
+            </div>
+            <div class="modal-field">
+                <label>Цвет</label>
+                <div id="editCatColorPicker" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelEditCatBtn">Отмена</button>
+                <button class="btn-primary" id="confirmEditCatBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create project modal -->
+    <div class="modal-overlay" id="createProjectModal">
+        <div class="modal">
+            <h3>➕ Новый проект</h3>
+            <div class="modal-field">
+                <label>Название *</label>
+                <input type="text" id="newProjectName" placeholder="Например: Клиент A" maxlength="120">
+            </div>
+            <div class="modal-field">
+                <label>Категория</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;" id="projectTypeSelector">
+                    <!-- injected by JS from /api/categories -->
+                </div>
+            </div>
+            <div class="modal-field">
+                <label>Описание</label>
+                <textarea id="newProjectDesc" placeholder="Краткое описание проекта..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelCreateBtn">Отмена</button>
+                <button class="btn-primary" id="confirmCreateBtn">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        const date = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+        const time = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        return `${date}, ${time}`;
+    }
+
+    function formatDuration(min) {
+        if (!min) return '—';
+        if (min >= 60) {
+            const h = Math.floor(min / 60);
+            const m = min % 60;
+            return m ? `${h} ч ${m} мин` : `${h} ч`;
+        }
+        return min + ' мин';
+    }
+
+    async function authFetch(url, opts) {
+        const res = await fetch(url, opts);
+        if (res.status === 401) { window.location.href = '/login'; throw new Error('unauthorized'); }
+        return res;
+    }
+
+    // ── Projects ──────────────────────────────────────────────
+    let allProjectsData = [];
+    let allCategories = [];
+    let currentUserRole = '';
+    let currentFilter = '';
+    let currentSearch = '';
+    let currentView = localStorage.getItem('projects-view') || 'grid';
+
+    function getCatMeta(slug) {
+        const c = allCategories.find(x => x.slug === slug);
+        return c ? { label: c.label, color: c.color } : { label: slug, color: '#8b8fa8' };
+    }
+
+    const FOLDER_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>`;
+    const VIDEO_ICON  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`;
+    const ARROW_ICON  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+
+    function updateTabCounts(projects) {
+        allCategories.forEach(c => {
+            const el = document.getElementById('cnt-' + c.slug);
+            if (el) el.textContent = projects.filter(p => (p.project_type || 'other') === c.slug).length;
+        });
+    }
+
+    function getFilteredProjects() {
+        return allProjectsData.filter(p => {
+            if (currentFilter && (p.project_type || 'other') !== currentFilter) return false;
+            if (currentSearch) {
+                const q = currentSearch.toLowerCase();
+                return (p.name || '').toLowerCase().includes(q) ||
+                       (p.description || '').toLowerCase().includes(q);
+            }
+            return true;
+        });
+    }
+
+    function buildVisibilityToggle(p) {
+        const isVisible = p.is_staff_visible !== false;
+        return `<div class="visibility-toggle${!isVisible ? ' is-hidden' : ''}" title="${isVisible ? 'Видно сотрудникам' : 'Скрыто'}">
+            <span class="toggle-label">${isVisible ? 'Staff' : 'Скрыто'}</span>
+            <label class="toggle-switch">
+                <input type="checkbox" ${isVisible ? 'checked' : ''} data-token="${escapeHtml(p.public_token)}">
+                <span class="toggle-track"></span><span class="toggle-thumb"></span>
+            </label>
+        </div>`;
+    }
+
+    function attachVisibilityHandler(container, card, p) {
+        const checkbox = container.querySelector('input[type=checkbox]');
+        if (!checkbox) return;
+        checkbox.addEventListener('change', async (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const newVal = checkbox.checked;
+            try {
+                const res = await fetch('/api/project/' + checkbox.dataset.token + '/staff-visible', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_staff_visible: newVal }),
+                });
+                if (!res.ok) throw new Error();
+                card.classList.toggle('hidden-from-staff', !newVal);
+                const lbl = card.querySelector('.toggle-label');
+                if (lbl) lbl.textContent = newVal ? 'Staff' : 'Скрыто';
+                const tog = card.querySelector('.visibility-toggle');
+                if (tog) { tog.title = newVal ? 'Видно сотрудникам' : 'Скрыто'; tog.classList.toggle('is-hidden', !newVal); }
+                p.is_staff_visible = newVal;
+            } catch { checkbox.checked = !newVal; alert('Ошибка при изменении видимости'); }
+        });
+        container.querySelector('.toggle-switch')?.addEventListener('click', e => e.stopPropagation());
+        container.querySelector('.visibility-toggle')?.addEventListener('click', e => e.stopPropagation());
+        container.querySelector('.card-top-right')?.addEventListener('click', e => e.stopPropagation());
+    }
+
+    function renderProjectsView() {
+        const el = document.getElementById('projectsContent');
+        const filtered = getFilteredProjects();
+        const isAdmin = currentUserRole === 'admin';
+
+        if (!filtered.length) {
+            el.innerHTML = `<div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <h3>${currentSearch ? 'Ничего не найдено' : 'В этой категории пока нет проектов'}</h3>
+                <p>${currentSearch ? 'Попробуйте изменить запрос' : 'Создайте проект или измените категорию'}</p>
+            </div>`;
+            return;
+        }
+
+        if (currentView === 'list') {
+            const list = document.createElement('div');
+            list.className = 'projects-list';
+            filtered.forEach(p => {
+                const type = p.project_type || 'other';
+                const count = p.meeting_count || 0;
+                const isVisible = p.is_staff_visible !== false;
+                const row = document.createElement('a');
+                row.className = `project-list-row cat-${type}${!isVisible ? ' hidden-from-staff' : ''}`;
+                row.href = '/project/' + p.public_token;
+                const meta = getCatMeta(type);
+                row.innerHTML = `
+                    <div class="project-list-type-dot${isAdmin ? ' editable' : ''}" title="${isAdmin ? 'Изменить категорию' : meta.label}" style="background:${meta.color}"></div>
+                    <div class="project-list-icon">${FOLDER_ICON}</div>
+                    <div class="project-list-info">
+                        <div class="project-list-name">${escapeHtml(p.name)}</div>
+                        ${p.description ? `<div class="project-list-desc">${escapeHtml(p.description)}</div>` : ''}
+                    </div>
+                    <div class="project-list-meta">
+                        <span class="project-type-badge${isAdmin ? ' editable' : ''}" title="${isAdmin ? 'Изменить категорию' : ''}">
+                            <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="4" fill="${meta.color}"/></svg>
+                            ${meta.label}${isAdmin ? ' ▾' : ''}
+                        </span>
+                        <span class="video-count-badge ${count > 0 ? 'has-videos' : ''}">${VIDEO_ICON} ${count} видео</span>
+                        ${isAdmin ? buildVisibilityToggle(p) : ''}
+                    </div>
+                    <div class="project-list-arrow">${ARROW_ICON}</div>`;
+                if (isAdmin) {
+                    attachVisibilityHandler(row, row, p);
+                    const badge = row.querySelector('.project-type-badge');
+                    badge.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); showCatDropdown(badge, p); });
+                    const dot = row.querySelector('.project-list-type-dot');
+                    dot.style.cursor = 'pointer';
+                    dot.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); showCatDropdown(dot, p); });
+                }
+                list.appendChild(row);
+            });
+            el.innerHTML = '';
+            el.appendChild(list);
+        } else {
+            const grid = document.createElement('div');
+            grid.className = 'projects-grid';
+            filtered.forEach(p => {
+                const type = p.project_type || 'other';
+                const count = p.meeting_count || 0;
+                const isVisible = p.is_staff_visible !== false;
+                const meta = getCatMeta(type);
+
+                const card = document.createElement('a');
+                card.className = `project-card cat-${type}${!isVisible ? ' hidden-from-staff' : ''}`;
+                card.href = '/project/' + p.public_token;
+                card.innerHTML = `
+                    <div class="project-card-stripe"></div>
+                    <div class="project-card-body">
+                        <div class="card-top-right">
+                            <span class="video-count-badge ${count > 0 ? 'has-videos' : ''}">${VIDEO_ICON} ${count} видео</span>
+                            ${isAdmin ? buildVisibilityToggle(p) : ''}
+                        </div>
+                        <div class="project-card-icon-wrap">${FOLDER_ICON}</div>
+                        <div class="project-card-name">${escapeHtml(p.name)}</div>
+                        ${p.description ? `<div class="project-card-desc">${escapeHtml(p.description)}</div>` : ''}
+                    </div>
+                    <div class="project-card-footer">
+                        <span class="project-type-badge${isAdmin ? ' editable' : ''}" title="${isAdmin ? 'Изменить категорию' : ''}">
+                            <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="4" fill="${meta.color}"/></svg>
+                            ${meta.label}${isAdmin ? ' ▾' : ''}
+                        </span>
+                    </div>`;
+                if (isAdmin) {
+                    attachVisibilityHandler(card, card, p);
+                    const badge = card.querySelector('.project-type-badge');
+                    badge.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); showCatDropdown(badge, p); });
+                }
+                grid.appendChild(card);
+            });
+            el.innerHTML = '';
+            el.appendChild(grid);
+        }
+    }
+
+    // ── Category quick-change dropdown ────────────────────────
+    let activeCatDropdown = null;
+
+    function closeCatDropdown() {
+        if (activeCatDropdown) { activeCatDropdown.remove(); activeCatDropdown = null; }
+    }
+    document.addEventListener('click', e => {
+        if (activeCatDropdown && !activeCatDropdown.contains(e.target)) closeCatDropdown();
+    });
+
+    function showCatDropdown(anchorEl, p) {
+        closeCatDropdown();
+        const drop = document.createElement('div');
+        drop.className = 'cat-dropdown';
+        allCategories.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 'cat-dropdown-item' + (c.slug === (p.project_type || 'other') ? ' current' : '');
+            item.innerHTML = `<span class="cat-dropdown-dot" style="background:${c.color}"></span>${escapeHtml(c.label)}`;
+            if (c.slug !== (p.project_type || 'other')) {
+                    item.addEventListener('click', async e => {
+                    e.preventDefault(); e.stopPropagation();
+                    closeCatDropdown();
+                    try {
+                        const res = await authFetch('/api/project/' + p.public_token + '/type', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ project_type: c.slug }),
+                        });
+                        if (!res.ok) throw new Error();
+                        p.project_type = c.slug;
+                        updateTabCounts(allProjectsData);
+                        renderProjectsView();
+                    } catch { alert('Ошибка при смене категории'); }
+                });
+            }
+            drop.appendChild(item);
+        });
+
+        // Position relative to anchor
+        document.body.appendChild(drop);
+        const rect = anchorEl.getBoundingClientRect();
+        const dropH = drop.offsetHeight;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const top = spaceBelow > dropH + 8 ? rect.bottom + window.scrollY + 4 : rect.top + window.scrollY - dropH - 4;
+        drop.style.cssText = `position:absolute;top:${top}px;left:${rect.left + window.scrollX}px`;
+        activeCatDropdown = drop;
+    }
+
+    async function loadProjects() {
+        try {
+            const res = await authFetch('/api/projects');
+            if (!res.ok) throw new Error();
+            allProjectsData = await res.json();
+            updateTabCounts(allProjectsData);
+            renderProjectsView();
+        } catch {
+            document.getElementById('projectsContent').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <h3>Не удалось загрузить проекты</h3>
+                    <p>Попробуйте обновить страницу</p>
+                </div>`;
+        }
+    }
+
+    // Filter tabs
+    document.getElementById('filterTabs').addEventListener('click', e => {
+        const tab = e.target.closest('.filter-tab');
+        if (!tab) return;
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.type;
+        renderProjectsView();
+    });
+
+    // Search
+    document.getElementById('projectSearch').addEventListener('input', e => {
+        currentSearch = e.target.value.trim();
+        renderProjectsView();
+    });
+
+    // View toggle
+    function setView(v) {
+        currentView = v;
+        localStorage.setItem('projects-view', v);
+        document.getElementById('viewGrid').classList.toggle('active', v === 'grid');
+        document.getElementById('viewList').classList.toggle('active', v === 'list');
+        renderProjectsView();
+    }
+    document.getElementById('viewGrid').addEventListener('click', () => setView('grid'));
+    document.getElementById('viewList').addEventListener('click', () => setView('list'));
+    setView(currentView); // apply saved preference (just update buttons, data loads later)
+
+    // ── Unlinked meetings ─────────────────────────────────────
+    async function loadUnlinked() {
+        try {
+            const res = await fetch('/api/meetings/unlinked');
+            if (!res.ok) throw new Error();
+            const meetings = await res.json();
+            renderUnlinked(meetings);
+        } catch {
+            document.getElementById('unlinkedContent').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <h3>Не удалось загрузить встречи</h3>
+                    <p>Попробуйте обновить страницу</p>
+                </div>`;
+        }
+    }
+
+    function renderUnlinked(meetings) {
+        document.getElementById('unlinkedCount').textContent = meetings.length;
+        const el = document.getElementById('unlinkedContent');
+
+        if (!meetings.length) {
+            el.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">✅</div>
+                    <h3>Все видео распределены по проектам</h3>
+                    <p>Здесь появятся записи встреч без проекта</p>
+                </div>`;
+            return;
+        }
+
+        const table = document.createElement('table');
+        table.className = 'meetings-table';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Тема</th>
+                    <th>Дата</th>
+                    <th>Длительность</th>
+                    <th>Организатор</th>
+                    <th>Статус</th>
+                    <th style="width:40px"></th>
+                </tr>
+            </thead>
+            <tbody id="unlinkedTbody"></tbody>`;
+
+        const tbody = table.querySelector('#unlinkedTbody');
+        meetings.forEach(m => {
+            const tr = document.createElement('tr');
+            if (m.public_token) {
+                tr.onclick = () => { window.location.href = '/meeting/' + m.public_token; };
+                tr.style.cursor = 'pointer';
+            }
+
+            const statusClass = (m.status === 'finished' || m.status === 'recorded') ? 'finished' : m.status === 'ended' ? 'ended' : 'scheduled';
+            const statusLabel = (m.status === 'finished' || m.status === 'recorded') ? 'Записано' : m.status === 'ended' ? 'Завершено' : m.status === 'scheduled' ? 'Запланировано' : m.status || '—';
+
+            tr.innerHTML = `
+                <td>
+                    <div class="meeting-topic">
+                        ${m.public_token
+                            ? `<a href="/meeting/${m.public_token}" onclick="event.stopPropagation()">${escapeHtml(m.topic || 'Без названия')}</a>`
+                            : escapeHtml(m.topic || 'Без названия')}
+                    </div>
+                </td>
+                <td><span class="meta-pill">📅 ${formatDate(m.start_time || m.created_at)}</span></td>
+                <td><span class="meta-pill">⏱ ${formatDuration(m.duration)}</span></td>
+                <td style="color:var(--text-dim)">${escapeHtml(m.host_name || '—')}</td>
+                <td><span class="status-pill ${statusClass}">${escapeHtml(statusLabel)}</span></td>
+                <td>
+                    <button class="delete-row-btn" title="Удалить встречу" data-dbid="${m.db_id}">🗑️</button>
+                </td>`;
+
+            tr.querySelector('.delete-row-btn').addEventListener('click', e => {
+                e.stopPropagation();
+                openDeleteModal(m.db_id, tr);
+            });
+
+            tbody.appendChild(tr);
+        });
+
+        const wrap = document.createElement('div');
+        wrap.className = 'table-wrap';
+        wrap.appendChild(table);
+        el.innerHTML = '';
+        el.appendChild(wrap);
+    }
+
+    // ── Delete meeting modal ──────────────────────────────────
+    let pendingDeleteDbId = null;
+    let pendingDeleteRow = null;
+
+    const deleteMeetingModal = document.getElementById('deleteMeetingModal');
+
+    function openDeleteModal(dbId, row) {
+        pendingDeleteDbId = dbId;
+        pendingDeleteRow = row;
+        deleteMeetingModal.classList.add('open');
+    }
+
+    document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+        deleteMeetingModal.classList.remove('open');
+        pendingDeleteDbId = null;
+        pendingDeleteRow = null;
+    });
+    deleteMeetingModal.addEventListener('click', e => {
+        if (e.target === deleteMeetingModal) {
+            deleteMeetingModal.classList.remove('open');
+            pendingDeleteDbId = null;
+            pendingDeleteRow = null;
+        }
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+        if (!pendingDeleteDbId) return;
+        const btn = document.getElementById('confirmDeleteBtn');
+        btn.disabled = true;
+        btn.textContent = 'Удаление...';
+        try {
+            const res = await fetch('/api/meeting/id/' + pendingDeleteDbId, { method: 'DELETE' });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert('Ошибка: ' + (err.error || res.status));
+            } else {
+                if (pendingDeleteRow) pendingDeleteRow.remove();
+                // Update counter
+                const countEl = document.getElementById('unlinkedCount');
+                const cur = parseInt(countEl.textContent) || 0;
+                const next = Math.max(0, cur - 1);
+                countEl.textContent = next;
+                // Show empty state if no rows left
+                const tbody = document.getElementById('unlinkedTbody');
+                if (tbody && tbody.querySelectorAll('tr').length === 0) {
+                    document.getElementById('unlinkedContent').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✅</div>
+                            <h3>Все видео распределены по проектам</h3>
+                            <p>Здесь появятся записи встреч без проекта</p>
+                        </div>`;
+                }
+                deleteMeetingModal.classList.remove('open');
+            }
+        } catch {
+            alert('Ошибка при удалении');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Удалить';
+            pendingDeleteDbId = null;
+            pendingDeleteRow = null;
+        }
+    });
+
+    // ── Create project modal ──────────────────────────────────
+    const createModal = document.getElementById('createProjectModal');
+
+    // Type option selector — delegated, handles dynamically inserted options
+    document.getElementById('projectTypeSelector').addEventListener('click', e => {
+        const opt = e.target.closest('.type-option');
+        if (!opt) return;
+        document.querySelectorAll('#projectTypeSelector .type-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        opt.querySelector('input[type=radio]').checked = true;
+    });
+
+    document.getElementById('newProjectBtn').addEventListener('click', () => {
+        document.getElementById('newProjectName').value = '';
+        document.getElementById('newProjectDesc').value = '';
+        // Re-render category selector and select first option
+        renderCategorySelector(allCategories);
+        createModal.classList.add('open');
+        setTimeout(() => document.getElementById('newProjectName').focus(), 50);
+    });
+    document.getElementById('cancelCreateBtn').addEventListener('click', () => {
+        createModal.classList.remove('open');
+    });
+    createModal.addEventListener('click', e => {
+        if (e.target === createModal) createModal.classList.remove('open');
+    });
+
+    document.getElementById('confirmCreateBtn').addEventListener('click', async () => {
+        const name = document.getElementById('newProjectName').value.trim();
+        if (!name) { document.getElementById('newProjectName').focus(); return; }
+        const desc = document.getElementById('newProjectDesc').value.trim();
+        const selectedType = document.querySelector('input[name="projectType"]:checked')?.value || 'other';
+        const btn = document.getElementById('confirmCreateBtn');
+        btn.disabled = true;
+        btn.textContent = 'Создание...';
+        try {
+            const res = await fetch('/api/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, description: desc || null, project_type: selectedType })
+            });
+            if (!res.ok) throw new Error();
+            const project = await res.json();
+            createModal.classList.remove('open');
+            window.location.href = '/project/' + project.public_token;
+        } catch {
+            alert('Ошибка при создании проекта');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Создать';
+        }
+    });
+
+    document.getElementById('newProjectName').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('confirmCreateBtn').click();
+    });
+
+
+// ── Categories ────────────────────────────────────────────
+
+    const COLOR_PALETTE = [
+        '#6c5ce7','#00cec9','#fdcb6e','#e17355','#00b894',
+        '#fd79a8','#0984e3','#a29bfe','#55efc4','#fab1a0',
+    ];
+
+    function hexToRgb(hex) {
+        const m = hex.replace('#','').match(/.{2}/g);
+        return m ? m.map(x => parseInt(x,16)).join(',') : '139,143,168';
+    }
+
+    function applyCategoryStyles(cats) {
+        let css = '';
+        cats.forEach(c => {
+            const rgb = hexToRgb(c.color);
+            css += `.cat-${c.slug} .project-card-stripe{background:${c.color}}
+.cat-${c.slug} .project-card-icon-wrap{background:rgba(${rgb},.13);color:${c.color}}
+.cat-${c.slug} .project-type-badge{background:rgba(${rgb},.13);color:${c.color}}
+.cat-${c.slug} .project-list-type-dot{background:${c.color}}
+.cat-${c.slug} .project-list-icon{background:rgba(${rgb},.13);color:${c.color}}\n`;
+        });
+        let styleEl = document.getElementById('dynamic-cat-styles');
+        if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'dynamic-cat-styles'; document.head.appendChild(styleEl); }
+        styleEl.textContent = css;
+    }
+
+    function renderFilterTabs(cats) {
+        const container = document.getElementById('filterTabs');
+        container.innerHTML = '';
+        if (!currentFilter && cats.length) currentFilter = cats[0].slug;
+        cats.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-tab' + (currentFilter === c.slug ? ' active' : '');
+            btn.dataset.type = c.slug;
+            btn.dataset.cat = '1';
+            btn.innerHTML = `<svg width="9" height="9" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="4" fill="${c.color}"/></svg>
+                ${escapeHtml(c.label)} <span class="tab-count" id="cnt-${c.slug}">0</span>`;
+            container.appendChild(btn);
+        });
+    }
+
+    function renderCategorySelector(cats) {
+        const sel = document.getElementById('projectTypeSelector');
+        sel.innerHTML = '';
+        cats.forEach((c, i) => {
+            const lbl = document.createElement('label');
+            lbl.className = 'type-option' + (i === 0 ? ' selected' : '');
+            lbl.dataset.type = c.slug;
+            lbl.style.setProperty('--dot', c.color);
+            lbl.innerHTML = `<input type="radio" name="projectType" value="${escapeHtml(c.slug)}"${i===0?' checked':''}>
+                <span class="type-dot" style="background:${c.color}"></span>
+                ${escapeHtml(c.label)}`;
+            sel.appendChild(lbl);
+        });
+    }
+
+    async function loadCategories() {
+        try {
+            const res = await fetch('/api/categories');
+            if (!res.ok) return;
+            allCategories = await res.json();
+            applyCategoryStyles(allCategories);
+            renderFilterTabs(allCategories);
+            renderCategorySelector(allCategories);
+            renderCategoryManagerList();
+        } catch(e) { console.error('loadCategories', e); }
+    }
+
+    // ── Category Manager Modal ────────────────────────────────
+    const catModal = document.getElementById('categoryManagerModal');
+
+    document.getElementById('manageCategoriesBtn').addEventListener('click', () => {
+        renderCategoryManagerList();
+        catModal.classList.add('open');
+    });
+    catModal.addEventListener('click', e => { if (e.target === catModal) catModal.classList.remove('open'); });
+    document.getElementById('closeCatManagerBtn').addEventListener('click', () => catModal.classList.remove('open'));
+
+    function renderCategoryManagerList() {
+        const list = document.getElementById('catManagerList');
+        list.innerHTML = '';
+        allCategories.forEach(c => {
+            const isVisible = c.staff_visible !== false;
+            const row = document.createElement('div');
+            row.className = 'cat-manager-row';
+            row.innerHTML = `
+                <span class="cat-manager-dot" style="background:${c.color}"></span>
+                <span class="cat-manager-label">${escapeHtml(c.label)}</span>
+                <div class="cat-manager-actions">
+                    <span class="cat-visibility-label ${isVisible ? '' : 'hidden-label'}" data-vis-label="${c.slug}">${isVisible ? 'Staff' : 'Скрыта'}</span>
+                    <button class="cat-visibility-toggle ${isVisible ? 'active' : ''}" data-slug="${c.slug}" title="${isVisible ? 'Видна для Staff' : 'Скрыта от Staff'}"></button>
+                    <button class="cat-btn-edit" data-slug="${c.slug}" title="Переименовать">✏️</button>
+                    ${c.slug !== 'other' ? `<button class="cat-btn-del" data-slug="${c.slug}" title="Удалить">🗑️</button>` : ''}
+                </div>`;
+            row.querySelector('.cat-btn-edit')?.addEventListener('click', () => openEditCat(c));
+            row.querySelector('.cat-btn-del')?.addEventListener('click', () => deleteCat(c.slug, c.label));
+            row.querySelector('.cat-visibility-toggle')?.addEventListener('click', () => toggleCatVisibility(c));
+            list.appendChild(row);
+        });
+    }
+
+    async function toggleCatVisibility(cat) {
+        const newVal = cat.staff_visible === false ? true : false;
+        try {
+            const res = await fetch('/api/categories/' + cat.slug + '/visibility', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ staff_visible: newVal }),
+            });
+            if (!res.ok) { const e = await res.json(); alert(e.error || 'Ошибка'); return; }
+            const updated = await res.json();
+            allCategories = allCategories.map(c => c.slug === cat.slug ? updated : c);
+            renderCategoryManagerList();
+        } catch { alert('Ошибка при изменении видимости'); }
+    }
+
+    // ── Add new category ──────────────────────────────────────
+    let selectedNewColor = COLOR_PALETTE[0];
+
+    function buildColorPicker(containerId) {
+        const cont = document.getElementById(containerId);
+        if (!cont) return;
+        cont.innerHTML = '';
+        COLOR_PALETTE.forEach(col => {
+            const dot = document.createElement('span');
+            dot.className = 'color-dot' + (col === selectedNewColor ? ' selected' : '');
+            dot.style.background = col;
+            dot.dataset.color = col;
+            dot.title = col;
+            dot.addEventListener('click', () => {
+                selectedNewColor = col;
+                cont.querySelectorAll('.color-dot').forEach(d => d.classList.toggle('selected', d.dataset.color === col));
+            });
+            cont.appendChild(dot);
+        });
+    }
+
+    document.getElementById('addCatBtn').addEventListener('click', () => {
+        document.getElementById('newCatLabel').value = '';
+        selectedNewColor = COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)];
+        buildColorPicker('newCatColorPicker');
+        document.getElementById('addCatForm').style.display = 'block';
+        document.getElementById('addCatBtn').style.display = 'none';
+        document.getElementById('newCatLabel').focus();
+    });
+
+    document.getElementById('cancelAddCatBtn').addEventListener('click', () => {
+        document.getElementById('addCatForm').style.display = 'none';
+        document.getElementById('addCatBtn').style.display = '';
+    });
+
+    document.getElementById('confirmAddCatBtn').addEventListener('click', async () => {
+        const label = document.getElementById('newCatLabel').value.trim();
+        if (!label) { document.getElementById('newCatLabel').focus(); return; }
+        const btn = document.getElementById('confirmAddCatBtn');
+        btn.disabled = true;
+        try {
+            const res = await fetch('/api/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ label, color: selectedNewColor }),
+            });
+            if (!res.ok) { const e = await res.json(); alert(e.error || 'Ошибка'); return; }
+            allCategories = [...allCategories, await res.json()];
+            applyCategoryStyles(allCategories);
+            renderFilterTabs(allCategories);
+            renderCategorySelector(allCategories);
+            renderCategoryManagerList();
+            document.getElementById('addCatForm').style.display = 'none';
+            document.getElementById('addCatBtn').style.display = '';
+        } catch { alert('Ошибка при создании'); }
+        finally { btn.disabled = false; }
+    });
+
+    // ── Edit category ─────────────────────────────────────────
+    const editModal = document.getElementById('editCatModal');
+    let editingSlug = null;
+
+    function openEditCat(cat) {
+        editingSlug = cat.slug;
+        selectedNewColor = cat.color;
+        document.getElementById('editCatLabel').value = cat.label;
+        buildColorPicker('editCatColorPicker');
+        editModal.classList.add('open');
+    }
+    editModal.addEventListener('click', e => { if (e.target === editModal) editModal.classList.remove('open'); });
+    document.getElementById('cancelEditCatBtn').addEventListener('click', () => editModal.classList.remove('open'));
+
+    document.getElementById('confirmEditCatBtn').addEventListener('click', async () => {
+        const label = document.getElementById('editCatLabel').value.trim();
+        if (!label || !editingSlug) return;
+        const btn = document.getElementById('confirmEditCatBtn');
+        btn.disabled = true;
+        try {
+            const res = await fetch('/api/categories/' + editingSlug, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ label, color: selectedNewColor }),
+            });
+            if (!res.ok) { const e = await res.json(); alert(e.error || 'Ошибка'); return; }
+            const updated = await res.json();
+            allCategories = allCategories.map(c => c.slug === editingSlug ? updated : c);
+            applyCategoryStyles(allCategories);
+            renderFilterTabs(allCategories);
+            renderCategorySelector(allCategories);
+            renderCategoryManagerList();
+            renderProjectsView();
+            editModal.classList.remove('open');
+        } catch { alert('Ошибка при сохранении'); }
+        finally { btn.disabled = false; }
+    });
+
+    // ── Delete category ───────────────────────────────────────
+    async function deleteCat(slug, label) {
+        if (!confirm(`Удалить категорию «${label}»?\nВсе проекты в этой категории перейдут в «Другие».`)) return;
+        try {
+            const res = await fetch('/api/categories/' + slug, { method: 'DELETE' });
+            if (!res.ok) { const e = await res.json(); alert(e.error || 'Ошибка'); return; }
+            allCategories = allCategories.filter(c => c.slug !== slug);
+            applyCategoryStyles(allCategories);
+            renderFilterTabs(allCategories);
+            renderCategorySelector(allCategories);
+            renderCategoryManagerList();
+            if (currentFilter === slug) {
+                currentFilter = 'all';
+                document.querySelector('.filter-tab[data-type="all"]').click();
+            }
+            await loadProjects();
+        } catch { alert('Ошибка при удалении'); }
+    }
+
+    (async () => {
+        try {
+            const r = await fetch('/api/auth/me');
+            if (r.ok) {
+                const u = await r.json();
+                currentUserRole = u.role || '';
+                if (u.role === 'admin') {
+                    document.getElementById('manageCategoriesBtn').style.display = '';
+                }
+            }
+        } catch(_) {}
+        await loadCategories();
+        loadProjects();
+        loadUnlinked();
+    })();
+    </script>
+    <script src="/sidebar.js"></script>
+</body>
+</html>

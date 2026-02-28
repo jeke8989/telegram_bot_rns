@@ -1,0 +1,72 @@
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: var(--transition);
+    padding: 22px 24px;
+}
+
+/* List cards (project cards, etc.) — hover lift effect */
+.card--clickable:hover {
+    border-color: rgba(108,92,231,.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+}
+
+/* Detail page cards — subtle hover, no lift */
+.card:hover {
+    border-color: rgba(108,92,231,.25);
+}
+
+.card__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 20px 0;
+}
+.card__body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px 14px;
+}
+.card__stripe {
+    display: block;
+    height: 4px;
+    flex-shrink: 0;
+}
+
+.meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 3px 10px;
+    font-size: .76rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .96rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: var(--text);
+}
+.card-title svg {
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+    flex-shrink: 0;
+}

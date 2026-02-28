@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # Mini App Web Server
+  miniapp:
+    build:
+      context: ..
+      dockerfile: Dockerfile.webapp
+    container_name: nc-miniapp
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - ../mini_app:/app
+      - ../app/database.py:/app/app/database.py
+      - ../app/config.py:/app/app/config.py
+    ports:
+      - "8080:8080"
+    command: python server.py
+    networks:
+      - miniapp_network
+
+networks:
+  miniapp_network:
+    driver: bridge

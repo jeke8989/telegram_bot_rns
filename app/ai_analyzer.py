@@ -201,6 +201,87 @@ class AIAnalyzer:
             logger.error(f"Audio transcription failed: {e}", exc_info=True)
             return "Извините, произошла ошибка при распознавании аудио."
     
+    async def transcribe_audio_gemini(self, audio_file_path: str) -> str:
+        """
+        Transcribe audio using OpenRouter with Gemini model (multimodal).
+        """
+        try:
+            audio_path = Path(audio_file_path)
+            if not audio_path.exists():
+                logger.error(f"Audio file not found: {audio_file_path}")
+                return "Ошибка: файл не найден"
+
+            file_size = audio_path.stat().st_size
+            logger.info(f"Transcribing audio via Gemini: {audio_file_path} (size: {file_size} bytes)")
+
+            with open(audio_file_path, 'rb') as f:
+                audio_bytes = f.read()
+            audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
+
+            suffix = audio_path.suffix.lower().lstrip('.')
+            mime_map = {
+                'ogg': 'audio/ogg', 'oga': 'audio/ogg',
+                'mp3': 'audio/mpeg', 'wav': 'audio/wav',
+                'webm': 'audio/webm', 'm4a': 'audio/mp4',
+            }
+            mime_type = mime_map.get(suffix, 'audio/ogg')
+
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
+
+            payload = {
+                "model": "google/gemini-3-flash-preview",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_audio",
+                                "input_audio": {
+                                    "data": audio_b64,
+                                    "format": suffix if suffix in ('wav', 'mp3') else 'ogg',
+                                },
+                            },
+                            {
+                                "type": "text",
+                                "text": (
+                                    "Транскрибируй это аудиосообщение на русском языке. "
+                                    "Верни ТОЛЬКО текст расшифровки, без комментариев, заголовков и пояснений. "
+                                    "Сохрани структуру речи, пунктуацию и абзацы."
+                                ),
+                            },
+                        ],
+                    }
+                ],
+                "temperature": 0.1,
+                "max_tokens": 4000,
+            }
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{self.base_url}/chat/completions",
+                    json=payload,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=120),
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        transcription = data['choices'][0]['message']['content'].strip()
+                        if not transcription:
+                            return "Извините, не удалось распознать речь в аудио."
+                        logger.info(f"Gemini transcription OK: '{transcription[:100]}...' ({len(transcription)} chars)")
+                        return transcription
+                    else:
+                        error_text = await response.text()
+                        logger.error(f"Gemini transcription API error {response.status}: {error_text}")
+                        return "Извините, произошла ошибка при распознавании аудио."
+
+        except Exception as e:
+            logger.error(f"Gemini audio transcription failed: {e}", exc_info=True)
+            return "Извините, произошла ошибка при распознавании аудио."
+
     async def analyze_business_card(self, image_url: str) -> dict:
         """Analyze business card image and extract contact information using Vision API"""
         

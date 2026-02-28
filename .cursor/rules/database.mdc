@@ -1,0 +1,82 @@
+---
+description: PostgreSQL + asyncpg database conventions, UUID identifiers, query safety
+globs: "**/database.py,**/*_client.py,**/models/**"
+alwaysApply: false
+---
+
+# Database Rules (PostgreSQL + asyncpg)
+
+## ORM
+- No ORM — raw SQL via asyncpg
+- All queries must be async
+
+## Connection Pool
+- Use connection pool for performance (`asyncpg.create_pool`)
+- Always release connections back to pool
+- Set pool min/max size based on expected load
+
+## Transactions
+- Wrap related operations in transactions
+- Use `async with pool.acquire() as conn:` + `async with conn.transaction():`
+
+## UUID as Public Identifiers
+- Every table that is exposed via API or URL MUST have:
+  ```sql
+  uuid UUID NOT NULL DEFAULT gen_random_uuid() UNIQUE
+  ```
+- Internal `id SERIAL PRIMARY KEY` is for DB joins and FK references only.
+- All API endpoints, URL params, and client-facing responses use `uuid`, NEVER `id`.
+- Validate UUID format in Python before passing to queries:
+  ```python
+  import uuid as uuid_lib
+  try:
+      valid_uuid = uuid_lib.UUID(raw_input)
+  except ValueError:
+      raise web.HTTPBadRequest(text="Invalid identifier")
+  ```
+- Index `uuid` columns for performance (UNIQUE constraint creates index automatically).
+
+## Query Safety (SQL Injection Prevention)
+- ALWAYS use parameterized queries with positional placeholders (`$1, $2, ...`).
+- NEVER use f-strings, `.format()`, or `%` string formatting to build SQL with user input.
+  ```python
+  # CORRECT
+  await conn.fetchrow("SELECT * FROM projects WHERE uuid = $1", project_uuid)
+  # WRONG
+  await conn.fetchrow(f"SELECT * FROM projects WHERE uuid = '{project_uuid}'")
+  ```
+- For dynamic column names (sorting, filtering), use a strict allow-list:
+  ```python
+  ALLOWED_SORT = {"created_at", "name", "amount"}
+  sort_col = col if col in ALLOWED_SORT else "created_at"
+  ```
+- Escape `%` and `_` in user input for `LIKE`/`ILIKE` patterns.
+- Limit `LIMIT`/`OFFSET` to sane maximums (e.g., max 100 per page).
+
+## Schema Conventions
+- Use correct Postgres types: `jsonb`, `uuid`, `timestamptz`, `numeric(12,2)` for money.
+- Add SQL migration comments when changing schema.
+- Use `ADD COLUMN IF NOT EXISTS` for safe migrations.
+- Default timestamps: `TIMESTAMP WITH TIME ZONE DEFAULT NOW()`.
+- All FKs must have `ON DELETE CASCADE` or explicit handling.
+
+## Tables (current schema)
+- `users` — all bot users (broadcasts, roles)
+- `contacts` — users who completed the survey
+- `business_profiles` — entrepreneur profiles
+- `startup_ideas` — startup ideas
+- `specialist_profiles` — specialist profiles
+- `zoom_meetings` — Zoom meeting records
+- `meeting_participants` — meeting attendance
+- `projects` — project entities
+- `project_meetings` — project ↔ meeting M2M
+- `project_expenses` / `project_income` — financial records
+- `project_embeddings` — RAG vector search
+- `clients` — CRM client records
+- `web_sessions` — authenticated web sessions
+- `brainstorm_threads` / `brainstorm_messages` — AI brainstorm chat
+
+## Performance
+- Add indexes on frequently queried columns (telegram_id, uuid, meeting_id).
+- Use `EXPLAIN ANALYZE` for slow queries.
+- Avoid `SELECT *` — list only needed columns in performance-critical paths.
