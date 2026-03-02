@@ -2521,10 +2521,6 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         if via_message:
-            banner_path = Path(__file__).parent / "assets" / "welcome_client_banner.png"
-            if banner_path.exists():
-                with open(banner_path, 'rb') as photo:
-                    await update.message.reply_photo(photo=photo)
             await update.message.reply_text(text, reply_markup=reply_markup, parse_mode='HTML')
         else:
             query = update.callback_query
@@ -5699,25 +5695,17 @@ def main():
         """Initialize database, register commands, and re-schedule reminders."""
         await bot.initialize_db()
         commands = [
-            BotCommand("start", "🚀 Начать работу с ботом"),
-            BotCommand("roulette", "🎰 Крутить рулетку призов"),
-            BotCommand("cancel", "❌ Отменить текущий опрос")
+            BotCommand("start", "🏠 Главное меню"),
+            BotCommand("cancel", "❌ Отменить текущее действие"),
         ]
         await app.bot.set_my_commands(commands)
         logger.info("Bot commands registered in menu")
-        # Set bot menu button to open the portal as a WebApp (auto-auth via initData)
-        if bot.config.webapp_url:
-            try:
-                from telegram import MenuButtonWebApp, WebAppInfo as _WAI
-                await app.bot.set_chat_menu_button(
-                    menu_button=MenuButtonWebApp(
-                        text="🌐 Портал",
-                        web_app=_WAI(url=f"{bot.config.webapp_url}/projects"),
-                    )
-                )
-                logger.info("Bot menu button set to portal WebApp")
-            except Exception as e:
-                logger.warning(f"Failed to set menu button: {e}")
+        try:
+            from telegram import MenuButtonCommands
+            await app.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+            logger.info("Bot menu button set to commands")
+        except Exception as e:
+            logger.warning(f"Failed to set menu button: {e}")
         try:
             await bot.reschedule_meeting_reminders(app)
         except Exception as e:
