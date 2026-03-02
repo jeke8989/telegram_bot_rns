@@ -2524,14 +2524,8 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
             banner_path = Path(__file__).parent / "assets" / "welcome_client_banner.png"
             if banner_path.exists():
                 with open(banner_path, 'rb') as photo:
-                    await update.message.reply_photo(
-                        photo=photo,
-                        caption=text,
-                        reply_markup=reply_markup,
-                        parse_mode='HTML',
-                    )
-            else:
-                await update.message.reply_text(text, reply_markup=reply_markup, parse_mode='HTML')
+                    await update.message.reply_photo(photo=photo)
+            await update.message.reply_text(text, reply_markup=reply_markup, parse_mode='HTML')
         else:
             query = update.callback_query
             await query.answer()
