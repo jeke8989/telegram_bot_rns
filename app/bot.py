@@ -2445,17 +2445,18 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
         first_name = user.first_name or "Сотрудник"
         is_admin = context.user_data.get('is_admin', False)
         is_seller = context.user_data.get('is_seller', False)
+        webapp = self.config.webapp_url or ""
 
         if is_admin:
             text = (
                 f"👋 Привет, <b>{first_name}</b>!\n\n"
                 f"🏢 <b>{self.config.company_name}</b>\n\n"
                 "У тебя <b>полный доступ</b> к системе.\n\n"
-                "🎯 <b>Что можно делать:</b>\n"
-                "  • Создавать и управлять встречами\n"
-                "  • Работать с проектами и клиентами\n"
-                "  • Управлять командой сотрудников\n"
-                "  • Формировать отчёты и КП\n\n"
+                "🎯 <b>Доступные действия:</b>\n"
+                "  • Встречи и Zoom-звонки\n"
+                "  • Клиенты, проекты и КП\n"
+                "  • Команда и сотрудники\n"
+                "  • Отчёты и аналитика\n\n"
                 "⬇️ <i>Выберите действие:</i>"
             )
         elif is_seller:
@@ -2463,9 +2464,10 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
                 f"👋 Привет, <b>{first_name}</b>!\n\n"
                 f"🏢 <b>{self.config.company_name}</b>\n\n"
                 "Добро пожаловать в панель продаж.\n\n"
-                "🎯 <b>Что можно делать:</b>\n"
-                "  • Создавать коммерческие предложения\n"
-                "  • Отслеживать свои КП\n\n"
+                "🎯 <b>Доступные действия:</b>\n"
+                "  • Создание коммерческих предложений\n"
+                "  • Управление клиентами\n"
+                "  • Просмотр своих КП\n\n"
                 "⬇️ <i>Выберите действие:</i>"
             )
         else:
@@ -2473,10 +2475,10 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
                 f"👋 Привет, <b>{first_name}</b>!\n\n"
                 f"🏢 <b>{self.config.company_name}</b>\n\n"
                 "Добро пожаловать в рабочий портал.\n\n"
-                "🎯 <b>Что можно делать:</b>\n"
-                "  • Создавать встречи и записи\n"
-                "  • Работать с проектами\n"
-                "  • Открыть портал проектов\n\n"
+                "🎯 <b>Доступные действия:</b>\n"
+                "  • Создание встреч и Zoom-звонков\n"
+                "  • Просмотр клиентов и проектов\n"
+                "  • Рабочий портал\n\n"
                 "⬇️ <i>Выберите действие:</i>"
             )
 
@@ -2484,43 +2486,54 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
 
         if is_seller:
             keyboard.append(
-                [InlineKeyboardButton("📄  Коммерческое предложение", callback_data="admin_cp_start")]
+                [InlineKeyboardButton("📄  Новое КП", callback_data="admin_cp_start")]
             )
-            seller_url = f"{self.config.webapp_url}/seller" if self.config.webapp_url else None
-            if seller_url:
-                keyboard.append(
-                    [InlineKeyboardButton("🌐  Мои КП", web_app=WebAppInfo(url=seller_url))]
-                )
+            if webapp:
+                keyboard.append([
+                    InlineKeyboardButton("📋  Мои КП", web_app=WebAppInfo(url=f"{webapp}/seller")),
+                    InlineKeyboardButton("👤  Клиенты", web_app=WebAppInfo(url=f"{webapp}/clients")),
+                ])
+                keyboard.append([
+                    InlineKeyboardButton("🗂  Проекты", web_app=WebAppInfo(url=f"{webapp}/projects")),
+                    InlineKeyboardButton("📝  Предложения", web_app=WebAppInfo(url=f"{webapp}/proposals")),
+                ])
         else:
-            keyboard.append(
-                [InlineKeyboardButton("📹  Создать встречу", callback_data="staff_create_zoom")]
-            )
-            keyboard.append(
-                [InlineKeyboardButton("📋  Мои встречи", callback_data="staff_my_meetings")]
-            )
-            portal_url = f"{self.config.webapp_url}/projects" if self.config.webapp_url else None
-            if portal_url:
-                keyboard.append(
-                    [InlineKeyboardButton("🌐  Портал проектов", web_app=WebAppInfo(url=portal_url))]
-                )
+            keyboard.append([
+                InlineKeyboardButton("📹  Создать встречу", callback_data="staff_create_zoom"),
+                InlineKeyboardButton("📋  Мои встречи", callback_data="staff_my_meetings"),
+            ])
+            if webapp:
+                keyboard.append([
+                    InlineKeyboardButton("👤  Клиенты", web_app=WebAppInfo(url=f"{webapp}/clients")),
+                    InlineKeyboardButton("🗂  Проекты", web_app=WebAppInfo(url=f"{webapp}/projects")),
+                ])
+                keyboard.append([
+                    InlineKeyboardButton("📝  Предложения", web_app=WebAppInfo(url=f"{webapp}/proposals")),
+                    InlineKeyboardButton("🌐  Портал", web_app=WebAppInfo(url=f"{webapp}/projects")),
+                ])
 
         if is_admin:
-            keyboard.append(
-                [InlineKeyboardButton("👥  Сотрудники", callback_data="admin_view_staff")]
-            )
-            keyboard.append(
-                [InlineKeyboardButton("🔗  Пригласить сотрудника", callback_data="admin_create_invite")]
-            )
+            keyboard.append([
+                InlineKeyboardButton("👥  Сотрудники", callback_data="admin_view_staff"),
+                InlineKeyboardButton("🔗  Пригласить", callback_data="admin_create_invite"),
+            ])
+            row = []
             if self.kimai:
-                keyboard.append(
-                    [InlineKeyboardButton("📊  Создать отчёт", callback_data="admin_report_menu")]
-                )
-            keyboard.append(
-                [InlineKeyboardButton("📄  Коммерческое предложение", callback_data="admin_cp_start")]
-            )
+                row.append(InlineKeyboardButton("📊  Отчёт", callback_data="admin_report_menu"))
+            row.append(InlineKeyboardButton("📄  Создать КП", callback_data="admin_cp_start"))
+            keyboard.append(row)
+            if webapp:
+                keyboard.append([
+                    InlineKeyboardButton("👥  Сотрудники (портал)", web_app=WebAppInfo(url=f"{webapp}/employees")),
+                ])
+
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         if via_message:
+            logo_path = Path(__file__).parent / "assets" / "logo.png"
+            if logo_path.exists():
+                with open(logo_path, 'rb') as photo:
+                    await update.message.reply_photo(photo=photo)
             await update.message.reply_text(text, reply_markup=reply_markup, parse_mode='HTML')
         else:
             query = update.callback_query
