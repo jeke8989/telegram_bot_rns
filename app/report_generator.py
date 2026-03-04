@@ -41,6 +41,7 @@ LOGO_PATH = next((p for p in _LOGO_PATHS if os.path.exists(p)), _LOGO_PATHS[0])
 
 _RE_PCT = re.compile(r"^(\d+(?:\.\d+)?)\s*%$")
 _RE_HOURLY = re.compile(r"^(\d+(?:\.\d+)?)\s*\$")
+_RE_HOURLY_RUB = re.compile(r"(\d+(?:\.\d+)?)\s*РУБ", re.IGNORECASE)
 
 
 def _register_fonts():
@@ -67,9 +68,16 @@ def _register_fonts():
 FONT, FONT_B = _register_fonts()
 
 
-def _money(val: float) -> str:
+def _is_rub(account_number: str) -> bool:
+    """Return True if the employee's rates are denominated in rubles."""
+    return bool(_RE_HOURLY_RUB.search(account_number or ""))
+
+
+def _money(val: float, is_rub: bool = False) -> str:
     if val == 0:
         return "—"
+    if is_rub:
+        return f"₽{val:,.0f}"
     return f"${val:,.2f}"
 
 
@@ -84,7 +92,7 @@ def _hours(h: float) -> str:
 def _parse_bonus_rate(account_number: str) -> tuple:
     """Parse accountNumber field into bonus type.
 
-    Returns ("pct", fraction), ("hourly", dollars) or (None, 0).
+    Returns ("pct", fraction), ("hourly", dollars), ("hourly_rub", rubles) or (None, 0).
     """
     if not account_number:
         return (None, 0)
@@ -95,6 +103,9 @@ def _parse_bonus_rate(account_number: str) -> tuple:
     m = _RE_HOURLY.match(s)
     if m:
         return ("hourly", float(m.group(1)))
+    m = _RE_HOURLY_RUB.search(s)
+    if m:
+        return ("hourly_rub", float(m.group(1)))
     return (None, 0)
 
 
@@ -103,7 +114,7 @@ def _calc_employee_bonus(member: dict) -> float:
     btype, bval = _parse_bonus_rate(member.get("account_number", ""))
     if btype == "pct":
         return member["total_money"] * bval
-    elif btype == "hourly":
+    elif btype in ("hourly", "hourly_rub"):
         return member["total_hours"] * bval
     return 0.0
 
@@ -180,11 +191,13 @@ def generate_team_report_excel(
         for m in members:
             emp_bonus = _calc_employee_bonus(m)
             total_bonus += emp_bonus
-            m["_bonus"] = 0.0
-            m["_total"] = m["total_money"]
+            # Employee's own bonus = activity "Бонусы" entries
+            m["_bonus"] = m.get("bonus_from_activity", 0.0)
+            m["_total"] = m["total_money"] + m["_bonus"]
 
-        leader["_bonus"] = total_bonus
-        leader["_total"] = leader["total_money"] + total_bonus
+        # Team lead gets: formula bonuses from members + own activity bonuses
+        leader["_bonus"] = total_bonus + leader.get("bonus_from_activity", 0.0)
+        leader["_total"] = leader["total_money"] + leader["_bonus"]
 
         members.sort(key=lambda x: x["_total"], reverse=True)
         team_groups.append({"leader": leader, "team_name": tname, "members": members})
@@ -283,15 +296,16 @@ def generate_team_report_excel(
         if g["leader"]:
             m = g["leader"]
             idx += 1
+            rub = _is_rub(m.get("account_number", ""))
             leader_row_indices.append(len(rows))
             rows.append([
                 Paragraph(str(idx), s_bc),
                 Paragraph(m["name"], s_b),
                 Paragraph(tname, s_bc),
                 Paragraph(_hours(m["total_hours"]), s_bc),
-                Paragraph(_money(m["total_money"]), s_br),
-                Paragraph(_money(m["_bonus"]), s_br),
-                Paragraph(_money(m["_total"]), s_br),
+                Paragraph(_money(m["total_money"], rub), s_br),
+                Paragraph(_money(m["_bonus"], rub), s_br),
+                Paragraph(_money(m["_total"], rub), s_br),
             ])
             sum_hrs += m["total_hours"]
             sum_money += m["total_money"]
@@ -300,14 +314,15 @@ def generate_team_report_excel(
 
         for m in g["members"]:
             idx += 1
+            rub = _is_rub(m.get("account_number", ""))
             rows.append([
                 Paragraph(str(idx), s_cc),
                 Paragraph(m["name"], s_c),
                 Paragraph(tname, s_cc),
                 Paragraph(_hours(m["total_hours"]), s_cc),
-                Paragraph(_money(m["total_money"]), s_cr),
-                Paragraph(_money(m["_bonus"]), s_cr),
-                Paragraph(_money(m["_total"]), s_cr),
+                Paragraph(_money(m["total_money"], rub), s_cr),
+                Paragraph(_money(m["_bonus"], rub), s_cr),
+                Paragraph(_money(m["_total"], rub), s_cr),
             ])
             sum_hrs += m["total_hours"]
             sum_money += m["total_money"]

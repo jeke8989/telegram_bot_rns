@@ -200,6 +200,13 @@ class KimaiClient:
         teams: list[dict] = []
         report_by_team: dict[int, list[dict]] = {}
 
+        # Fetch activities once to detect "Бонусы" activity type
+        activities_list = await self.get_activities()
+        bonus_activity_ids: set[int] = {
+            a["id"] for a in activities_list
+            if "бонус" in (a.get("name") or "").lower()
+        }
+
         for team_summary in teams_list:
             team_id = team_summary["id"]
             team_detail = await self.get_team(team_id)
@@ -225,13 +232,18 @@ class KimaiClient:
 
                 project_hours: dict[int, float] = {}
                 project_money: dict[int, float] = {}
+                bonus_from_activity: float = 0.0
 
                 for ts in timesheets:
                     proj_id = ts.get("project")
+                    activity_id = ts.get("activity")
                     duration_sec = ts.get("duration", 0) or 0
                     rate = ts.get("rate", 0) or 0
 
-                    if proj_id is not None:
+                    # Timesheets with "Бонусы" activity go to bonus, not regular earnings
+                    if activity_id in bonus_activity_ids:
+                        bonus_from_activity += rate
+                    elif proj_id is not None:
                         project_hours[proj_id] = project_hours.get(proj_id, 0) + duration_sec / 3600
                         project_money[proj_id] = project_money.get(proj_id, 0) + rate
 
@@ -244,6 +256,7 @@ class KimaiClient:
                     "project_money": project_money,
                     "total_hours": sum(project_hours.values()),
                     "total_money": sum(project_money.values()),
+                    "bonus_from_activity": bonus_from_activity,
                 })
 
             report_by_team[team_id] = member_reports
