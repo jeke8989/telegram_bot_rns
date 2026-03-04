@@ -720,7 +720,12 @@ async def auth_telegram(request):
 
 # ==================== Dev-only auth ====================
 
-_IS_DEV = os.getenv('APP_ENV', 'production') == 'development'
+_WEBAPP_URL = os.getenv('WEBAPP_URL', '')
+_IS_DEV = (
+    os.getenv('APP_ENV', 'production') == 'development'
+    or _WEBAPP_URL.startswith('http://localhost')
+    or _WEBAPP_URL.startswith('http://127.0.0.1')
+)
 
 
 @routes.get('/api/auth/dev-users')
