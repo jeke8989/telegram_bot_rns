@@ -435,24 +435,36 @@ def generate_team_report_excel(
             Paragraph("Часы", s_h), Paragraph("Сумма", s_h),
         ]
         p_rows = [p_header]
-        p_hrs = p_money = 0.0
+        p_hrs = 0.0
+        p_money_usd = p_money_rub = 0.0
 
         for m in contributors:
             hrs = m["project_hours"].get(pid, 0)
             money = m["project_money"].get(pid, 0)
+            rub = _is_rub(m.get("account_number", ""))
             p_hrs += hrs
-            p_money += money
+            if rub:
+                p_money_rub += money
+            else:
+                p_money_usd += money
             p_rows.append([
                 Paragraph(m["name"], s_b if m["is_teamlead"] else s_c),
                 Paragraph(m.get("_team", ""), s_cc),
                 Paragraph(_hours(hrs), s_cc),
-                Paragraph(_money(money), s_cr),
+                Paragraph(_money(money, rub), s_cr),
             ])
 
+        # Project total — split currencies if mixed
+        total_parts = []
+        if p_money_usd:
+            total_parts.append(_money(p_money_usd, False))
+        if p_money_rub:
+            total_parts.append(_money(p_money_rub, True))
+        p_total_str = "  +  ".join(total_parts) if total_parts else "—"
         p_rows.append([
             Paragraph("Итого", s_b), Paragraph("", s_b),
             Paragraph(_hours(p_hrs), s_bc),
-            Paragraph(_money(p_money), s_br),
+            Paragraph(p_total_str, s_br),
         ])
 
         p_tbl = Table(p_rows, colWidths=cw2, repeatRows=1)
