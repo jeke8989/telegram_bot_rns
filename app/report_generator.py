@@ -69,8 +69,12 @@ FONT, FONT_B = _register_fonts()
 
 
 def _is_rub(account_number: str) -> bool:
-    """Return True if the employee's rates are denominated in rubles."""
-    return bool(_RE_HOURLY_RUB.search(account_number or ""))
+    """Return True if the employee's rates are denominated in rubles.
+    Matches 'РУБ', 'руб', '1500 РУБ', 'рублей' etc.
+    """
+    if not account_number:
+        return False
+    return bool(re.search(r"РУБ", account_number, re.IGNORECASE))
 
 
 def _money(val: float, is_rub: bool = False) -> str:
@@ -284,7 +288,9 @@ def generate_team_report_excel(
     ]
     rows = [header]
 
-    sum_hrs = sum_money = sum_bonus = sum_total = 0.0
+    sum_hrs = 0.0
+    sum_money_usd = sum_bonus_usd = sum_total_usd = 0.0
+    sum_money_rub = sum_bonus_rub = sum_total_rub = 0.0
     idx = 0
     leader_row_indices: list[int] = []
     group_first_rows: list[int] = []
@@ -308,9 +314,14 @@ def generate_team_report_excel(
                 Paragraph(_money(m["_total"], rub), s_br),
             ])
             sum_hrs += m["total_hours"]
-            sum_money += m["total_money"]
-            sum_bonus += m["_bonus"]
-            sum_total += m["_total"]
+            if rub:
+                sum_money_rub += m["total_money"]
+                sum_bonus_rub += m["_bonus"]
+                sum_total_rub += m["_total"]
+            else:
+                sum_money_usd += m["total_money"]
+                sum_bonus_usd += m["_bonus"]
+                sum_total_usd += m["_total"]
 
         for m in g["members"]:
             idx += 1
@@ -325,17 +336,46 @@ def generate_team_report_excel(
                 Paragraph(_money(m["_total"], rub), s_cr),
             ])
             sum_hrs += m["total_hours"]
-            sum_money += m["total_money"]
-            sum_total += m["_total"]
+            if rub:
+                sum_money_rub += m["total_money"]
+                sum_bonus_rub += m["_bonus"]
+                sum_total_rub += m["_total"]
+            else:
+                sum_money_usd += m["total_money"]
+                sum_bonus_usd += m["_bonus"]
+                sum_total_usd += m["_total"]
 
-    rows.append([
-        Paragraph("", s_b), Paragraph("ИТОГО", s_b),
-        Paragraph("", s_b),
-        Paragraph(_hours(sum_hrs), s_bc),
-        Paragraph(_money(sum_money), s_br),
-        Paragraph(_money(sum_bonus), s_br),
-        Paragraph(_money(sum_total), s_br),
-    ])
+    # Totals row(s) — split by currency if both present
+    has_usd = sum_total_usd > 0 or sum_money_usd > 0
+    has_rub = sum_total_rub > 0 or sum_money_rub > 0
+    if has_usd:
+        rows.append([
+            Paragraph("", s_b), Paragraph("ИТОГО $", s_b),
+            Paragraph("", s_b),
+            Paragraph(_hours(sum_hrs) if not has_rub else "", s_bc),
+            Paragraph(_money(sum_money_usd, False), s_br),
+            Paragraph(_money(sum_bonus_usd, False), s_br),
+            Paragraph(_money(sum_total_usd, False), s_br),
+        ])
+    if has_rub:
+        rows.append([
+            Paragraph("", s_b), Paragraph("ИТОГО ₽", s_b),
+            Paragraph("", s_b),
+            Paragraph(_hours(sum_hrs) if not has_usd else "", s_bc),
+            Paragraph(_money(sum_money_rub, True), s_br),
+            Paragraph(_money(sum_bonus_rub, True), s_br),
+            Paragraph(_money(sum_total_rub, True), s_br),
+        ])
+    if not has_usd and not has_rub:
+        rows.append([
+            Paragraph("", s_b), Paragraph("ИТОГО", s_b),
+            Paragraph("", s_b),
+            Paragraph(_hours(sum_hrs), s_bc),
+            Paragraph("—", s_br), Paragraph("—", s_br), Paragraph("—", s_br),
+        ])
+
+    n_totals = (1 if has_usd else 0) + (1 if has_rub else 0) or 1
+    first_total_row = len(rows) - n_totals
 
     tbl = Table(rows, colWidths=cw1, repeatRows=1)
     st = [
@@ -346,10 +386,12 @@ def generate_team_report_excel(
         ("BOTTOMPADDING", (0, 0), (-1, -1), 1.2 * mm),
         ("LEFTPADDING", (0, 0), (-1, -1), 1.5 * mm),
         ("RIGHTPADDING", (0, 0), (-1, -1), 1.5 * mm),
-        ("LINEBELOW", (0, 0), (-1, -2), 0.25, MID_GRAY),
-        ("BACKGROUND", (0, -1), (-1, -1), YELLOW_BG),
-        ("LINEABOVE", (0, -1), (-1, -1), 1, NAVY),
-        ("BACKGROUND", (-1, 1), (-1, -2), LIGHT_BLUE),
+        ("LINEBELOW", (0, 0), (-1, first_total_row - 1), 0.25, MID_GRAY),
+        # Highlight totals rows
+        ("BACKGROUND", (0, first_total_row), (-1, -1), YELLOW_BG),
+        ("LINEABOVE", (0, first_total_row), (-1, first_total_row), 1, NAVY),
+        # Blue highlight for "Итого" column (data rows only)
+        ("BACKGROUND", (-1, 1), (-1, first_total_row - 1), LIGHT_BLUE),
     ]
     for ri in leader_row_indices:
         st.append(("BACKGROUND", (0, ri), (-2, ri), LEADER_BG))
@@ -435,8 +477,14 @@ def generate_team_report_excel(
 
     # ── Grand total bar ──
     elements.append(Spacer(1, 2 * mm))
+    budget_parts = []
+    if has_usd:
+        budget_parts.append(_money(sum_total_usd, False))
+    if has_rub:
+        budget_parts.append(_money(sum_total_rub, True))
+    budget_str = "  +  ".join(budget_parts) if budget_parts else "—"
     grand_text = (
-        f"  Общий бюджет: {_money(sum_total)}     |     "
+        f"  Бюджет: {budget_str}     |     "
         f"Часов: {_hours(sum_hrs)}     |     "
         f"Сотрудников: {len(all_members)}"
     )
