@@ -30,6 +30,7 @@ from app.zoom_ws_listener import ZoomWSListener
 from app.embeddings import embed_meeting_for_project, generate_single_embedding, reembed_all_project_meetings
 from app.s3_client import S3Client
 from app.kimai_client import KimaiClient
+from app.proposal_calculator import ProposalCalculator
 
 # Setup logging
 logging.basicConfig(
@@ -443,6 +444,94 @@ async def proposal_delete_api(request):
     except Exception as e:
         logger.error(f"Failed to delete proposal {token}: {e}", exc_info=True)
         return web.json_response({'error': 'server_error'}, status=500)
+
+
+@routes.post('/api/proposal/{token}/regenerate')
+async def proposal_regenerate_api(request):
+    """Regenerate proposal estimation using AI. Auth required."""
+    require_session(request)
+    token = request.match_info['token']
+    try:
+        body = await request.json()
+    except Exception:
+        return web.json_response({'error': 'invalid json'}, status=400)
+
+    description = body.get('description', '').strip()
+    if not description:
+        return web.json_response({'error': 'description required'}, status=400)
+
+    proposal_type = body.get('proposal_type', 'mvp')
+    design_type = body.get('design_type', 'no_design')
+    hourly_rate = float(body.get('hourly_rate', 0))
+    currency = body.get('currency', '$')
+    budget = body.get('budget')
+    budget_currency = body.get('budget_currency', currency)
+
+    if hourly_rate <= 0:
+        return web.json_response({'error': 'invalid hourly_rate'}, status=400)
+
+    if budget is not None:
+        try:
+            budget = float(budget)
+            if budget <= 0:
+                budget = None
+        except (ValueError, TypeError):
+            budget = None
+
+    openrouter_key = os.getenv('OPENROUTER_API_KEY', '')
+    if not openrouter_key:
+        return web.json_response({'error': 'AI service not configured'}, status=500)
+
+    calculator = ProposalCalculator(openrouter_key)
+    try:
+        estimation = await calculator.calculate_proposal(
+            project_description=description,
+            proposal_type=proposal_type,
+            budget_constraint=budget,
+            budget_currency=budget_currency,
+            design_type=design_type,
+            hourly_rate=hourly_rate,
+            currency=currency,
+        )
+    except Exception as e:
+        logger.error(f"Proposal regeneration failed: {e}", exc_info=True)
+        return web.json_response({'error': 'generation_failed'}, status=500)
+
+    if estimation.get('error'):
+        return web.json_response({'error': estimation.get('error_message', 'generation failed')}, status=500)
+
+    try:
+        await db.update_commercial_proposal(
+            token,
+            estimation=estimation,
+            proposal_type=proposal_type,
+            design_type=design_type,
+            hourly_rate=hourly_rate,
+            currency=currency,
+            project_name=estimation.get('project_name', ''),
+        )
+    except Exception as e:
+        logger.error(f"Failed to save regenerated proposal: {e}", exc_info=True)
+        return web.json_response({'error': 'save_failed'}, status=500)
+
+    proposal = await db.get_commercial_proposal(token)
+    if not proposal:
+        return web.json_response({'error': 'not_found'}, status=404)
+
+    return web.json_response({
+        'ok': True,
+        'token': proposal['token'],
+        'project_name': proposal['project_name'],
+        'client_name': proposal.get('client_name', ''),
+        'proposal_type': proposal.get('proposal_type', 'mvp'),
+        'design_type': proposal.get('design_type', 'no_design'),
+        'currency': proposal.get('currency', '$'),
+        'hourly_rate': float(proposal.get('hourly_rate', 0)),
+        'estimation': proposal.get('estimation', {}),
+        'client_id': proposal.get('client_id'),
+        'client_uuid': proposal.get('client_uuid'),
+    })
+
 
 # ========== API Endpoints ==========
 

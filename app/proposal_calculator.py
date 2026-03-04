@@ -1,7 +1,7 @@
 """
 AI-powered project estimation engine for commercial proposals.
 Uses Claude Sonnet 4.5 via OpenRouter to analyze project descriptions
-and produce structured hour/cost breakdowns by department.
+and produce structured hour/cost breakdowns.
 """
 
 import aiohttp
@@ -12,45 +12,34 @@ import re
 logger = logging.getLogger(__name__)
 
 ESTIMATION_NORMS = """
-## Reference Estimation Norms (role distribution as % of total development hours)
+## Reference Estimation Norms
 
-These are typical hour distributions for web/mobile projects. Use them as guardrails:
-- Project Management (PM): 10-15% of total hours
-- UX/UI Design: 12-18% of total hours
-- Frontend Development: 25-30% of total hours
-- Backend Development: 28-35% of total hours
-- QA / Testing: 8-12% of total hours
-
-## Reference Complexity Benchmarks (per-feature hour ranges)
-
-Simple CRUD page (list + card + create/edit): 20-40 hours total
-Medium complexity module (dashboard, analytics, charts): 60-120 hours total
-Complex module (real-time chat, billing, document flow): 100-200 hours total
-Authentication & registration: 20-40 hours total
-Landing page: 40-80 hours total
-Admin panel with roles: 80-200 hours total
-Mobile app (single role, 5-8 screens): 150-300 hours total
-Integration with external API: 15-40 hours per integration
-Preparation phase (architecture, DB design, tech docs): 80-190 hours
+Typical hour ranges per feature complexity:
+- Simple CRUD page (list + card + create/edit): 15-30 hours
+- Medium complexity module (dashboard, analytics, charts): 40-80 hours
+- Complex module (real-time chat, billing, document flow): 70-140 hours
+- Authentication & registration: 15-30 hours
+- Landing page: 30-60 hours
+- Admin panel with roles: 60-150 hours
+- Mobile app (single role, 5-8 screens): 100-200 hours
+- Integration with external API: 10-30 hours per integration
+- Preparation phase (architecture, DB design, tech docs): 50-120 hours
 
 ## MVP vs Full estimation
-- MVP: Focus on core features only. Reduce scope by ~40-50%. Prioritize must-have functionality.
-  Team: 2-3 people. Timeline: 1-2 weeks. Keep it tight and focused.
+- MVP: Focus on core features only. Reduce scope by ~40-50%.
+  Team: 2-3 people. Timeline: 1-3 weeks.
 - Full: Complete feature set with all described functionality.
-  Team: 3-5 people. Timeline depends on scope but typically 1-4 months.
+  Team: 3-5 people. Timeline: 4-16 weeks.
 
 ## Timeline Calculation Rules
-- Calculate timeline_weeks (not months!) based on total hours divided by team capacity.
-- MVP team: 2-3 people working ~40 hours/week each. So capacity = 80-120 hours/week.
-  A 100-hour MVP project = ~1 week. A 200-hour project = ~2 weeks. Max 2-3 weeks for MVP.
-- Full project team: 3-5 people working ~40 hours/week each. Capacity = 120-200 hours/week.
-  Timeline typically 4-16 weeks depending on total hours.
-- Return timeline_weeks in the JSON (min/max in weeks).
+- Calculate timeline_weeks based on total hours / team capacity.
+- MVP team: 2-3 people * 40h/week = 80-120h/week capacity.
+- Full project team: 3-5 people * 40h/week = 120-200h/week capacity.
 
 ## Design options
-- Full Design: Include full UX/UI design hours (wireframes + mockups + design system)
-- Wireframes Only: ~40% of full design hours (structure and layout only, no visual polish)
-- No Design: Zero design hours (development uses basic UI framework)
+- Full Design: Full UX/UI design hours (wireframes + mockups + design system)
+- Wireframes Only: ~40% of full design hours
+- No Design: Zero design hours
 """
 
 
@@ -70,21 +59,6 @@ class ProposalCalculator:
         hourly_rate: float,
         currency: str,
     ) -> dict:
-        """
-        Analyze a project description and return a structured estimation.
-
-        Args:
-            project_description: Full text of the project description / TZ
-            proposal_type: "mvp" or "full"
-            budget_constraint: Maximum budget amount or None
-            budget_currency: Currency of budget constraint
-            design_type: "full_design", "wireframes", or "no_design"
-            hourly_rate: Cost per hour
-            currency: "$" or "₽"
-
-        Returns:
-            Structured dict with modules, hours, costs, and timeline.
-        """
         prompt = self._build_prompt(
             project_description,
             proposal_type,
@@ -103,77 +77,26 @@ class ProposalCalculator:
         if parsed is None:
             return self._error_result("Failed to parse AI response")
 
-        ai_keys = list(parsed.keys())
-        has_persp_before = "perspectives" in parsed
-        has_stages_before = "stages" in parsed
-        persp_count_before = len(parsed.get("perspectives", []))
-        stages_count_before = len(parsed.get("stages", []))
         logger.info(
-            "AI response parsed: keys=%s, perspectives=%s(%d), stages=%s(%d)",
-            ai_keys, has_persp_before, persp_count_before, has_stages_before, stages_count_before,
+            "AI response parsed: keys=%s, modules=%d, stages=%d",
+            list(parsed.keys()),
+            len(parsed.get("modules", [])),
+            len(parsed.get("stages", [])),
         )
 
         parsed = self._apply_multipliers(parsed, design_type, hourly_rate, budget_constraint)
 
-        logger.info(
-            "After _apply_multipliers: perspectives=%d, stages=%d",
-            len(parsed.get("perspectives", [])), len(parsed.get("stages", [])),
-        )
-
         if "perspectives" not in parsed or not parsed["perspectives"]:
-            logger.warning("FINAL CHECK: perspectives still missing after _apply_multipliers, forcing generation")
-            modules = parsed.get("modules", [])
-            module_names = [m.get("name", "") for m in modules if m.get("name")]
             parsed["perspectives"] = [
                 {"title": "Аналитика и отчёты", "description": "Наглядные графики и отчёты — вы видите, что работает, и принимаете решения на основе данных"},
-                {"title": "Автоматические уведомления", "description": "Клиенты получают напоминания, а вы — оповещения о важных событиях. Ничего не теряется."},
-                {"title": "Мобильное приложение", "description": "Удобное приложение для телефона — ваши клиенты всегда на связи, даже в дороге"},
+                {"title": "Автоматические уведомления", "description": "Клиенты получают напоминания, а вы — оповещения о важных событиях"},
+                {"title": "Мобильное приложение", "description": "Удобное приложение для телефона — ваши клиенты всегда на связи"},
                 {"title": "Умные рекомендации", "description": "Система подсказывает клиентам подходящие товары или услуги — средний чек растёт"},
                 {"title": "Рост без ограничений", "description": "Система готова к увеличению нагрузки — когда бизнес вырастет, продукт справится"},
             ]
 
         if "stages" not in parsed or not parsed["stages"]:
-            logger.warning("FINAL CHECK: stages still missing after _apply_multipliers, forcing generation")
-            totals_data = parsed.get("totals", {})
-            total_avg = (totals_data.get("total_hours", {}).get("min", 40) + totals_data.get("total_hours", {}).get("max", 60)) / 2
-
-            forced_stages = []
-            design_hours_total = (totals_data.get("design", {}).get("min", 0) + totals_data.get("design", {}).get("max", 0)) // 2
-            if design_type != "no_design" and design_hours_total > 0:
-                dh = max(3, design_hours_total)
-                forced_stages.append({
-                    "name": "UX/UI Дизайн",
-                    "tasks": [
-                        {"name": "Проектирование структуры экранов и навигации", "hours": max(1, dh // 3)},
-                        {"name": "Создание вайрфреймов ключевых страниц", "hours": max(1, dh // 3)},
-                        {"name": "Согласование и финализация макетов", "hours": max(1, dh - 2 * (dh // 3))},
-                    ]
-                })
-
-            dev_hours = int(total_avg * 0.7)
-            modules = parsed.get("modules", [])
-            dev_tasks = []
-            for mod in modules:
-                mod_name = mod.get("name", "Модуль")
-                mod_hours = (mod.get("total", {}).get("min", 4) + mod.get("total", {}).get("max", 8)) // 2
-                for si in mod.get("sub_items", []):
-                    if isinstance(si, dict):
-                        si_hours = (si.get("hours", {}).get("min", 2) + si.get("hours", {}).get("max", 4)) // 2
-                        dev_tasks.append({"name": si.get("name", "Задача"), "hours": max(1, si_hours), "module": mod_name})
-                if not mod.get("sub_items"):
-                    dev_tasks.append({"name": f"Разработка модуля {mod_name}", "hours": max(2, mod_hours), "module": mod_name})
-            forced_stages.append({"name": "Разработка приложения", "tasks": dev_tasks or [{"name": "Основная разработка", "hours": dev_hours}]})
-
-            qa_hours = max(4, int(total_avg * 0.12))
-            forced_stages.append({
-                "name": "Тестирование и запуск",
-                "tasks": [
-                    {"name": "Проверка всех функций", "hours": max(1, qa_hours // 3)},
-                    {"name": "Исправление ошибок", "hours": max(1, qa_hours // 3)},
-                    {"name": "Запуск на рабочем сервере", "hours": max(1, qa_hours - 2 * (qa_hours // 3))},
-                ]
-            })
-            parsed["stages"] = forced_stages
+            self._generate_fallback_stages(parsed, design_type)
 
         parsed["hourly_rate"] = hourly_rate
         parsed["currency"] = currency
@@ -199,11 +122,7 @@ class ProposalCalculator:
 ## STRICT Budget Constraint
 The client's budget is **EXACTLY {budget_constraint:,.0f} {budget_currency or currency}**.
 Hourly rate is {hourly_rate} {currency}/hour, so the target total hours MUST be **{target_hours:,.0f}**.
-
-CRITICAL: The final total_cost AVERAGE ((min+max)/2) MUST equal EXACTLY {budget_constraint:,.0f}.
-Set total_hours so that (min+max)/2 * {hourly_rate} = {budget_constraint:,.0f}.
-Adjust scope, trim non-essential features, or redistribute hours to hit this target precisely.
-Do NOT exceed the budget. Do NOT undershoot the budget.
+Adjust scope to hit this target precisely. Do NOT exceed or undershoot the budget.
 """
 
         design_label = {
@@ -216,43 +135,34 @@ Do NOT exceed the budget. Do NOT undershoot the budget.
         if design_type == "no_design":
             no_design_instruction = """
 ## CRITICAL: No Design
-The client chose NO DESIGN. All design hours MUST be exactly 0 for every module, preparation phase, and totals.
-Do NOT include any design work at all — not even wireframes, mockups, or design system work.
+The client chose NO DESIGN. Do NOT include any design work — not even wireframes or mockups.
+Do NOT include a "UX/UI Дизайн" stage.
 """
 
         if design_type == "no_design":
-            design_stage_instruction = '1. "UX/UI Дизайн" — NOT needed (design_type is no_design). Do NOT include this stage.'
+            design_stage_instruction = '1. "UX/UI Дизайн" — NOT needed (no_design). Do NOT include this stage.'
         elif design_type == "wireframes":
-            design_stage_instruction = '1. "UX/UI Дизайн" — MANDATORY. Include wireframe tasks (структура экранов, прототипирование, UX-сценарии). This stage MUST be present.'
+            design_stage_instruction = '1. "UX/UI Дизайн" — MANDATORY. Include wireframe tasks.'
         else:
-            design_stage_instruction = '1. "UX/UI Дизайн" — MANDATORY. Include full design tasks (wireframes, mockups, design system, UI kit). This stage MUST be present.'
+            design_stage_instruction = '1. "UX/UI Дизайн" — MANDATORY. Include full design tasks.'
 
         return f"""You are an expert software project estimator for a web/mobile development agency.
-Your task: analyze the project description below and produce a **detailed, structured estimation**
-broken down into modules and roles.
+Analyze the project description and produce a detailed, structured estimation.
 
 {ESTIMATION_NORMS}
 
-## Our Tech Stack (ALWAYS use these tools in estimates)
-Our agency builds ALL projects using this exact stack. Factor these tools into every estimation:
-
+## Our Tech Stack
 **Frontend:** Next.js, React, TypeScript, Redux Toolkit, Tailwind CSS
 **Backend:** NestJS, TypeORM, PostgreSQL, Redis, Socket.io
-**Infrastructure:** Docker, CI/CD pipelines, Cloud deployments (VPS/AWS)
+**Infrastructure:** Docker, CI/CD, Cloud deployments
 
-Because we have deep expertise and reusable boilerplates in this stack:
-- We have ready-made project templates, auth modules, admin panels, and API scaffolding
-- We reuse our component library and design system across projects
-- Our team is highly specialized in this stack — no learning curve
+We have ready-made templates, auth modules, admin panels, and API scaffolding.
 
 ## AI-Assisted Development
-Our team uses AI-assisted development tools (Cursor AI, GitHub Copilot), which significantly speeds up work:
-- **Frontend development takes 40% less time** than traditional estimates (apply 0.6x multiplier)
-- **Backend development takes 30% less time** than traditional estimates (apply 0.7x multiplier)
-- AI generates boilerplate code, tests, documentation, and handles routine refactoring
-- PM and QA are NOT affected by AI speedups
-- Combined with our stack expertise, this results in ~30% total budget savings and ~3x faster delivery vs traditional agencies
-Factor these speedups into ALL your hour estimates from the start.
+Our team uses AI tools (Cursor AI, GitHub Copilot):
+- **Frontend takes 40% less time** (0.6x multiplier already applied in your estimates)
+- **Backend takes 30% less time** (0.7x multiplier already applied in your estimates)
+- Apply these speedups to ALL hour estimates from the start.
 
 ## Input Parameters
 - Proposal type: **{proposal_type.upper()}**
@@ -261,320 +171,143 @@ Factor these speedups into ALL your hour estimates from the start.
 {budget_section}
 {no_design_instruction}
 
-## Project Description / Technical Specification
+## Project Description
 ---
 {project_description}
 ---
 
 ## Your Task
 
-1. Break the project into logical modules/sections.
-   IMPORTANT: Name modules in SIMPLE BUSINESS LANGUAGE that a non-technical entrepreneur understands.
-   Good: "Личный кабинет пользователя", "Каталог товаров", "Система оплаты", "Уведомления"
-   Bad: "API Gateway", "Auth Module", "WebSocket Service", "ORM Layer"
-   Sub-task names should also be business-readable, not code-level.
-   Good: "Форма входа и регистрация", "Страница товара с фото и описанием"
-   Bad: "JWT middleware setup", "Redux store configuration"
-2. For each module, estimate hours by role: PM, Design, Frontend, Backend, QA.
-   Provide min-max ranges for each.
-3. For each module, list 3-6 specific sub-tasks. Each sub-task MUST have its own total hour estimate (min-max).
-   The sum of sub-task hours should approximately equal the module total.
-4. Include a "Preparation Phase" module (architecture, DB design, tech docs, meetings) with sub-tasks.
-5. Calculate totals.
-6. Estimate project timeline in WEEKS (min-max). For MVP: 1-2 weeks with 2-3 people. For Full: calculate based on total hours / team capacity (3-5 people * 40h/week).
-7. Estimate team_size (min-max number of people on the project).
-8. Generate a short project name (2-5 words) if not obvious from the description.
-9. project_description_short: Write 1-2 sentences in SIMPLE Russian that explain what the project does for the CLIENT'S BUSINESS. No technical terms. Example: "Платформа для онлайн-продажи курсов с личным кабинетом для учеников и преподавателей".
+1. Break the project into logical modules. Name them in SIMPLE BUSINESS LANGUAGE:
+   Good: "Личный кабинет", "Каталог товаров", "Система оплаты"
+   Bad: "API Gateway", "Auth Module", "WebSocket Service"
+2. For each module, list 3-8 specific work items (sub_items). Each has a name and a SINGLE hours value (not min/max).
+   The module total = sum of sub_item hours.
+3. Include a "Подготовка и проектирование" module (architecture, DB design, meetings).
+4. Calculate totals: total_hours (sum of all module totals), total_cost (total_hours * hourly_rate).
+5. Estimate timeline_weeks (single number). MVP: 1-3 weeks. Full: calculate from hours/team.
+6. Estimate team_size (single number).
+7. Generate a short project_name (2-5 words in Russian).
+8. project_description_short: 1-2 sentences in simple Russian about what the project does for the business.
 
 ## CRITICAL: Output Format
 
-Return ONLY valid JSON (no markdown, no ```json blocks, no comments). Use this exact structure:
+Return ONLY valid JSON (no markdown, no ```json blocks). Use this EXACT structure:
 
 {{
-    "project_name": "Short project name in Russian",
-    "project_description_short": "1-2 sentence description of the project in Russian",
+    "project_name": "Short name in Russian",
+    "project_description_short": "1-2 sentences in Russian",
     "modules": [
         {{
             "name": "Module name in Russian",
             "description": "Short description in Russian",
             "sub_items": [
-                {{"name": "Task name in Russian", "hours": {{"min": 0, "max": 0}}}},
-                {{"name": "Task name in Russian", "hours": {{"min": 0, "max": 0}}}}
+                {{"name": "Work item in Russian", "hours": 12}},
+                {{"name": "Work item in Russian", "hours": 8}}
             ],
-            "hours": {{
-                "pm": {{"min": 0, "max": 0}},
-                "design": {{"min": 0, "max": 0}},
-                "frontend": {{"min": 0, "max": 0}},
-                "backend": {{"min": 0, "max": 0}},
-                "qa": {{"min": 0, "max": 0}}
-            }},
-            "total": {{"min": 0, "max": 0}}
+            "total": 20
         }}
     ],
-    "preparation_phase": {{
-        "sub_items": [
-            {{"name": "Task name in Russian", "hours": {{"min": 0, "max": 0}}}}
-        ],
-        "hours": {{
-            "pm": {{"min": 0, "max": 0}},
-            "design": {{"min": 0, "max": 0}},
-            "frontend": {{"min": 0, "max": 0}},
-            "backend": {{"min": 0, "max": 0}},
-            "qa": {{"min": 0, "max": 0}}
-        }},
-        "total": {{"min": 0, "max": 0}}
-    }},
     "totals": {{
-        "pm": {{"min": 0, "max": 0}},
-        "design": {{"min": 0, "max": 0}},
-        "frontend": {{"min": 0, "max": 0}},
-        "backend": {{"min": 0, "max": 0}},
-        "qa": {{"min": 0, "max": 0}},
-        "total_hours": {{"min": 0, "max": 0}},
-        "total_cost": {{"min": 0.0, "max": 0.0}}
+        "total_hours": 150,
+        "total_cost": 7500.0
     }},
-    "timeline_weeks": {{"min": 0, "max": 0}},
-    "team_size": {{"min": 0, "max": 0}},
-    "notes": ["Optional note 1", "Optional note 2"],
+    "timeline_weeks": 4,
+    "team_size": 3,
+    "notes": ["Note 1", "Note 2"],
     "perspectives": [
-        {{"title": "Short catchy title in Russian (3-5 words)", "description": "Compelling description in Russian (1-2 sentences) explaining the business value"}},
-        {{"title": "Short catchy title in Russian (3-5 words)", "description": "Compelling description in Russian (1-2 sentences) explaining the business value"}}
+        {{"title": "Short title in Russian", "description": "Business value in Russian"}}
     ],
     "stages": [
         {{
             "name": "UX/UI Дизайн",
             "tasks": [
-                {{"name": "Task description in Russian", "hours": 16}}
+                {{"name": "Task in Russian", "hours": 16}}
             ]
         }},
         {{
             "name": "Разработка приложения",
             "tasks": [
-                {{"name": "Task description in Russian", "hours": 20, "module": "Module name in Russian"}},
-                {{"name": "Task description in Russian", "hours": 12, "module": "Module name in Russian"}}
+                {{"name": "Task in Russian", "hours": 20, "module": "Module name"}},
+                {{"name": "Task in Russian", "hours": 12, "module": "Module name"}}
             ]
         }},
         {{
             "name": "Тестирование и запуск",
             "tasks": [
-                {{"name": "Task description in Russian", "hours": 8, "module": "Module name in Russian"}},
-                {{"name": "Task description in Russian", "hours": 4}}
+                {{"name": "Task in Russian", "hours": 8, "module": "Module name"}},
+                {{"name": "Task in Russian", "hours": 4}}
             ]
         }}
     ]
 }}
 
-Make sure total_cost = total_hours * {hourly_rate}.
-All text content (names, descriptions, notes, sub_items, perspectives) MUST be in Russian.
-Each sub_item MUST be an object with "name" (string) and "hours" ({{"min": N, "max": N}}).
-timeline_weeks: for MVP typically 1-2 weeks, for Full projects calculate realistically.
-team_size: for MVP 2-3, for Full 3-5.
-## CRITICAL: perspectives (MANDATORY — DO NOT OMIT)
-The "perspectives" array is REQUIRED and MUST contain 4-6 items. This is the "Version 2.0" roadmap — a logical continuation of THIS specific project.
-Each perspective MUST be an object with "title" (catchy 3-5 word name in Russian) and "description" (1-2 sentences in Russian explaining the concrete business value).
-IMPORTANT: Write perspectives in SIMPLE BUSINESS LANGUAGE that a non-technical entrepreneur can understand.
-Do NOT use technical jargon (no "API", "микросервисы", "кеширование", "CDN").
-Instead use language like: "больше клиентов", "автоматизация рутины", "рост продаж", "экономия времени".
-Generate ideas that DIRECTLY extend the current project scope:
-- Be a natural next step that builds on what was just developed (not generic features)
-- Reference specific modules/features from the current project and show how they can evolve
-- Example: if the project has a catalog → "Умные рекомендации товаров — покупатели находят нужное быстрее, средний чек растёт"
-- Example: if the project has auth → "Личный кабинет для клиентов — история заказов, бонусы, персональные предложения"
-Make the client excited to start Version 2.0 immediately after launch.
-OUTPUT WILL BE REJECTED IF "perspectives" IS MISSING OR EMPTY.
+IMPORTANT RULES:
+- ALL hours are SINGLE integers, NOT min/max objects.
+- total_cost = total_hours * {hourly_rate}
+- All text MUST be in Russian.
+- Each sub_item is {{"name": "string", "hours": integer}}.
+- Module total = sum of its sub_items hours.
+- totals.total_hours = sum of all module totals.
+- perspectives: 4-6 items, business language, no technical jargon.
+- stages MUST contain:
+  {design_stage_instruction}
+  2. "Разработка приложения" — MANDATORY. Tasks grouped by module (use "module" field).
+  3. "Тестирование и запуск" — MANDATORY.
+- Tasks in stages have SINGLE "hours" integer.
+- Sum of all stage task hours ≈ totals.total_hours.
+- Each task in "Разработка" and "Тестирование" MUST have "module" field matching a module name.
 
-## CRITICAL: stages rules (MUST FOLLOW — OUTPUT WILL BE REJECTED IF STAGES ARE MISSING)
-The "stages" array MUST contain EXACTLY these phases:
-{design_stage_instruction}
-2. "Разработка приложения" — MANDATORY. All frontend and backend development, grouped by module. This stage MUST be present.
-   Task names in this stage should be BUSINESS-READABLE. Good: "Страница каталога с фильтрами". Bad: "Redux store + API endpoints".
-3. "Тестирование и запуск" — MANDATORY. QA, testing, bug fixing, deployment. This stage MUST ALWAYS be present — NO PROJECT ships without testing.
-
-DO NOT skip any mandatory stage. DO NOT merge stages. Each stage is a SEPARATE entry in the "stages" array.
-Do NOT include a "Скоупинг" stage. Scoping/planning hours are already covered by preparation_phase.
-
-Each task in stages has a SINGLE "hours" integer (not min/max).
-The SUM of all task hours across ALL stages MUST approximately equal the AVERAGE of totals.total_hours.min and totals.total_hours.max.
-No double-counting between stages — each hour of work appears in exactly one stage.
-
-## CRITICAL: module grouping inside stages
-Tasks in "Разработка приложения" and "Тестирование и запуск" MUST have a "module" field matching one of the modules from the "modules" array.
-This groups tasks visually by module. Example:
-  {{"name": "Форма входа и регистрации", "hours": 8, "module": "Авторизация"}},
-  {{"name": "API авторизации и JWT", "hours": 10, "module": "Авторизация"}},
-  {{"name": "Список товаров с пагинацией", "hours": 12, "module": "Каталог товаров"}}
-Tasks in "UX/UI Дизайн" do NOT need "module" — it is a flat list.
-Each module should have 2-5 tasks. The "Разработка" stage should have the most tasks total (10-20).
-
-Ensure all numbers are realistic and consistent. Double-check your math.
+Ensure all numbers are realistic and consistent. Double-check math.
 """
 
     @staticmethod
     def _apply_multipliers(data: dict, design_type: str, hourly_rate: float, budget_constraint: float | None = None) -> dict:
-        """Post-process AI estimation: enforce AI speedups and no-design constraint."""
-        FRONTEND_MULT = 0.6
-        BACKEND_MULT = 0.7
-
-        def adjust_hours(hours: dict) -> dict:
-            for key in ("min", "max"):
-                hours["frontend"][key] = round(hours["frontend"][key] * FRONTEND_MULT)
-                hours["backend"][key] = round(hours["backend"][key] * BACKEND_MULT)
-                if design_type == "no_design":
-                    hours["design"][key] = 0
-            return hours
-
-        def recalc_total(hours: dict) -> dict:
-            roles = ("pm", "design", "frontend", "backend", "qa")
-            return {
-                "min": sum(hours[r]["min"] for r in roles),
-                "max": sum(hours[r]["max"] for r in roles),
-            }
-
-        def scale_sub_items(module: dict, old_total: dict):
-            """Scale sub_item hours proportionally after module total was adjusted."""
-            sub_items = module.get("sub_items", [])
-            new_total = module.get("total", {})
-            for bound in ("min", "max"):
-                old_val = old_total.get(bound, 0)
-                new_val = new_total.get(bound, 0)
-                if old_val > 0:
-                    ratio = new_val / old_val
-                    for si in sub_items:
-                        if isinstance(si, dict) and "hours" in si:
-                            si["hours"][bound] = max(1, round(si["hours"][bound] * ratio))
-
+        """Post-process: enforce budget constraint if set, fix stages."""
         for module in data.get("modules", []):
-            if "hours" in module:
-                old_total = dict(module.get("total", {}))
-                module["hours"] = adjust_hours(module["hours"])
-                module["total"] = recalc_total(module["hours"])
-                scale_sub_items(module, old_total)
+            sub_items = module.get("sub_items", [])
+            module["total"] = sum(
+                (si.get("hours", 0) if isinstance(si.get("hours"), (int, float)) else 0)
+                for si in sub_items if isinstance(si, dict)
+            )
 
-        if "preparation_phase" in data and "hours" in data["preparation_phase"]:
-            old_total = dict(data["preparation_phase"].get("total", {}))
-            data["preparation_phase"]["hours"] = adjust_hours(data["preparation_phase"]["hours"])
-            data["preparation_phase"]["total"] = recalc_total(data["preparation_phase"]["hours"])
-            scale_sub_items(data["preparation_phase"], old_total)
+        total_hours = sum(m.get("total", 0) for m in data.get("modules", []))
+        data["totals"] = {
+            "total_hours": total_hours,
+            "total_cost": round(total_hours * hourly_rate, 2),
+        }
 
-        if "totals" in data:
-            totals = data["totals"]
-            roles = ("pm", "design", "frontend", "backend", "qa")
-            for role in roles:
-                if role in totals:
-                    totals[role]["min"] = sum(
-                        m["hours"][role]["min"] for m in data.get("modules", []) if "hours" in m
-                    ) + (data.get("preparation_phase", {}).get("hours", {}).get(role, {}).get("min", 0))
-                    totals[role]["max"] = sum(
-                        m["hours"][role]["max"] for m in data.get("modules", []) if "hours" in m
-                    ) + (data.get("preparation_phase", {}).get("hours", {}).get(role, {}).get("max", 0))
-
-            totals["total_hours"] = {
-                "min": sum(totals[r]["min"] for r in roles if r in totals),
-                "max": sum(totals[r]["max"] for r in roles if r in totals),
-            }
-            totals["total_cost"] = {
-                "min": round(totals["total_hours"]["min"] * hourly_rate, 2),
-                "max": round(totals["total_hours"]["max"] * hourly_rate, 2),
-            }
-
-        if budget_constraint is not None and "totals" in data:
-            totals = data["totals"]
+        if budget_constraint is not None and total_hours > 0:
             target_hours = budget_constraint / hourly_rate
-            avg_hours = (totals["total_hours"]["min"] + totals["total_hours"]["max"]) / 2
-            if avg_hours > 0 and abs(avg_hours - target_hours) > 0.5:
-                scale = target_hours / avg_hours
-                roles = ("pm", "design", "frontend", "backend", "qa")
-                for role in roles:
-                    if role in totals:
-                        totals[role]["min"] = max(0, round(totals[role]["min"] * scale))
-                        totals[role]["max"] = max(0, round(totals[role]["max"] * scale))
+            if abs(total_hours - target_hours) > 1:
+                scale = target_hours / total_hours
                 for module in data.get("modules", []):
-                    if "hours" in module:
-                        for role in roles:
-                            if role in module["hours"]:
-                                module["hours"][role]["min"] = max(0, round(module["hours"][role]["min"] * scale))
-                                module["hours"][role]["max"] = max(0, round(module["hours"][role]["max"] * scale))
-                        module["total"] = {
-                            "min": sum(module["hours"][r]["min"] for r in roles if r in module["hours"]),
-                            "max": sum(module["hours"][r]["max"] for r in roles if r in module["hours"]),
-                        }
-                        for si in module.get("sub_items", []):
-                            if isinstance(si, dict) and "hours" in si:
-                                si["hours"]["min"] = max(1, round(si["hours"]["min"] * scale))
-                                si["hours"]["max"] = max(1, round(si["hours"]["max"] * scale))
-                if "preparation_phase" in data and "hours" in data["preparation_phase"]:
-                    pp = data["preparation_phase"]
-                    for role in roles:
-                        if role in pp["hours"]:
-                            pp["hours"][role]["min"] = max(0, round(pp["hours"][role]["min"] * scale))
-                            pp["hours"][role]["max"] = max(0, round(pp["hours"][role]["max"] * scale))
-                    pp["total"] = {
-                        "min": sum(pp["hours"][r]["min"] for r in roles if r in pp["hours"]),
-                        "max": sum(pp["hours"][r]["max"] for r in roles if r in pp["hours"]),
-                    }
-
-                totals["total_hours"] = {
-                    "min": sum(totals[r]["min"] for r in roles if r in totals),
-                    "max": sum(totals[r]["max"] for r in roles if r in totals),
-                }
-                totals["total_cost"] = {
-                    "min": round(totals["total_hours"]["min"] * hourly_rate, 2),
-                    "max": round(totals["total_hours"]["max"] * hourly_rate, 2),
+                    for si in module.get("sub_items", []):
+                        if isinstance(si, dict) and isinstance(si.get("hours"), (int, float)):
+                            si["hours"] = max(1, round(si["hours"] * scale))
+                    module["total"] = sum(
+                        si.get("hours", 0) for si in module.get("sub_items", []) if isinstance(si, dict)
+                    )
+                total_hours = sum(m.get("total", 0) for m in data.get("modules", []))
+                data["totals"] = {
+                    "total_hours": total_hours,
+                    "total_cost": round(total_hours * hourly_rate, 2),
                 }
 
-        perspectives = data.get("perspectives", [])
-        if not perspectives or not isinstance(perspectives, list):
-            modules = data.get("modules", [])
-            module_names = [m.get("name", "") for m in modules if m.get("name")]
-            generated = []
-            _persp_templates = [
-                ("Аналитика и отчёты", "Наглядные графики и отчёты — вы видите, что работает, и принимаете решения на основе данных"),
-                ("Автоматические уведомления", "Клиенты получают напоминания, а вы — оповещения о важных событиях. Ничего не теряется."),
-                ("Мобильное приложение", "Удобное приложение для телефона — ваши клиенты всегда на связи, даже в дороге"),
-                ("Умные рекомендации", "Система подсказывает клиентам подходящие товары или услуги — средний чек растёт"),
-                ("Рост без ограничений", "Система готова к увеличению нагрузки — когда бизнес вырастет, продукт справится"),
-            ]
-            for i, (title, desc) in enumerate(_persp_templates):
-                if i < len(module_names):
-                    desc = f"Развитие модуля «{module_names[i]}»: {desc.lower()}"
-                generated.append({"title": title, "description": desc})
-            data["perspectives"] = generated
-            logger.info("Safety net: generated %d default perspectives", len(generated))
-
+        # --- Fix stages ---
         stages = data.get("stages", [])
-        if not stages:
-            stages = []
-            data["stages"] = stages
-
-        data["stages"] = [s for s in stages if "скоупинг" not in s.get("name", "").lower() and "scoping" not in s.get("name", "").lower()]
+        data["stages"] = [
+            s for s in stages
+            if "скоупинг" not in s.get("name", "").lower() and "scoping" not in s.get("name", "").lower()
+        ]
         if design_type == "no_design":
             data["stages"] = [s for s in data["stages"] if "дизайн" not in s.get("name", "").lower()]
-        stages = data["stages"]
 
-        stage_names_lower = [s.get("name", "").lower() for s in stages]
-
-        has_design = any("дизайн" in n for n in stage_names_lower)
-        has_dev = any("разработка" in n for n in stage_names_lower)
-        has_test = any("тестирован" in n or "отладк" in n or "деплой" in n or "запуск" in n for n in stage_names_lower)
-
-        totals_data = data.get("totals", {})
-        if design_type != "no_design" and not has_design:
-            design_hours = (totals_data.get("design", {}).get("min", 0) + totals_data.get("design", {}).get("max", 0)) // 2
-            if design_hours > 0:
-                stages.insert(0, {
-                    "name": "UX/UI Дизайн",
-                    "tasks": [
-                        {"name": "Проектирование структуры экранов и навигации", "hours": max(1, design_hours // 3)},
-                        {"name": "Создание вайрфреймов ключевых страниц", "hours": max(1, design_hours // 3)},
-                        {"name": "Согласование и финализация макетов", "hours": max(1, design_hours - 2 * (design_hours // 3))},
-                    ]
-                })
-
+        stage_names_lower = [s.get("name", "").lower() for s in data["stages"]]
+        has_test = any("тестирован" in n or "запуск" in n for n in stage_names_lower)
         if not has_test:
-            qa_hours = (totals_data.get("qa", {}).get("min", 0) + totals_data.get("qa", {}).get("max", 0)) // 2
-            if qa_hours <= 0:
-                qa_hours = max(4, int(((totals_data.get("total_hours", {}).get("min", 0) + totals_data.get("total_hours", {}).get("max", 0)) / 2) * 0.1))
-            stages.append({
+            qa_hours = max(4, int(total_hours * 0.1))
+            data["stages"].append({
                 "name": "Тестирование и запуск",
                 "tasks": [
                     {"name": "Проверка всех функций", "hours": max(1, qa_hours // 3)},
@@ -583,25 +316,65 @@ Ensure all numbers are realistic and consistent. Double-check your math.
                 ]
             })
 
-        data["stages"] = stages
-
-        if stages:
-            stages_total = sum(
-                t.get("hours", 0) for s in stages for t in s.get("tasks", [])
-            )
-            target_total = (
-                data.get("totals", {}).get("total_hours", {}).get("min", 0)
-                + data.get("totals", {}).get("total_hours", {}).get("max", 0)
-            ) / 2
-
-            if stages_total > 0 and target_total > 0:
-                ratio = target_total / stages_total
-                if abs(ratio - 1.0) > 0.05:
-                    for stage in stages:
-                        for task in stage.get("tasks", []):
-                            task["hours"] = max(1, round(task["hours"] * ratio))
+        stages_total = sum(t.get("hours", 0) for s in data["stages"] for t in s.get("tasks", []))
+        if stages_total > 0 and total_hours > 0:
+            ratio = total_hours / stages_total
+            if abs(ratio - 1.0) > 0.05:
+                for stage in data["stages"]:
+                    for task in stage.get("tasks", []):
+                        task["hours"] = max(1, round(task["hours"] * ratio))
 
         return data
+
+    @staticmethod
+    def _generate_fallback_stages(data: dict, design_type: str):
+        """Generate stages from modules when AI didn't provide them."""
+        stages = []
+        total_hours = data.get("totals", {}).get("total_hours", 0)
+
+        if design_type != "no_design":
+            dh = max(3, int(total_hours * 0.15))
+            stages.append({
+                "name": "UX/UI Дизайн",
+                "tasks": [
+                    {"name": "Проектирование структуры экранов и навигации", "hours": max(1, dh // 3)},
+                    {"name": "Создание вайрфреймов ключевых страниц", "hours": max(1, dh // 3)},
+                    {"name": "Согласование и финализация макетов", "hours": max(1, dh - 2 * (dh // 3))},
+                ]
+            })
+
+        dev_tasks = []
+        for mod in data.get("modules", []):
+            mod_name = mod.get("name", "Модуль")
+            for si in mod.get("sub_items", []):
+                if isinstance(si, dict):
+                    dev_tasks.append({
+                        "name": si.get("name", "Задача"),
+                        "hours": max(1, si.get("hours", 2)),
+                        "module": mod_name,
+                    })
+            if not mod.get("sub_items"):
+                dev_tasks.append({
+                    "name": f"Разработка модуля {mod_name}",
+                    "hours": max(2, mod.get("total", 8)),
+                    "module": mod_name,
+                })
+        stages.append({
+            "name": "Разработка приложения",
+            "tasks": dev_tasks or [{"name": "Основная разработка", "hours": max(4, int(total_hours * 0.7))}],
+        })
+
+        qa_hours = max(4, int(total_hours * 0.1))
+        stages.append({
+            "name": "Тестирование и запуск",
+            "tasks": [
+                {"name": "Проверка всех функций", "hours": max(1, qa_hours // 3)},
+                {"name": "Исправление ошибок", "hours": max(1, qa_hours // 3)},
+                {"name": "Запуск на рабочем сервере", "hours": max(1, qa_hours - 2 * (qa_hours // 3))},
+            ]
+        })
+
+        data["stages"] = stages
 
     async def _call_api(self, prompt: str) -> str | None:
         headers = {
@@ -662,13 +435,8 @@ Ensure all numbers are realistic and consistent. Double-check your math.
             "project_name": "Ошибка расчёта",
             "modules": [],
             "totals": {
-                "pm": {"min": 0, "max": 0},
-                "design": {"min": 0, "max": 0},
-                "frontend": {"min": 0, "max": 0},
-                "backend": {"min": 0, "max": 0},
-                "qa": {"min": 0, "max": 0},
-                "total_hours": {"min": 0, "max": 0},
-                "total_cost": {"min": 0, "max": 0},
+                "total_hours": 0,
+                "total_cost": 0,
             },
-            "timeline_months": {"min": 0, "max": 0},
+            "timeline_weeks": 0,
         }
