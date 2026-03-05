@@ -160,7 +160,9 @@ async def index(request):
 @routes.get('/projects')
 async def projects_page(request):
     """Serve projects listing page"""
-    return web.FileResponse('./static/projects.html')
+    resp = web.FileResponse('./static/projects.html')
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return resp
 
 @routes.get('/employees')
 async def employees_page(request):
@@ -263,7 +265,7 @@ async def proposal_page(request):
     except FileNotFoundError:
         return web.Response(status=404, text='Page not found')
 
-    og_title = 'Коммерческое предложение — РусНейроСофт'
+    og_title = 'Коммерческое предложение — НейроСофт'
     og_description = 'Разработка решений на основе искусственного интеллекта для стартапов и предпринимателей'
     og_url = f'{request.scheme}://{request.host}/proposal/{token}'
     og_image = f'{request.scheme}://{request.host}/og-proposal.png'
@@ -274,7 +276,7 @@ async def proposal_page(request):
             project_name = row.get('project_name') or ''
             client_name = row.get('client_name') or ''
             if project_name:
-                og_title = f'{project_name} — РусНейроСофт'
+                og_title = f'{project_name} — НейроСофт'
             if client_name and project_name:
                 og_description = f'Коммерческое предложение по проекту «{project_name}» для {client_name}'
             elif project_name:
@@ -313,21 +315,57 @@ async def proposal_api(request):
             creator['calendly_url'] = staff_contact.get('calendly_url', '')
             config_data['creator'] = creator
 
+        hourly_rate = float(row['hourly_rate']) if row.get('hourly_rate') else 0
+        design_type = row.get('design_type', 'no_design')
+        estimation['design_type'] = design_type
+
+        overhead = _resolve_overhead(estimation.get('overhead') or {})
+        _jr = lambda x: int(x + 0.5) if x >= 0 else -int(-x + 0.5)
+        modules = estimation.get('modules') or []
+        filtered = [m for m in modules if not (m.get('stage', 'dev') == 'design' and design_type == 'no_design')]
+        base_h = sum(si.get('hours', 0) or 0 for m in filtered for si in (m.get('sub_items') or []))
+        pm_h = _jr(base_h * (overhead.get('pm_percent') or 0) / 100)
+        qa_h = _jr(base_h * (overhead.get('qa_percent') or 0) / 100)
+        mkt_h = _jr(base_h * (overhead.get('marketing_percent') or 0) / 100)
+        seller_h = _jr(base_h * (overhead.get('seller_percent') or 0) / 100)
+        custom_items_list = overhead.get('custom_items') or []
+        custom_h = sum(_jr(base_h * (ci.get('percent', 0) or 0) / 100) for ci in custom_items_list)
+        total_hours = max(0, base_h + pm_h + qa_h + mkt_h + seller_h + custom_h)
+        total_cost = _jr(total_hours * hourly_rate)
+
+        discount_items = [
+            {'name': ci.get('name', ''), 'percent': ci.get('percent', 0)}
+            for ci in custom_items_list if (ci.get('percent', 0) or 0) < 0
+        ]
+        base_cost_no_discount = _jr(
+            max(0, base_h + pm_h + qa_h + mkt_h + seller_h) * hourly_rate
+        ) if discount_items else 0
+
+        payment_phases = _build_payment_phases(estimation, hourly_rate, total_hours, total_cost)
+
         return web.json_response({
             'token': row['token'],
             'project_name': row.get('project_name'),
             'client_name': row.get('client_name'),
             'proposal_type': row.get('proposal_type'),
-            'design_type': row.get('design_type'),
+            'design_type': design_type,
             'currency': row.get('currency', '$'),
-            'hourly_rate': float(row['hourly_rate']) if row.get('hourly_rate') else 0,
+            'hourly_rate': hourly_rate,
             'estimation': estimation,
             'config_data': config_data,
             'created_at': row['created_at'].isoformat() if row.get('created_at') else None,
             'client_id': row.get('client_id'),
             'client_uuid': str(row['client_uuid']) if row.get('client_uuid') else None,
+            'seller_id': row.get('seller_id'),
+            'seller_uuid': str(row['seller_uuid']) if row.get('seller_uuid') else None,
+            'seller_name': row.get('seller_name'),
             'project_id': row.get('project_id'),
             'proposal_status': row.get('proposal_status', 'draft'),
+            'payment_phases': payment_phases,
+            'total_hours': total_hours,
+            'total_cost': total_cost,
+            'discount_items': discount_items,
+            'base_cost_no_discount': base_cost_no_discount,
         })
     except Exception as e:
         logger.error(f"Failed to get proposal {token}: {e}", exc_info=True)
@@ -343,23 +381,32 @@ async def proposals_list_api(request):
             rows = await db.get_seller_proposals(tid) if tid else []
         else:
             rows = await db.get_all_commercial_proposals()
-        return web.json_response([{
-            'token': r['token'],
-            'project_name': r.get('project_name'),
-            'client_name': r.get('client_name'),
-            'proposal_type': r.get('proposal_type'),
-            'design_type': r.get('design_type'),
-            'currency': r.get('currency', '$'),
-            'hourly_rate': float(r['hourly_rate']) if r.get('hourly_rate') else 0,
-            'created_at': r['created_at'].isoformat() if r.get('created_at') else None,
-            'updated_at': r['updated_at'].isoformat() if r.get('updated_at') else None,
-            'client_id': r.get('client_id'),
-            'client_uuid': str(r['client_uuid']) if r.get('client_uuid') else None,
-            'project_id': r.get('project_id'),
-            'proposal_status': r.get('proposal_status', 'draft'),
-            'client_display_name': r.get('client_display_name'),
-            'client_company': r.get('client_company'),
-        } for r in rows])
+        def _row_to_dict(r):
+            d = {
+                'token': r['token'],
+                'project_name': r.get('project_name'),
+                'client_name': r.get('client_name'),
+                'proposal_type': r.get('proposal_type'),
+                'design_type': r.get('design_type'),
+                'currency': r.get('currency', '$'),
+                'hourly_rate': float(r['hourly_rate']) if r.get('hourly_rate') else 0,
+                'created_at': r['created_at'].isoformat() if r.get('created_at') else None,
+                'updated_at': r['updated_at'].isoformat() if r.get('updated_at') else None,
+                'client_id': r.get('client_id'),
+                'client_uuid': str(r['client_uuid']) if r.get('client_uuid') else None,
+                'project_id': r.get('project_id'),
+                'proposal_status': r.get('proposal_status', 'draft'),
+                'client_display_name': r.get('client_display_name'),
+                'client_company': r.get('client_company'),
+            }
+            est_raw = r.get('estimation')
+            if est_raw:
+                est = est_raw if isinstance(est_raw, dict) else json.loads(est_raw) if isinstance(est_raw, str) else {}
+                totals = est.get('totals') or {}
+                d['total_cost'] = totals.get('total_cost') or 0
+                d['total_hours'] = totals.get('total_hours') or 0
+            return d
+        return web.json_response([_row_to_dict(r) for r in rows])
     except Exception as e:
         logger.error(f"Failed to list proposals: {e}", exc_info=True)
         return web.json_response({'error': 'server_error'}, status=500)
@@ -370,21 +417,27 @@ async def proposal_update_api(request):
     token = request.match_info['token']
     try:
         data = await request.json()
-        updated = await db.update_commercial_proposal(
-            token,
-            project_name=data.get('project_name'),
-            client_name=data.get('client_name'),
-            hourly_rate=data.get('hourly_rate'),
-            currency=data.get('currency'),
-            estimation=data.get('estimation'),
-            proposal_type=data.get('proposal_type'),
-            design_type=data.get('design_type'),
-            client_id=data.get('client_id'),
-            project_id=data.get('project_id'),
-            proposal_status=data.get('proposal_status'),
-        )
+
+        old_proposal = await db.get_commercial_proposal(token)
+        old_client_id = old_proposal.get('client_id') if old_proposal else None
+
+        update_kwargs = {}
+        for key in ('project_name', 'client_name', 'hourly_rate', 'currency',
+                     'estimation', 'proposal_type', 'design_type',
+                     'client_id', 'seller_id', 'project_id', 'proposal_status'):
+            if key in data:
+                update_kwargs[key] = data[key]
+
+        updated = await db.update_commercial_proposal(token, **update_kwargs)
         if not updated:
             return web.json_response({'error': 'not_found'}, status=404)
+
+        new_client_id = updated.get('client_id')
+        if old_client_id != new_client_id:
+            if new_client_id:
+                await db.recalc_user_client_status(new_client_id)
+            if old_client_id:
+                await db.recalc_user_client_status(old_client_id)
 
         estimation = updated.get('estimation') or {}
         if isinstance(estimation, str):
@@ -401,6 +454,7 @@ async def proposal_update_api(request):
             'estimation': estimation,
             'updated_at': updated['updated_at'].isoformat() if updated.get('updated_at') else None,
             'client_id': updated.get('client_id'),
+            'seller_id': updated.get('seller_id'),
             'project_id': updated.get('project_id'),
             'proposal_status': updated.get('proposal_status', 'draft'),
         })
@@ -437,9 +491,16 @@ async def proposal_delete_api(request):
     """Delete proposal (auth required)."""
     token = request.match_info['token']
     try:
+        old_proposal = await db.get_commercial_proposal(token)
+        old_client_id = old_proposal.get('client_id') if old_proposal else None
+
         deleted = await db.delete_commercial_proposal(token)
         if not deleted:
             return web.json_response({'error': 'not_found'}, status=404)
+
+        if old_client_id:
+            await db.recalc_user_client_status(old_client_id)
+
         return web.json_response({'ok': True})
     except Exception as e:
         logger.error(f"Failed to delete proposal {token}: {e}", exc_info=True)
@@ -518,6 +579,7 @@ async def proposal_regenerate_api(request):
     if not proposal:
         return web.json_response({'error': 'not_found'}, status=404)
 
+    client_uuid = proposal.get('client_uuid')
     return web.json_response({
         'ok': True,
         'token': proposal['token'],
@@ -529,7 +591,7 @@ async def proposal_regenerate_api(request):
         'hourly_rate': float(proposal.get('hourly_rate', 0)),
         'estimation': proposal.get('estimation', {}),
         'client_id': proposal.get('client_id'),
-        'client_uuid': proposal.get('client_uuid'),
+        'client_uuid': str(client_uuid) if client_uuid else None,
     })
 
 
@@ -635,8 +697,12 @@ async def get_session(request) -> dict | None:
 
 @routes.get('/login')
 async def login_page(request):
-    """Serve login page (no auth required)."""
-    return web.FileResponse('./static/login.html')
+    """Serve login page (no auth required). No-cache to avoid Telegram WebView caching."""
+    resp = web.FileResponse('./static/login.html')
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 
 @routes.get('/auth/callback')
@@ -658,10 +724,17 @@ async def auth_callback(request):
     elif role in ('staff', 'admin'):
         default_page = '/projects'
     else:
-        default_page = '/my-cabinet'
-    redirect = unquote(raw_next) if raw_next else default_page
-    if not redirect.startswith('/') or redirect.startswith('/login'):
-        redirect = default_page
+        default_page = '/cabinet'
+    if role == 'user':
+        decoded = unquote(raw_next) if raw_next else ''
+        if decoded.startswith('/cabinet') or decoded == '/my-cabinet':
+            redirect = decoded
+        else:
+            redirect = default_page
+    else:
+        redirect = unquote(raw_next) if raw_next else default_page
+        if not redirect.startswith('/') or redirect.startswith('/login'):
+            redirect = default_page
     resp = web.HTTPFound(redirect)
     resp.set_cookie('session_token', token, max_age=10800, httponly=True, path='/', samesite='Lax')
     resp.del_cookie('auth_next', path='/')
@@ -697,25 +770,52 @@ async def auth_me(request):
         'note': session.get('note', ''),
     }
     if session['role'] == 'user':
-        client = await db.get_client_by_telegram_id(int(session['telegram_id']))
-        if client and client.get('cabinet_token'):
-            result['cabinet_token'] = client['cabinet_token']
+        async with db.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT id, cabinet_token FROM users WHERE telegram_id = $1",
+                int(session['telegram_id']),
+            )
+        if row:
+            token = row['cabinet_token']
+            if not token:
+                import secrets as _sec
+                token = _sec.token_hex(16)
+                async with db.pool.acquire() as conn:
+                    await conn.execute(
+                        "UPDATE users SET cabinet_token = $1 WHERE id = $2",
+                        token, row['id']
+                    )
+            result['cabinet_token'] = token
     return web.json_response(result)
 
 
 @routes.get('/my-cabinet')
+@routes.get('/cabinet')
 async def my_cabinet_redirect(request):
-    """Redirect authenticated client to their personal cabinet."""
+    """Redirect authenticated user to their personal cabinet."""
     session = await get_session(request)
     if not session:
-        raise web.HTTPFound('/login?next=/my-cabinet')
+        raise web.HTTPFound('/login?next=/cabinet')
     tg_id = session.get('telegram_id')
     if not tg_id:
         raise web.HTTPFound('/login')
-    client = await db.get_client_by_telegram_id(int(tg_id))
-    if client and client.get('cabinet_token'):
-        raise web.HTTPFound(f"/cabinet/{client['cabinet_token']}")
-    raise web.HTTPFound('/login')
+    async with db.pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT id, cabinet_token FROM users WHERE telegram_id = $1",
+            int(tg_id),
+        )
+    if not row:
+        raise web.HTTPFound('/login')
+    token = row['cabinet_token']
+    if not token:
+        import secrets as _sec
+        token = _sec.token_hex(16)
+        async with db.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE users SET cabinet_token = $1 WHERE id = $2",
+                token, row['id']
+            )
+    raise web.HTTPFound(f"/cabinet/{token}")
 
 
 def _validate_telegram_init_data(init_data: str, bot_token: str) -> dict | None:
@@ -797,13 +897,27 @@ async def auth_telegram(request):
         'first_name': first_name,
         'username': username,
         'role': role,
+        'session_token': token,
     }
     if role == 'user':
-        client = await db.get_client_by_telegram_id(int(telegram_id))
-        if client and client.get('cabinet_token'):
-            result['cabinet_token'] = client['cabinet_token']
+        async with db.pool.acquire() as conn:
+            urow = await conn.fetchrow(
+                "SELECT id, cabinet_token FROM users WHERE telegram_id = $1",
+                int(telegram_id),
+            )
+        if urow:
+            ct = urow['cabinet_token']
+            if not ct:
+                import secrets as _sec
+                ct = _sec.token_hex(16)
+                async with db.pool.acquire() as conn:
+                    await conn.execute(
+                        "UPDATE users SET cabinet_token = $1 WHERE id = $2",
+                        ct, urow['id']
+                    )
+            result['cabinet_token'] = ct
     resp = web.json_response(result)
-    resp.set_cookie('session_token', token, max_age=10800, httponly=True, path='/', samesite='None', secure=True)
+    resp.set_cookie('session_token', token, max_age=10800, httponly=True, path='/', samesite='Lax')
     return resp
 
 
@@ -892,8 +1006,17 @@ async def auth_dev_login(request):
         'username': username,
         'role': role,
     }
-    if role == 'user' and row['cabinet_token']:
-        result['cabinet_token'] = row['cabinet_token']
+    if role == 'user':
+        ct = row['cabinet_token']
+        if not ct:
+            import secrets as _sec
+            ct = _sec.token_hex(16)
+            async with db.pool.acquire() as conn:
+                await conn.execute(
+                    "UPDATE users SET cabinet_token = $1 WHERE telegram_id = $2",
+                    ct, int(telegram_id)
+                )
+        result['cabinet_token'] = ct
 
     resp = web.json_response(result)
     resp.set_cookie('session_token', token, max_age=86400, httponly=True, path='/', samesite='Lax')
@@ -940,6 +1063,10 @@ async def auth_middleware(request, handler):
     for prefix in _PUBLIC_PREFIXES:
         if path.startswith(prefix):
             return await handler(request)
+
+    # /cabinet (без токена) — обработчик сам проверяет сессию и редиректит
+    if path == '/cabinet':
+        return await handler(request)
 
     # Cabinet routes: public, but attach session if present (staff preview mode)
     if path.startswith('/cabinet/') or path.startswith('/api/cabinet/'):
@@ -1057,7 +1184,7 @@ async def meeting_page(request):
     meeting = await db.get_meeting_by_public_token(token)
 
     og_title = 'Детали встречи'
-    og_description = 'Запись встречи на портале РусНейроСофт'
+    og_description = 'Запись встречи на портале НейроСофт'
     og_image = f'{config.webapp_url}/og-meeting.jpg'
     og_url = f'{config.webapp_url}/meeting/{token}'
 
@@ -1088,7 +1215,7 @@ async def meeting_page(request):
 
     og_tags = (
         f'<meta property="og:type" content="article">\n'
-        f'    <meta property="og:site_name" content="РусНейроСофт">\n'
+        f'    <meta property="og:site_name" content="НейроСофт">\n'
         f'    <meta property="og:title" content="{_esc(og_title)}">\n'
         f'    <meta property="og:description" content="{_esc(og_description)}">\n'
         f'    <meta property="og:image" content="{_esc(og_image)}">\n'
@@ -1107,7 +1234,7 @@ async def meeting_page(request):
         html = f.read()
 
     html = html.replace('<title>Детали встречи</title>',
-                         f'<title>{_esc(og_title)} — РусНейроСофт</title>\n    {og_tags}')
+                         f'<title>{_esc(og_title)} — НейроСофт</title>\n    {og_tags}')
 
     return web.Response(
         text=html,
@@ -2681,6 +2808,28 @@ async def list_clients(request):
         staff_tg_ids = set()
     return web.json_response([_serialize_client(c, staff_tg_ids) for c in clients])
 
+
+@routes.get('/api/sellers')
+async def list_sellers(request):
+    """Return all users with role='seller'."""
+    try:
+        all_users = await db.get_all_users_admin()
+        sellers = [
+            {
+                'id': u.get('id'),
+                'telegram_id': u.get('telegram_id'),
+                'name': ' '.join(filter(None, [u.get('first_name'), u.get('last_name')])) or u.get('username') or str(u.get('telegram_id', '')),
+                'username': u.get('username'),
+                'uuid': str(u['uuid']) if u.get('uuid') else None,
+            }
+            for u in all_users if u.get('role') == 'seller'
+        ]
+        return web.json_response(sellers)
+    except Exception as e:
+        logger.error(f"Failed to list sellers: {e}", exc_info=True)
+        return web.json_response([], status=200)
+
+
 @routes.post('/api/clients')
 async def create_client_api(request):
     """Create a new client."""
@@ -2834,6 +2983,26 @@ async def update_client_status_api(request):
         'uuid': str(uuid_val) if uuid_val else None,
         'status': updated.get('client_status', new_status),
     })
+
+@routes.post('/api/client/{uuid}/ensure-cabinet')
+async def ensure_cabinet_token_api(request):
+    """Auto-generate cabinet_token if user doesn't have one."""
+    require_session(request)
+    client, err = await _get_client_by_uuid_or_404(request.match_info['uuid'])
+    if err:
+        return err
+    cabinet_token = client.get('cabinet_token')
+    if not cabinet_token:
+        import secrets as _secrets
+        cabinet_token = _secrets.token_hex(16)
+        async with db.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE users SET cabinet_token = $1, updated_at = NOW() WHERE id = $2",
+                cabinet_token, client['id'],
+            )
+        logger.info(f"Auto-generated cabinet_token for user {client['id']}")
+    return web.json_response({'cabinet_token': cabinet_token})
+
 
 @routes.patch('/api/client/{uuid}/block')
 async def toggle_client_block(request):
@@ -3068,6 +3237,142 @@ async def send_client_message_api(request):
     })
 
 
+_DEFAULT_OVERHEAD = {'pm_percent': 15, 'qa_percent': 10, 'marketing_percent': 5}
+
+
+def _resolve_overhead(overhead: dict) -> dict:
+    """Return overhead with defaults applied for missing/empty values."""
+    if not overhead:
+        return dict(_DEFAULT_OVERHEAD)
+    has_system = any(overhead.get(k) for k in ('pm_percent', 'qa_percent', 'marketing_percent'))
+    has_extra = overhead.get('seller_percent') or overhead.get('custom_items')
+    if not has_system and not has_extra:
+        return dict(_DEFAULT_OVERHEAD)
+    return overhead
+
+
+def _distribute_hours(raw_values: list[int], target_sum: int) -> list[int]:
+    """Distribute target_sum across items proportionally (largest-remainder method).
+    Guarantees sum(result) == target_sum exactly."""
+    total_raw = sum(raw_values)
+    if total_raw <= 0 or target_sum <= 0:
+        return [0] * len(raw_values)
+    exact = [v * target_sum / total_raw for v in raw_values]
+    floored = [int(e) for e in exact]
+    remainders = [(exact[i] - floored[i], i) for i in range(len(exact))]
+    remainders.sort(reverse=True)
+    deficit = target_sum - sum(floored)
+    for j in range(min(deficit, len(remainders))):
+        floored[remainders[j][1]] += 1
+    return floored
+
+
+def _build_payment_phases(est: dict, hourly_rate: float,
+                          total_hours: int, total_cost: int) -> list[dict]:
+    """Build payment phases using pre-computed totals from build_proposal."""
+    modules = est.get('modules') or []
+    design_type = est.get('design_type', 'no_design')
+
+    design_mods: list[dict] = []
+    dev_mods: list[dict] = []
+    for m in modules:
+        stage = m.get('stage', 'dev')
+        if stage == 'design' and design_type == 'no_design':
+            continue
+        h = sum(si.get('hours', 0) for si in (m.get('sub_items') or []))
+        entry = {'name': m.get('name', ''), 'hours': h}
+        if stage == 'design' and design_type != 'no_design':
+            design_mods.append(entry)
+        else:
+            dev_mods.append(entry)
+
+    design_hours = sum(dm['hours'] for dm in design_mods)
+
+    if total_cost <= 0:
+        return []
+
+    has_design = design_hours > 0 and design_type != 'no_design'
+
+    half = len(dev_mods) // 2 or 1
+    main_mods = dev_mods[:half]
+    rest_mods = dev_mods[half:]
+
+    if has_design:
+        scopes = [
+            {
+                'name': 'Аналитика и дизайн',
+                'pct': 25,
+                'deliverables': [dm['name'] for dm in design_mods]
+                    + ['Техническое задание', 'Архитектура решения'],
+            },
+            {
+                'name': 'Разработка ключевого функционала',
+                'pct': 35,
+                'deliverables': [m['name'] for m in main_mods],
+            },
+            {
+                'name': 'Интеграции и доработки',
+                'pct': 25,
+                'deliverables': [m['name'] for m in rest_mods],
+            },
+            {
+                'name': 'Тестирование и запуск',
+                'pct': 15,
+                'deliverables': ['Полное тестирование', 'Исправление замечаний', 'Запуск в продакшн'],
+            },
+        ]
+    else:
+        scopes = [
+            {
+                'name': 'Аналитика и проектирование',
+                'pct': 25,
+                'deliverables': ['Техническое задание', 'Архитектура решения', 'Прототип интерфейса'],
+            },
+            {
+                'name': 'Разработка ключевого функционала',
+                'pct': 35,
+                'deliverables': [m['name'] for m in main_mods],
+            },
+            {
+                'name': 'Интеграции и доработки',
+                'pct': 25,
+                'deliverables': [m['name'] for m in rest_mods],
+            },
+            {
+                'name': 'Тестирование и запуск',
+                'pct': 15,
+                'deliverables': ['Полное тестирование', 'Исправление замечаний', 'Запуск в продакшн'],
+            },
+        ]
+
+    saved = est.get('payment_phases') or []
+
+    phases = []
+    assigned_cost = 0
+    assigned_hours = 0
+    for i, scope in enumerate(scopes):
+        is_last = (i == len(scopes) - 1)
+        if is_last:
+            ph_cost = total_cost - assigned_cost
+            ph_hours = total_hours - assigned_hours
+        else:
+            ph_cost = round(total_cost * scope['pct'] / 100)
+            ph_hours = round(total_hours * scope['pct'] / 100)
+        assigned_cost += ph_cost
+        assigned_hours += ph_hours
+        prev = saved[i] if i < len(saved) else {}
+        phases.append({
+            'name': scope['name'],
+            'hours': ph_hours,
+            'cost': ph_cost,
+            'deliverables': [d for d in scope.get('deliverables', []) if d],
+            'status': prev.get('status', 'pending'),
+            'paid_at': prev.get('paid_at'),
+            'comment': prev.get('comment', ''),
+        })
+    return phases
+
+
 # ========== Cabinet API (public, token-based auth) ==========
 
 @routes.get('/cabinet/{token}')
@@ -3095,33 +3400,103 @@ async def get_cabinet_data(request):
         if isinstance(cfg, str):
             cfg = json.loads(cfg)
         hourly_rate = float(full.get('hourly_rate') or 0)
-        totals = est.get('totals') or {}
+        design_type = full.get('design_type', 'no_design')
+        est['design_type'] = design_type
 
-        # Build payment phases from stages
-        stages = est.get('stages') or []
-        payment_phases = []
-        for s in stages:
-            tasks = s.get('tasks') or []
-            phase_hours = sum(t.get('hours', 0) for t in tasks)
-            phase_cost = round(phase_hours * hourly_rate, 2)
-            payment_phases.append({
-                'name': s.get('name', ''),
-                'hours': phase_hours,
-                'cost': phase_cost,
-                'tasks': [{'name': t.get('name', ''), 'hours': t.get('hours', 0)} for t in tasks],
-                'status': 'pending',
+        modules = est.get('modules') or []
+        overhead = _resolve_overhead(est.get('overhead') or {})
+        pm_pct = overhead.get('pm_percent') or 0
+        qa_pct = overhead.get('qa_percent') or 0
+        mkt_pct = overhead.get('marketing_percent') or 0
+        seller_pct = overhead.get('seller_percent') or 0
+        custom_items = overhead.get('custom_items') or []
+
+        # --- Модули: точное распределение overhead ---
+        filtered_modules = [
+            m for m in modules
+            if not (m.get('stage', 'dev') == 'design' and design_type == 'no_design')
+        ]
+        all_si_raw = []
+        si_map = []
+        for mi, m in enumerate(filtered_modules):
+            for si_i, si in enumerate((m.get('sub_items') or [])):
+                raw_h = si.get('hours', 0) or 0
+                all_si_raw.append(raw_h)
+                si_map.append((mi, si_i, si.get('name', '')))
+
+        base_hours = sum(all_si_raw)
+        _js_round = lambda x: int(x + 0.5) if x >= 0 else -int(-x + 0.5)
+        pm_hours = _js_round(base_hours * pm_pct / 100)
+        qa_hours = _js_round(base_hours * qa_pct / 100)
+        mkt_hours = _js_round(base_hours * mkt_pct / 100)
+        seller_hours = _js_round(base_hours * seller_pct / 100)
+        custom_hours = sum(_js_round(base_hours * (ci.get('percent', 0) or 0) / 100) for ci in custom_items)
+        target_total = max(0, base_hours + pm_hours + qa_hours + mkt_hours + seller_hours + custom_hours)
+        distributed = _distribute_hours(all_si_raw, target_total)
+
+        client_modules = []
+        mod_buckets: dict[int, list] = {}
+        for idx, (mi, si_i, name) in enumerate(si_map):
+            mod_buckets.setdefault(mi, []).append({'name': name, 'hours': distributed[idx]})
+        for mi, m in enumerate(filtered_modules):
+            subs = mod_buckets.get(mi, [])
+            mod_total = sum(s['hours'] for s in subs)
+            client_modules.append({
+                'name': m.get('name', ''),
+                'stage': m.get('stage', 'dev'),
+                'sub_items': subs,
+                'total': mod_total,
             })
+
+        # --- Стейджи: точное распределение overhead ---
+        stages = est.get('stages') or []
+        all_task_raw = []
+        task_map = []
+        for si, st in enumerate(stages):
+            for ti, t in enumerate((st.get('tasks') or [])):
+                raw_h = t.get('hours', 0) or 0
+                all_task_raw.append(raw_h)
+                task_map.append((si, ti, t.get('name', ''), t.get('module', '')))
+
+        stage_base = sum(all_task_raw)
+        stage_target = target_total if stage_base > 0 else 0
+        stage_distributed = _distribute_hours(all_task_raw, stage_target)
+
+        client_stages = []
+        stage_buckets: dict[int, list] = {}
+        for idx, (si, ti, name, mod) in enumerate(task_map):
+            stage_buckets.setdefault(si, []).append({'name': name, 'hours': stage_distributed[idx], 'module': mod})
+        for si, st in enumerate(stages):
+            tasks = stage_buckets.get(si, [])
+            client_stages.append({
+                'name': st.get('name', ''),
+                'tasks': tasks,
+                'total_hours': sum(tk['hours'] for tk in tasks),
+            })
+
+        total_hours = target_total
+        total_cost = _js_round(total_hours * hourly_rate)
+
+        payment_phases = _build_payment_phases(est, hourly_rate, total_hours, total_cost)
+
+        discount_items = [
+            {'name': ci.get('name', ''), 'percent': ci.get('percent', 0)}
+            for ci in custom_items if (ci.get('percent', 0) or 0) < 0
+        ]
+        base_cost_no_discount = _js_round(
+            max(0, base_hours + pm_hours + qa_hours + mkt_hours + seller_hours) * hourly_rate
+        ) if discount_items else 0
 
         return {
             'project_name': full.get('project_name', ''),
             'token': full.get('token'),
             'status': full.get('proposal_status', 'draft'),
-            'total_hours': est.get('total_hours') or (totals.get('total_hours') or {}),
-            'total_cost': est.get('total_cost') or (totals.get('total_cost') or {}),
+            'total_hours': total_hours,
+            'total_cost': total_cost,
             'currency': full.get('currency', '$'),
             'hourly_rate': hourly_rate,
-            'modules': est.get('modules', []),
-            'stages': stages,
+            'modules': client_modules,
+            'stages': client_stages,
             'payment_phases': payment_phases,
             'timeline_weeks': est.get('timeline_weeks'),
             'timeline_months': est.get('timeline_months'),
@@ -3129,8 +3504,10 @@ async def get_cabinet_data(request):
             'preparation_phase': est.get('preparation_phase'),
             'perspectives': est.get('perspectives', []),
             'project_description_short': est.get('project_description_short', ''),
-            'totals': totals,
+            'totals': {'total_hours': total_hours, 'total_cost': total_cost},
             'creator': cfg.get('creator'),
+            'discount_items': discount_items,
+            'base_cost_no_discount': base_cost_no_discount,
         }
 
     proposals_by_project: dict[int, list] = {}

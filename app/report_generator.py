@@ -157,7 +157,7 @@ def generate_team_report_excel(
     report_by_team: dict[int, list[dict]],
     begin_label: str,
     end_label: str,
-    company_name: str = "РусНейроСофт",
+    company_name: str = "НейроСофт",
 ) -> bytes:
     """Generate a compact portrait-A4 PDF team report. Returns PDF bytes."""
 

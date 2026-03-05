@@ -73,7 +73,7 @@ def generate_og_image():
         font_badge = ImageFont.load_default()
 
     # Top left: Brand Name next to logo
-    draw.text((200, 100), "РусНейроСофт", font=font_brand, fill=(255, 255, 255, 255))
+    draw.text((200, 100), "НейроСофт", font=font_brand, fill=(255, 255, 255, 255))
     
     # Main Title
     title = "Готовое решение для\nвашего бизнеса"

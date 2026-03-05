@@ -7,7 +7,7 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
-    <meta name="author" content="РусНейроСофт">
+    <meta name="author" content="НейроСофт">
     <meta name="theme-color" content="#787cf5">
     <link rel="canonical" href="{{OG_URL}}">
     <meta property="og:title" content="{{OG_TITLE}}">
@@ -17,7 +17,7 @@
     <meta property="og:image" content="{{OG_IMAGE}}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:site_name" content="РусНейроСофт">
+    <meta property="og:site_name" content="НейроСофт">
     <meta property="og:locale" content="ru_RU">
     <meta name="description" content="{{OG_DESCRIPTION}}">
     <meta name="twitter:card" content="summary_large_image">
@@ -32,8 +32,8 @@
     {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "РусНейроСофт",
-        "alternateName": "RusNeuroSoft",
+        "name": "НейроСофт",
+        "alternateName": "NeuroSoft",
         "url": "https://rusneurosoft.ru",
         "logo": "https://portal.rusneurosoft.ru/img/logo-icon.png",
         "description": "Разработка цифровых продуктов для бизнеса — от идеи до запуска.",
@@ -171,6 +171,15 @@
         .pricing-phase-name { font-size: 15px; font-weight: 600; color: var(--text); }
         .pricing-phase-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
         .pricing-phase-cost { font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; }
+        .pricing-phase-badge { font-size:11px; font-weight:600; padding:3px 10px; border-radius:100px; white-space:nowrap; margin-left:8px; }
+        .pricing-phase-badge.paid { background:rgba(16,185,129,.1); color:#059669; }
+        .pricing-phase-badge.current { background:rgba(120,124,245,.1); color:var(--primary); }
+        .pricing-discount-banner { background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%); border:1px solid rgba(16,185,129,.2); border-radius:16px; padding:20px 28px; margin-bottom:24px; text-align:center; }
+        .pricing-discount-items { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:12px; }
+        .pricing-discount-tag { display:inline-flex; align-items:center; gap:6px; padding:6px 16px; background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.3); border-radius:100px; font-size:13px; font-weight:700; color:#059669; }
+        .pricing-discount-tag svg { flex-shrink:0; }
+        .pricing-old-price { font-size:22px; font-weight:700; color:#94a3b8; text-decoration:line-through; }
+        .pricing-save-label { font-size:13px; color:#059669; font-weight:600; margin-top:4px; }
         .pricing-guarantee { background: linear-gradient(135deg, rgba(120,124,245,.06), rgba(167,139,250,.06)); border: 1px solid rgba(120,124,245,.15); border-radius: 16px; padding: 24px; text-align: center; }
         .pricing-guarantee-text { font-size: 14px; color: var(--text); line-height: 1.6; }
         .pricing-guarantee-text strong { color: var(--primary); }
@@ -348,7 +357,7 @@
 <body>
     <noscript>
         <div style="max-width:800px;margin:60px auto;padding:0 24px;font-family:Manrope,sans-serif;color:#1a1a2e;">
-            <h1>РусНейроСофт — Предложение по разработке</h1>
+            <h1>НейроСофт — Предложение по разработке</h1>
             <p>Разработка цифровых продуктов для бизнеса — от идеи до запуска. Обсудите проект: <a href="https://t.me/IT_anasta">@IT_anasta</a></p>
         </div>
     </noscript>
@@ -361,12 +370,12 @@
         <header role="banner">
         <section class="hero">
             <div class="hero-bg">
-                <img src="/img/hero-meeting.png" alt="РусНейроСофт — разработка цифровых продуктов">
+                <img src="/img/hero-meeting.png" alt="НейроСофт — разработка цифровых продуктов">
             </div>
             <div class="hero-content">
                 <div class="hero-top reveal">
-                    <img src="/img/logo-icon.png" alt="РусНейроСофт">
-                    <span class="hero-top-name" id="heroCompany">РусНейроСофт</span>
+                    <img src="/img/logo-icon.png" alt="НейроСофт">
+                    <span class="hero-top-name" id="heroCompany">НейроСофт</span>
                 </div>
                 <h1 class="hero-title reveal reveal-delay-1" id="heroTitle"></h1>
                 <div class="hero-subtitle reveal reveal-delay-1" id="heroSubtitle" style="display:none;"></div>
@@ -761,7 +770,7 @@
         function render(d) {
             var est = d.estimation || {};
             var cfg = d.config_data || {};
-            var companyName = cfg.company_name || 'РусНейроСофт';
+            var companyName = cfg.company_name || 'НейроСофт';
             var projectName = est.project_name || d.project_name || 'Проект';
 
             document.title = projectName + ' — ' + companyName;
@@ -857,8 +866,13 @@
             if (stagesData.length > 0) {
                 document.getElementById('timelineSection').style.display = '';
                 var timeline = est.timeline_weeks || est.timeline_months || {};
-                if (timeline.min || timeline.max) {
-                    var tw = Math.round(((timeline.min || 0) + (timeline.max || 0)) / 2);
+                var tw = 0;
+                if (typeof timeline === 'number' && timeline > 0) {
+                    tw = timeline;
+                } else if (timeline && typeof timeline === 'object' && (timeline.min || timeline.max)) {
+                    tw = Math.round(((timeline.min || 0) + (timeline.max || 0)) / 2);
+                }
+                if (tw > 0) {
                     var unit = est.timeline_months ? pluralize(tw, 'месяц', 'месяца', 'месяцев') : pluralize(tw, 'неделя', 'недели', 'недель');
                     document.getElementById('timelineDesc').textContent = 'Ориентировочный срок — ' + tw + ' ' + unit + '. Вот из каких этапов состоит работа:';
                 }
@@ -879,26 +893,70 @@
             }
 
             // Pricing
-            var totals = est.totals || {};
-            var totalCost = totals.total_cost || {};
             var currency = d.currency || '$';
-            if (totalCost.min || totalCost.max) {
+            var avgCost = d.total_cost || 0;
+            if (!avgCost) {
+                var totals = est.totals || {};
+                var rawCost = totals.total_cost;
+                if (typeof rawCost === 'number' && rawCost > 0) avgCost = Math.round(rawCost);
+                else if (rawCost && typeof rawCost === 'object') avgCost = Math.round(((rawCost.min || 0) + (rawCost.max || 0)) / 2);
+            }
+
+            if (avgCost > 0) {
                 document.getElementById('pricingSection').style.display = '';
                 document.getElementById('midCtaPricing').style.display = '';
-                var avgCost = Math.round(((totalCost.min || 0) + (totalCost.max || 0)) / 2);
+
                 document.getElementById('pricingCost').textContent = formatNum(avgCost) + currency;
 
-                // Payment phases from stages
-                if (stagesData.length > 1) {
-                    var phasesEl = document.getElementById('pricingPhases');
+                var overhead = est.overhead || {};
+                var customItems = overhead.custom_items || [];
+                var discounts = customItems.filter(function(ci) { return (ci.percent || 0) < 0; });
+                if (discounts.length > 0) {
+                    var baseCostND = d.base_cost_no_discount || 0;
+                    if (!baseCostND) {
+                        var pmPct = overhead.pm_percent || 0, qaPct = overhead.qa_percent || 0, mktPct = overhead.marketing_percent || 0, sellerPct = overhead.seller_percent || 0;
+                        var devHrs = (est.totals || {}).dev_hours || 0;
+                        baseCostND = Math.round(devHrs * (1 + (pmPct + qaPct + mktPct + sellerPct) / 100)) * (d.hourly_rate || 0);
+                    }
+                    if (baseCostND > avgCost) {
+                        var saving = baseCostND - avgCost;
+                        var bannerHtml = '<div class="pricing-discount-banner"><div class="pricing-discount-items">';
+                        discounts.forEach(function(di) {
+                            bannerHtml += '<span class="pricing-discount-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>' + esc(di.name) + ' ' + di.percent + '%</span>';
+                        });
+                        bannerHtml += '</div>';
+                        bannerHtml += '<div class="pricing-old-price">' + formatNum(Math.round(baseCostND)) + currency + '</div>';
+                        bannerHtml += '<div class="pricing-save-label">Вы экономите ' + formatNum(Math.round(saving)) + currency + '</div>';
+                        bannerHtml += '</div>';
+                        document.querySelector('.pricing-hero').insertAdjacentHTML('afterend', bannerHtml);
+                    }
+                }
+
+                var paymentPhases = d.payment_phases || [];
+                var phasesEl = document.getElementById('pricingPhases');
+                if (paymentPhases.length > 0) {
                     phasesEl.style.display = '';
-                    var totalStageHours = 0;
-                    stagesData.forEach(function(s) { (s.tasks || []).forEach(function(t) { totalStageHours += (t.hours || 0); }); });
+                    var firstUnpaidIdx = -1;
+                    paymentPhases.forEach(function(pp, i) { if (pp.status !== 'paid' && firstUnpaidIdx < 0) firstUnpaidIdx = i; });
+                    paymentPhases.forEach(function(pp, i) {
+                        var isPaid = pp.status === 'paid';
+                        var isCurrent = !isPaid && i === firstUnpaidIdx;
+                        var delivHtml = '';
+                        if (pp.deliverables && pp.deliverables.length) {
+                            delivHtml = '<div class="pricing-phase-desc">' + pp.deliverables.map(function(dl) { return esc(dl); }).join(' · ') + '</div>';
+                        }
+                        var badgeHtml = '';
+                        if (isPaid) badgeHtml = '<span class="pricing-phase-badge paid">Оплачено</span>';
+                        else if (isCurrent) badgeHtml = '<span class="pricing-phase-badge current">К оплате</span>';
+                        var phase = document.createElement('div');
+                        phase.className = 'pricing-phase';
+                        phase.innerHTML = '<div class="pricing-phase-num">' + (isPaid ? '✓' : (i + 1)) + '</div><div class="pricing-phase-info"><div class="pricing-phase-name">' + esc(pp.name) + '</div>' + delivHtml + '</div><div class="pricing-phase-cost">' + formatNum(pp.cost || 0) + currency + badgeHtml + '</div>';
+                        phasesEl.appendChild(phase);
+                    });
+                } else if (stagesData.length > 1) {
+                    phasesEl.style.display = '';
                     stagesData.forEach(function(s, i) {
-                        var stageHours = 0;
-                        (s.tasks || []).forEach(function(t) { stageHours += (t.hours || 0); });
-                        var pct = totalStageHours > 0 ? stageHours / totalStageHours : 1 / stagesData.length;
-                        var phaseCost = Math.round(avgCost * pct);
+                        var phaseCost = s._cost || Math.round(avgCost / stagesData.length);
                         var phase = document.createElement('div');
                         phase.className = 'pricing-phase';
                         phase.innerHTML = '<div class="pricing-phase-num">' + (i + 1) + '</div><div class="pricing-phase-info"><div class="pricing-phase-name">' + esc(s.name) + '</div></div><div class="pricing-phase-cost">' + formatNum(phaseCost) + currency + '</div>';

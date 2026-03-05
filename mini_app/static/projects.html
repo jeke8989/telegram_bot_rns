@@ -1468,11 +1468,21 @@
             if (r.ok) {
                 const u = await r.json();
                 currentUserRole = u.role || '';
+                if (u.role === 'user') {
+                    window.location.replace(u.cabinet_token ? '/cabinet/' + u.cabinet_token : '/my-cabinet');
+                    return;
+                }
                 if (u.role === 'admin') {
                     document.getElementById('manageCategoriesBtn').style.display = '';
                 }
+            } else {
+                window.location.replace('/login');
+                return;
             }
-        } catch(_) {}
+        } catch(_) {
+            window.location.replace('/login');
+            return;
+        }
         await loadCategories();
         loadProjects();
         loadUnlinked();

@@ -217,42 +217,44 @@ class NeuroConnectorBot:
             # Web app login: /start weblogin
             if arg == "weblogin":
                 role = await self.db.get_user_role(user.id)
+                webapp_url = self.config.webapp_url or ""
 
-                note = ""
-                if role in ('staff', 'admin', 'seller'):
-                    note = await self.db.get_staff_note(user.id) or ""
+                if role == 'seller':
+                    next_page = '/seller'
+                elif role in ('staff', 'admin'):
+                    next_page = '/projects'
+                else:
+                    client = await self.db.get_client_by_telegram_id(user.id)
+                    if client and client.get('cabinet_token'):
+                        next_page = f"/cabinet/{client['cabinet_token']}"
+                    else:
+                        next_page = '/my-cabinet'
+
+                miniapp_url = f"{webapp_url}/login?next={quote(next_page)}"
 
                 session_token = uuid.uuid4().hex
-                expires_at = datetime.now(zoneinfo.ZoneInfo("UTC")) + timedelta(hours=3)
+                note = ''
+                if role in ('staff', 'admin', 'seller'):
+                    note = await self.db.get_staff_note(user.id) or ''
                 await self.db.create_web_session(
                     token=session_token,
                     telegram_id=user.id,
-                    first_name=user.first_name or "",
-                    username=user.username or "",
+                    first_name=user.first_name or '',
+                    username=user.username or '',
                     role=role,
                     note=note,
-                    expires_at=expires_at,
+                    expires_at=datetime.now(timezone.utc) + timedelta(hours=3),
                 )
+                browser_url = f"{webapp_url}/auth/callback?token={session_token}&next={quote(next_page)}"
 
-                webapp_url = self.config.webapp_url or ""
-                login_url = f"{webapp_url}/auth/callback?token={session_token}"
-
-                # For client users, redirect to their cabinet
-                if role == 'user':
-                    client = await self.db.get_client_by_telegram_id(user.id)
-                    if client and client.get('cabinet_token'):
-                        login_url = (
-                            f"{webapp_url}/auth/callback?token={session_token}"
-                            f"&next=/cabinet/{client['cabinet_token']}"
-                        )
-
-                btn_label = "🌐 Войти в портал" if role in ('staff', 'admin', 'seller') else "📂 Открыть личный кабинет"
+                app_label = "📱 Открыть в приложении" if role in ('staff', 'admin', 'seller') else "📱 Личный кабинет"
+                browser_label = "🌐 Открыть в браузере"
                 await update.message.reply_text(
                     "✅ <b>Авторизация подтверждена</b>\n\n"
-                    "Нажмите кнопку ниже, чтобы войти в портал.\n"
-                    "Ссылка действительна <b>3 часа</b>.",
+                    "Выберите способ входа:",
                     reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton(btn_label, url=login_url)],
+                        [InlineKeyboardButton(app_label, web_app=WebAppInfo(url=miniapp_url))],
+                        [InlineKeyboardButton(browser_label, url=browser_url)],
                     ]),
                     parse_mode='HTML',
                 )
@@ -488,7 +490,7 @@ class NeuroConnectorBot:
                             await update.message.reply_photo(
                                 photo=photo,
                                 caption=(
-                                    f"🎉 <b>Добро пожаловать в РусНейроСофт!</b>\n\n"
+                                    f"🎉 <b>Добро пожаловать в НейроСофт!</b>\n\n"
                                     f"Вы успешно зарегистрированы в клиентском портале.\n\n"
                                     f"📂 <b>Ваш личный кабинет активирован</b>\n"
                                     f"Здесь вы найдёте:\n"
@@ -509,7 +511,7 @@ class NeuroConnectorBot:
                             )
                     else:
                         await update.message.reply_text(
-                            f"🎉 <b>Добро пожаловать в РусНейроСофт!</b>\n\n"
+                            f"🎉 <b>Добро пожаловать в НейроСофт!</b>\n\n"
                             f"Вы успешно зарегистрированы в клиентском портале.\n\n"
                             f"📂 <b>Ваш личный кабинет активирован</b>\n"
                             f"Здесь вы найдёте:\n"
@@ -4447,7 +4449,7 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
                 report_by_project=data["report_by_project"],
                 begin_label=begin_label,
                 end_label=end_label,
-                company_name=self.config.company_name or "РусНейроСофт",
+                company_name=self.config.company_name or "НейроСофт",
             )
 
             import io
@@ -5104,7 +5106,7 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
             if is_seller:
                 ceo_contact = self.config.STAFF_CONTACTS.get('black_tie_777')
                 creator_contact = ceo_contact or {
-                    'name': self.config.company_name or 'РусНейроСофт',
+                    'name': self.config.company_name or 'НейроСофт',
                     'role': 'CEO',
                     'phone': self.config.company_phone or '',
                     'email': self.config.company_email or 'info@rusneurosoft.ru',
@@ -5122,7 +5124,7 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
                     }
 
             config_data = {
-                'company_name': self.config.company_name or 'РусНейроСофт',
+                'company_name': self.config.company_name or 'НейроСофт',
                 'company_email': self.config.company_email or 'info@rusneurosoft.ru',
                 'company_website': self.config.company_website or 'https://rusneurosoft.ru/',
                 'company_phone': self.config.company_phone or '',

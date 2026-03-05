@@ -9,193 +9,205 @@
     <link rel="stylesheet" href="/css/base.css?v=1772292397">
     <link rel="stylesheet" href="/css/components/buttons.css?v=1772292397">
     <link rel="stylesheet" href="/css/components/cards.css?v=1772292397">
-    <title>Кабинет продажника</title>
+    <title>Кабинет продажника — НейроСофт</title>
     <style>
         :root {
             --seller: #fd79a8;
-            --seller-glow: rgba(253,121,168,.2);
+            --seller-glow: rgba(253,121,168,.15);
+            --seller-bg: rgba(253,121,168,.06);
         }
+        .seller-page { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
 
-        /* ── Page hero ── */
-        .page-hero {
-            background: linear-gradient(135deg, rgba(253,121,168,.12) 0%, rgba(108,92,231,.08) 100%);
-            border: 1px solid rgba(253,121,168,.2);
-            border-radius: var(--radius);
-            padding: 32px;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .hero-content { flex: 1; min-width: 0; }
-        .btn-logout {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(253,121,168,.3);
-            background: rgba(253,121,168,.08);
-            color: var(--seller);
-            font-size: .82rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
-            text-decoration: none;
-            transition: background .15s, border-color .15s;
-        }
-        .btn-logout:hover {
-            background: rgba(253,121,168,.16);
-            border-color: rgba(253,121,168,.5);
-        }
-        .hero-icon {
-            width: 56px; height: 56px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, var(--seller), #f9a8d4);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem;
-            flex-shrink: 0;
-        }
-        .hero-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
-        .hero-sub { font-size: .9rem; color: var(--text-dim); }
-        .hero-name { color: var(--seller); }
-
-        /* ── Stats ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-        .stat-card {
+        /* ── Header ── */
+        .seller-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 24px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 20px;
-            text-align: center;
+            margin-bottom: 20px;
         }
-        .stat-value { font-size: 2rem; font-weight: 700; color: var(--seller); line-height: 1; margin-bottom: 6px; }
-        .stat-label { font-size: .78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; }
-
-        /* ── Section grid ── */
-        .section-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+        .seller-header-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+        .seller-avatar {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--seller), #f9a8d4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; flex-shrink: 0;
         }
-
-        /* ── Coming soon ── */
-        .coming-soon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 28px 20px;
-            color: var(--text-dim);
-            text-align: center;
+        .seller-name { font-size: 1.05rem; font-weight: 700; }
+        .seller-role { font-size: .75rem; color: var(--text-dim); margin-top: 1px; }
+        .btn-logout {
+            display: flex; align-items: center; gap: 5px;
+            padding: 7px 14px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--surface);
+            color: var(--text-dim); font-size: .78rem; font-weight: 600;
+            cursor: pointer; text-decoration: none; transition: all .15s;
         }
-        .coming-soon-icon { font-size: 2rem; opacity: .5; }
-        .coming-soon-title { font-size: .88rem; font-weight: 600; color: var(--text); }
-        .coming-soon-desc { font-size: .78rem; line-height: 1.5; max-width: 220px; }
-        .badge-soon {
-            font-size: .65rem; font-weight: 700; letter-spacing: .5px;
-            text-transform: uppercase;
-            background: rgba(253,121,168,.12);
-            color: var(--seller);
-            padding: 3px 8px; border-radius: 6px;
+        .btn-logout:hover { border-color: var(--seller); color: var(--seller); }
+
+        /* ── Stats row ── */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 12px; margin-bottom: 20px;
         }
+        .stat-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px; text-align: center;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+        .stat-value.pink { color: var(--seller); }
+        .stat-value.accent { color: var(--accent); }
+        .stat-value.green { color: var(--green); }
+        .stat-value.orange { color: var(--orange); }
+        .stat-label { font-size: .7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .4px; }
 
-        /* ── Card sub-elements ── */
-        .card-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
-        .card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
-        .card-title { font-size: .95rem; font-weight: 600; }
-        .card-body { padding: 16px 20px; }
+        /* ── Funnel ── */
+        .funnel-section {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px;
+        }
+        .funnel-title {
+            font-size: .88rem; font-weight: 700; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .funnel-title svg { color: var(--seller); }
+        .funnel-bars { display: flex; flex-direction: column; gap: 10px; }
+        .funnel-row { display: flex; align-items: center; gap: 12px; }
+        .funnel-label { width: 110px; font-size: .78rem; font-weight: 600; color: var(--text-dim); flex-shrink: 0; }
+        .funnel-bar-wrap { flex: 1; height: 28px; background: var(--surface-2); border-radius: 6px; overflow: hidden; position: relative; }
+        .funnel-bar { height: 100%; border-radius: 6px; transition: width .4s ease; min-width: 2px; }
+        .funnel-bar.draft { background: rgba(139,143,168,.3); }
+        .funnel-bar.sent { background: rgba(108,92,231,.5); }
+        .funnel-bar.accepted { background: rgba(0,206,201,.5); }
+        .funnel-bar.rejected { background: rgba(225,115,85,.4); }
+        .funnel-count {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            font-size: .72rem; font-weight: 700; color: var(--text);
+        }
+        .funnel-amount { width: 100px; text-align: right; font-size: .8rem; font-weight: 600; color: var(--text); flex-shrink: 0; }
 
-        /* ── Inline tables ── */
-        .seller-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-        .seller-table th { text-align: left; color: var(--text-dim); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .3px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
-        .seller-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        .seller-table tr:last-child td { border-bottom: none; }
-        .seller-table a { color: var(--seller); text-decoration: none; }
-        .seller-table a:hover { text-decoration: underline; }
-        .status-pill { font-size: .7rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; white-space: nowrap; }
-        .status-pill.draft { background: rgba(139,143,168,.15); color: var(--text-dim); }
-        .status-pill.sent { background: rgba(108,92,231,.15); color: var(--accent); }
-        .status-pill.accepted { background: rgba(0,206,201,.15); color: var(--green); }
-        .status-pill.rejected { background: rgba(225,115,85,.15); color: var(--red); }
-        .empty-msg { text-align: center; padding: 24px 16px; color: var(--text-dim); font-size: .85rem; }
+        /* ── Proposals table ── */
+        .section-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 20px; overflow: hidden;
+        }
+        .section-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 20px; border-bottom: 1px solid var(--border);
+        }
+        .section-icon {
+            width: 30px; height: 30px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0;
+        }
+        .section-title { font-size: .9rem; font-weight: 700; }
+        .section-count { font-size: .72rem; color: var(--text-dim); background: var(--surface-2); padding: 2px 8px; border-radius: 10px; margin-left: auto; }
 
-        .seller-page { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
-        .seller-page .card:hover { transform: none; box-shadow: none; }
+        .proposals-list { padding: 0; }
+        .prop-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 20px; border-bottom: 1px solid var(--border);
+            transition: background .1s;
+        }
+        .prop-row:last-child { border-bottom: none; }
+        .prop-row:hover { background: var(--seller-bg); }
+        .prop-info { flex: 1; min-width: 0; }
+        .prop-name { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .prop-name a { color: var(--text); text-decoration: none; }
+        .prop-name a:hover { color: var(--seller); }
+        .prop-client { font-size: .72rem; color: var(--text-dim); margin-top: 2px; }
+        .prop-cost { font-size: .85rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+        .prop-date { font-size: .72rem; color: var(--text-dim); white-space: nowrap; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .status-dot.draft { background: var(--text-dim); }
+        .status-dot.sent { background: var(--accent); }
+        .status-dot.accepted { background: var(--green); }
+        .status-dot.rejected { background: var(--red); }
 
-        @media (max-width: 768px) {
-            .page-hero { flex-wrap: wrap; text-align: center; padding: 20px; }
-            .hero-content { width: 100%; }
-            .btn-logout { align-self: center; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .empty-msg { text-align: center; padding: 32px 16px; color: var(--text-dim); font-size: .85rem; }
+
+        /* ── Clients list ── */
+        .client-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 20px; border-bottom: 1px solid var(--border);
+        }
+        .client-row:last-child { border-bottom: none; }
+        .client-avatar-sm {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: rgba(0,206,201,.12); color: var(--green);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .75rem; font-weight: 700; flex-shrink: 0;
+        }
+        .client-info { flex: 1; min-width: 0; }
+        .client-name-row { font-size: .85rem; font-weight: 600; }
+        .client-company { font-size: .72rem; color: var(--text-dim); margin-top: 1px; }
+        .client-kp-count { font-size: .72rem; color: var(--text-dim); background: var(--surface-2); padding: 2px 8px; border-radius: 10px; }
+
+        @media (max-width: 640px) {
+            .seller-page { padding: 16px 12px 40px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .stat-card { padding: 12px; }
+            .stat-value { font-size: 1.2rem; }
+            .funnel-label { width: 80px; font-size: .7rem; }
+            .funnel-amount { width: 80px; font-size: .72rem; }
+            .prop-row { padding: 10px 14px; }
+            .seller-header { padding: 14px 16px; }
         }
     </style>
 </head>
 <body>
-    <main class="seller-page">
-        <!-- Hero -->
-        <div class="page-hero">
-            <div class="hero-icon">🤝</div>
-            <div class="hero-content">
-                <div class="hero-title">Добро пожаловать, <span class="hero-name" id="heroName">Продажник</span></div>
-                <div class="hero-sub">Ваш рабочий кабинет — здесь появятся инструменты для работы с клиентами и сделками</div>
+    <main class="seller-page" id="app">
+        <div class="seller-header">
+            <div class="seller-header-left">
+                <div class="seller-avatar">🤝</div>
+                <div>
+                    <div class="seller-name" id="heroName">Продажник</div>
+                    <div class="seller-role">Менеджер по продажам</div>
+                </div>
             </div>
             <a href="/auth/logout" class="btn-logout">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Выйти
             </a>
         </div>
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="statProposals">—</div>
-                <div class="stat-label">Предложений</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statClients">—</div>
-                <div class="stat-label">Клиентов</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" style="color:var(--text-dim)">⏳</div>
-                <div class="stat-label">Сделок в работе</div>
-            </div>
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-value pink" id="statProposals">—</div><div class="stat-label">Предложений</div></div>
+            <div class="stat-card"><div class="stat-value accent" id="statClients">—</div><div class="stat-label">Клиентов</div></div>
+            <div class="stat-card"><div class="stat-value green" id="statAccepted">—</div><div class="stat-label">Принято</div></div>
+            <div class="stat-card"><div class="stat-value orange" id="statTotalSum">—</div><div class="stat-label">Общая сумма</div></div>
         </div>
 
-        <!-- My Proposals -->
-        <div class="card" style="margin-bottom:20px">
-            <div class="card-header">
-                <div class="card-icon" style="background:rgba(108,92,231,.12)">📄</div>
-                <span class="card-title">Мои предложения</span>
+        <div class="funnel-section" id="funnelSection" style="display:none">
+            <div class="funnel-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                Воронка продаж
             </div>
-            <div class="card-body" id="proposalsBody" style="padding:0;overflow-x:auto">
+            <div class="funnel-bars" id="funnelBars"></div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-icon" style="background:rgba(108,92,231,.12)">📄</div>
+                <span class="section-title">Мои предложения</span>
+                <span class="section-count" id="proposalsCount">0</span>
+            </div>
+            <div class="proposals-list" id="proposalsBody">
                 <div class="empty-msg">Загрузка...</div>
             </div>
         </div>
 
-        <!-- My Clients -->
-        <div class="card" style="margin-bottom:20px">
-            <div class="card-header">
-                <div class="card-icon" style="background:rgba(0,206,201,.12)">👤</div>
-                <span class="card-title">Мои клиенты</span>
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-icon" style="background:rgba(0,206,201,.12)">👤</div>
+                <span class="section-title">Мои клиенты</span>
+                <span class="section-count" id="clientsCount">0</span>
             </div>
-            <div class="card-body" id="clientsBody" style="padding:0;overflow-x:auto">
+            <div id="clientsBody">
                 <div class="empty-msg">Загрузка...</div>
             </div>
         </div>
     </main>
 
-    <script src="/js/pages/seller.js"></script>
+    <script src="/js/pages/seller.js?v=20260305"></script>
 </body>
 </html>

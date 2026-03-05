@@ -35,21 +35,56 @@ class Database:
     async def init_tables(self):
         """Initialize database tables"""
         async with self.pool.acquire() as conn:
-            # Create users table - для всех пользователей бота (для рассылок)
+            # Create users table
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     id SERIAL PRIMARY KEY,
-                    telegram_id BIGINT UNIQUE NOT NULL,
+                    telegram_id BIGINT UNIQUE,
                     first_name VARCHAR(255),
                     last_name VARCHAR(255),
                     username VARCHAR(255),
                     is_bot BOOLEAN DEFAULT FALSE,
                     language_code VARCHAR(10),
                     is_blocked BOOLEAN DEFAULT FALSE,
+                    role VARCHAR(50) DEFAULT 'user',
+                    uuid UUID DEFAULT gen_random_uuid() UNIQUE,
+                    company VARCHAR(500),
+                    email VARCHAR(255),
+                    phone VARCHAR(100),
+                    position VARCHAR(255),
+                    website VARCHAR(500),
+                    address TEXT,
+                    client_notes TEXT,
+                    client_status VARCHAR(50),
+                    cabinet_token VARCHAR(32) UNIQUE,
+                    promo_enabled BOOLEAN DEFAULT FALSE,
+                    promo_started_at TIMESTAMP WITH TIME ZONE,
+                    promo_discount_percent INTEGER DEFAULT 10,
                     last_interaction TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 )
             """)
+            for stmt in [
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user'",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS uuid UUID DEFAULT gen_random_uuid() UNIQUE",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS company VARCHAR(500)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(100)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS position VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS website VARCHAR(500)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS client_notes TEXT",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS client_status VARCHAR(50)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS cabinet_token VARCHAR(32) UNIQUE",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS promo_enabled BOOLEAN DEFAULT FALSE",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS promo_started_at TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS promo_discount_percent INTEGER DEFAULT 10",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()",
+            ]:
+                await conn.execute(stmt)
+            await conn.execute("ALTER TABLE users ALTER COLUMN telegram_id DROP NOT NULL")
+            await conn.execute("UPDATE users SET uuid = gen_random_uuid() WHERE uuid IS NULL")
             
             # Create contacts table - для пользователей, прошедших опрос
             await conn.execute("""
@@ -552,6 +587,10 @@ class Database:
                 ALTER TABLE commercial_proposals
                 ADD COLUMN IF NOT EXISTS discount_percent INTEGER DEFAULT 0
             """)
+            await conn.execute("""
+                ALTER TABLE commercial_proposals
+                ADD COLUMN IF NOT EXISTS seller_id INTEGER
+            """)
 
             # Add client_id to projects (FK re-pointed to users after migration)
             await conn.execute("ALTER TABLE projects ADD COLUMN IF NOT EXISTS client_id INTEGER")
@@ -574,221 +613,7 @@ class Database:
                 ON client_messages(client_id, created_at DESC)
             """)
 
-            # ── Migration: merge clients into users table ──
-            await self._migrate_clients_to_users(conn)
-
             logger.info("Database tables initialized")
-    
-    async def _migrate_clients_to_users(self, conn):
-        """One-time migration: merge clients table data into users, then drop clients."""
-        # Step 1: Add client-profile columns to users (idempotent)
-        for stmt in [
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS uuid UUID DEFAULT gen_random_uuid() UNIQUE",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS company VARCHAR(500)",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255)",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(100)",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS position VARCHAR(255)",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS website VARCHAR(500)",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS client_notes TEXT",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS client_status VARCHAR(50)",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS cabinet_token VARCHAR(32) UNIQUE",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS promo_enabled BOOLEAN DEFAULT FALSE",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS promo_started_at TIMESTAMP WITH TIME ZONE",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS promo_discount_percent INTEGER DEFAULT 10",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()",
-        ]:
-            await conn.execute(stmt)
-
-        # Backfill uuid for existing users that got NULL
-        await conn.execute("UPDATE users SET uuid = gen_random_uuid() WHERE uuid IS NULL")
-
-        # Make telegram_id nullable (for clients without Telegram)
-        await conn.execute("""
-            ALTER TABLE users ALTER COLUMN telegram_id DROP NOT NULL
-        """)
-
-        # Step 2: Check if clients table exists and has rows
-        has_clients = await conn.fetchval("""
-            SELECT EXISTS (
-                SELECT 1 FROM information_schema.tables
-                WHERE table_name = 'clients'
-            )
-        """)
-        if not has_clients:
-            return
-
-        client_count = await conn.fetchval("SELECT COUNT(*) FROM clients")
-        if client_count == 0:
-            logger.info("clients table is empty, skipping data migration")
-            await self._drop_clients_table(conn)
-            return
-
-        logger.info(f"Migrating {client_count} clients into users table...")
-
-        # Step 3: Migrate data
-        clients = await conn.fetch("SELECT * FROM clients")
-        id_map = {}  # old clients.id -> new users.id
-
-        for c in clients:
-            old_id = c['id']
-            tg_id = c.get('telegram_id')
-
-            if tg_id:
-                existing = await conn.fetchrow(
-                    "SELECT id FROM users WHERE telegram_id = $1", tg_id
-                )
-                if existing:
-                    await conn.execute("""
-                        UPDATE users SET
-                            company = COALESCE($2, company),
-                            email = COALESCE($3, email),
-                            phone = COALESCE($4, phone),
-                            position = COALESCE($5, position),
-                            website = COALESCE($6, website),
-                            address = COALESCE($7, address),
-                            client_notes = COALESCE($8, client_notes),
-                            client_status = COALESCE($9, client_status),
-                            cabinet_token = COALESCE($10, cabinet_token),
-                            promo_enabled = $11,
-                            promo_started_at = COALESCE($12, promo_started_at),
-                            promo_discount_percent = COALESCE($13, promo_discount_percent),
-                            updated_at = NOW()
-                        WHERE telegram_id = $1
-                    """,
-                        tg_id,
-                        c.get('company'), c.get('email'), c.get('phone'),
-                        c.get('position'), c.get('website'), c.get('address'),
-                        c.get('notes'), c.get('status'),
-                        c.get('cabinet_token'),
-                        c.get('promo_enabled', False),
-                        c.get('promo_started_at'),
-                        c.get('promo_discount_percent', 10),
-                    )
-                    id_map[old_id] = existing['id']
-                    continue
-
-            # Create new user from client data (idempotent — skip if already migrated)
-            import secrets as _secrets
-            name = c.get('name', '') or ''
-            parts = name.split(' ', 1)
-            first = parts[0] if parts else ''
-            last = parts[1] if len(parts) > 1 else ''
-            tg_username = (c.get('telegram') or '').lstrip('@') or None
-
-            # Skip if a row with this username already exists as a client
-            if tg_username:
-                already = await conn.fetchrow(
-                    "SELECT id FROM users WHERE username = $1 AND client_status IS NOT NULL",
-                    tg_username,
-                )
-                if already:
-                    id_map[old_id] = already['id']
-                    continue
-
-            # If the cabinet_token already exists in users, generate a fresh one
-            cab_token = c.get('cabinet_token')
-            if cab_token:
-                conflict = await conn.fetchval(
-                    "SELECT id FROM users WHERE cabinet_token = $1", cab_token
-                )
-                if conflict:
-                    cab_token = _secrets.token_hex(16)
-
-            new_row = await conn.fetchrow("""
-                INSERT INTO users (
-                    telegram_id, first_name, last_name, username, role,
-                    company, email, phone, position, website, address,
-                    client_notes, client_status, cabinet_token,
-                    promo_enabled, promo_started_at, promo_discount_percent,
-                    created_at, updated_at
-                ) VALUES (
-                    $1, $2, $3, $4, 'user',
-                    $5, $6, $7, $8, $9, $10,
-                    $11, $12, $13,
-                    $14, $15, $16,
-                    COALESCE($17, NOW()), NOW()
-                ) RETURNING id
-            """,
-                tg_id, first, last, tg_username,
-                c.get('company'), c.get('email'), c.get('phone'),
-                c.get('position'), c.get('website'), c.get('address'),
-                c.get('notes'), c.get('status'), cab_token,
-                c.get('promo_enabled', False), c.get('promo_started_at'),
-                c.get('promo_discount_percent', 10),
-                c.get('created_at'),
-            )
-            id_map[old_id] = new_row['id']
-
-        # Step 4: Drop old FK constraints BEFORE re-pointing data
-        for table, col in [
-            ('projects', 'client_id'),
-            ('commercial_proposals', 'client_id'),
-            ('client_messages', 'client_id'),
-        ]:
-            constraints = await conn.fetch("""
-                SELECT conname FROM pg_constraint
-                WHERE conrelid = $1::regclass AND contype = 'f'
-                AND array_to_string(conkey, ',') = (
-                    SELECT attnum::text FROM pg_attribute
-                    WHERE attrelid = $1::regclass AND attname = $2
-                )
-            """, table, col)
-            for fk in constraints:
-                await conn.execute(
-                    f"ALTER TABLE {table} DROP CONSTRAINT IF EXISTS {fk['conname']}"
-                )
-
-        # Step 5: Re-point data references
-        for old_cid, new_uid in id_map.items():
-            await conn.execute(
-                "UPDATE projects SET client_id = $2 WHERE client_id = $1",
-                old_cid, new_uid,
-            )
-            await conn.execute(
-                "UPDATE commercial_proposals SET client_id = $2 WHERE client_id = $1",
-                old_cid, new_uid,
-            )
-            await conn.execute(
-                "UPDATE client_messages SET client_id = $2 WHERE client_id = $1",
-                old_cid, new_uid,
-            )
-
-        logger.info(f"Migrated {len(id_map)} clients -> users. Dropping clients table.")
-        await self._drop_clients_table(conn)
-
-    async def _drop_clients_table(self, conn):
-        """Drop clients table and re-point FK constraints to users."""
-        # Drop old FK constraints that reference clients
-        for table, col in [
-            ('projects', 'client_id'),
-            ('commercial_proposals', 'client_id'),
-            ('client_messages', 'client_id'),
-        ]:
-            constraints = await conn.fetch("""
-                SELECT conname FROM pg_constraint
-                WHERE conrelid = $1::regclass AND contype = 'f'
-                AND array_to_string(conkey, ',') = (
-                    SELECT attnum::text FROM pg_attribute
-                    WHERE attrelid = $1::regclass AND attname = $2
-                )
-            """, table, col)
-            for c in constraints:
-                await conn.execute(f"ALTER TABLE {table} DROP CONSTRAINT IF EXISTS {c['conname']}")
-
-        # Add new FK constraints pointing to users
-        for table in ('projects', 'commercial_proposals', 'client_messages'):
-            await conn.execute(f"""
-                DO $$ BEGIN
-                    ALTER TABLE {table}
-                    ADD CONSTRAINT {table}_client_id_users_fk
-                    FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE SET NULL;
-                EXCEPTION WHEN duplicate_object THEN NULL;
-                END $$
-            """)
-
-        await conn.execute("DROP TABLE IF EXISTS clients CASCADE")
-        logger.info("clients table dropped, FK constraints re-pointed to users")
 
     async def save_user(self, telegram_id: int, first_name: str, last_name: str, username: str, language_code: str = None):
         """Save user to database (users table for broadcasts)"""
@@ -1122,7 +947,7 @@ class Database:
         async with self.pool.acquire() as conn:
             try:
                 rows = await conn.fetch("""
-                    SELECT telegram_id, first_name, last_name, username,
+                    SELECT id, telegram_id, first_name, last_name, username,
                            role, is_blocked, created_at, last_interaction,
                            client_status, company, uuid
                     FROM users
@@ -2529,14 +2354,14 @@ class Database:
             return dict(row) if row else None
 
     async def get_all_clients(self, status_filter: str | None = None) -> list[dict]:
-        """Return all CRM-visible users: clients (client_status IS NOT NULL) + staff + admin."""
+        """Return users with role='user' (potential/actual clients)."""
         async with self.pool.acquire() as conn:
             base = (
                 "SELECT u.*, "
                 "(SELECT COUNT(*) FROM commercial_proposals cp WHERE cp.client_id = u.id) AS proposals_count, "
                 "(SELECT COUNT(*) FROM projects p WHERE p.client_id = u.id) AS projects_count "
                 "FROM users u "
-                "WHERE (u.client_status IS NOT NULL OR u.role IN ('staff', 'admin', 'seller')) "
+                "WHERE u.role = 'user' "
                 "AND u.telegram_id IS NOT NULL "
             )
             if status_filter:
@@ -2827,9 +2652,12 @@ class Database:
     async def get_commercial_proposal(self, token: str) -> dict | None:
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT cp.*, cl.uuid AS client_uuid "
+                "SELECT cp.*, cl.uuid AS client_uuid, "
+                "sl.uuid AS seller_uuid, "
+                "CONCAT_WS(' ', sl.first_name, sl.last_name) AS seller_name "
                 "FROM commercial_proposals cp "
                 "LEFT JOIN users cl ON cp.client_id = cl.id "
+                "LEFT JOIN users sl ON cp.seller_id = sl.id "
                 "WHERE cp.token = $1",
                 token,
             )
@@ -2841,45 +2669,54 @@ class Database:
                 SELECT cp.id, cp.token, cp.project_name, cp.client_name, cp.proposal_type,
                        cp.design_type, cp.currency, cp.hourly_rate, cp.created_at, cp.updated_at,
                        cp.client_id, cp.project_id, cp.proposal_status,
-                       cp.created_by_telegram_id,
+                       cp.created_by_telegram_id, cp.seller_id,
                        CONCAT_WS(' ', cl.first_name, cl.last_name) AS client_display_name,
                        cl.company AS client_company,
-                       cl.uuid AS client_uuid
+                       cl.uuid AS client_uuid,
+                       CONCAT_WS(' ', sl.first_name, sl.last_name) AS seller_display_name,
+                       sl.uuid AS seller_uuid
                 FROM commercial_proposals cp
                 LEFT JOIN users cl ON cp.client_id = cl.id
+                LEFT JOIN users sl ON cp.seller_id = sl.id
                 ORDER BY cp.created_at DESC
             """)
             return [dict(r) for r in rows]
 
     async def get_seller_proposals(self, telegram_id: int) -> list[dict]:
-        """Return proposals created by a specific seller."""
+        """Return proposals created by or assigned to a seller."""
         async with self.pool.acquire() as conn:
             rows = await conn.fetch("""
                 SELECT cp.id, cp.token, cp.project_name, cp.client_name, cp.proposal_type,
                        cp.design_type, cp.currency, cp.hourly_rate, cp.created_at, cp.updated_at,
                        cp.client_id, cp.project_id, cp.proposal_status,
-                       cp.created_by_telegram_id,
+                       cp.created_by_telegram_id, cp.estimation,
                        CONCAT_WS(' ', cl.first_name, cl.last_name) AS client_display_name,
                        cl.company AS client_company,
                        cl.uuid AS client_uuid
                 FROM commercial_proposals cp
                 LEFT JOIN users cl ON cp.client_id = cl.id
                 WHERE cp.created_by_telegram_id = $1
+                   OR cp.seller_id = (SELECT id FROM users WHERE telegram_id = $1 LIMIT 1)
                 ORDER BY cp.created_at DESC
             """, telegram_id)
             return [dict(r) for r in rows]
 
     async def get_seller_clients(self, telegram_id: int, status_filter: str | None = None) -> list[dict]:
-        """Return clients linked to proposals created by a specific seller."""
+        """Return clients linked to proposals created by or assigned to a seller."""
         async with self.pool.acquire() as conn:
             base = (
                 "SELECT u.*, "
-                "(SELECT COUNT(*) FROM commercial_proposals cp WHERE cp.client_id = u.id AND cp.created_by_telegram_id = $1) AS proposals_count, "
+                "(SELECT COUNT(*) FROM commercial_proposals cp WHERE cp.client_id = u.id "
+                "  AND (cp.created_by_telegram_id = $1 "
+                "       OR cp.seller_id = (SELECT id FROM users WHERE telegram_id = $1 LIMIT 1))"
+                ") AS proposals_count, "
                 "(SELECT COUNT(*) FROM projects p WHERE p.client_id = u.id) AS projects_count "
                 "FROM users u "
                 "WHERE u.id IN ("
                 "  SELECT DISTINCT cp2.client_id FROM commercial_proposals cp2 "
-                "  WHERE cp2.created_by_telegram_id = $1 AND cp2.client_id IS NOT NULL"
+                "  WHERE (cp2.created_by_telegram_id = $1 "
+                "         OR cp2.seller_id = (SELECT id FROM users WHERE telegram_id = $1 LIMIT 1))"
+                "    AND cp2.client_id IS NOT NULL"
                 ") "
             )
             if status_filter:
@@ -2896,8 +2733,11 @@ class Database:
 
     async def update_commercial_proposal(self, token: str, **kwargs) -> dict | None:
         allowed = {'project_name', 'client_name', 'hourly_rate', 'currency', 'estimation',
-                    'proposal_type', 'design_type', 'client_id', 'project_id', 'proposal_status'}
-        fields = {k: v for k, v in kwargs.items() if k in allowed and v is not None}
+                    'proposal_type', 'design_type', 'client_id', 'project_id', 'proposal_status',
+                    'seller_id'}
+        nullable_fk = {'client_id', 'seller_id', 'project_id'}
+        fields = {k: v for k, v in kwargs.items()
+                  if k in allowed and (v is not None or k in nullable_fk) and k in kwargs}
         if not fields:
             return await self.get_commercial_proposal(token)
         async with self.pool.acquire() as conn:
@@ -2928,6 +2768,45 @@ class Database:
             if deleted:
                 logger.info(f"Commercial proposal deleted: token={token}")
             return deleted
+
+    async def recalc_user_client_status(self, user_id: int) -> str | None:
+        """Пересчитать client_status пользователя на основе его связей.
+
+        Логика приоритетов:
+          - есть хотя бы 1 проект → 'client'
+          - есть хотя бы 1 КП → 'lead'
+          - иначе → NULL (обычный user)
+        Возвращает новый статус или None.
+        """
+        async with self.pool.acquire() as conn:
+            user = await conn.fetchrow(
+                "SELECT id, role, client_status FROM users WHERE id = $1", user_id
+            )
+            if not user or user['role'] in ('admin', 'staff', 'seller'):
+                return user['client_status'] if user else None
+
+            projects_count = await conn.fetchval(
+                "SELECT COUNT(*) FROM projects WHERE client_id = $1", user_id
+            )
+            if projects_count and projects_count > 0:
+                new_status = 'client'
+            else:
+                proposals_count = await conn.fetchval(
+                    "SELECT COUNT(*) FROM commercial_proposals WHERE client_id = $1",
+                    user_id,
+                )
+                new_status = 'lead' if proposals_count and proposals_count > 0 else None
+
+            if new_status != user['client_status']:
+                await conn.execute(
+                    "UPDATE users SET client_status = $1, updated_at = NOW() WHERE id = $2",
+                    new_status, user_id,
+                )
+                logger.info(
+                    f"User {user_id} client_status: "
+                    f"{user['client_status']!r} -> {new_status!r}"
+                )
+            return new_status
 
     # ---- Brainstorm threads ----
 

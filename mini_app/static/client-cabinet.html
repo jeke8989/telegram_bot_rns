@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет — РусНейроСофт</title>
+    <title>Личный кабинет — НейроСофт</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -49,13 +49,6 @@
         .nav-btn:hover { background:var(--primary); color:#fff; }
         .nav-btn svg { width:14px; height:14px; }
 
-        /* STAFF BAR */
-        .staff-bar { display:none; background:linear-gradient(90deg,#1a1030,#2d1b69); color:rgba(255,255,255,.85); font-size:13px; font-weight:600; }
-        .staff-bar-inner { max-width:960px; margin:0 auto; padding:8px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
-        .staff-bar-left { display:flex; align-items:center; gap:8px; }
-        .staff-bar-dot { width:8px; height:8px; border-radius:50%; background:var(--amber); box-shadow:0 0 6px rgba(245,158,11,.5); }
-        .staff-bar-back { color:rgba(255,255,255,.5); text-decoration:none; font-size:13px; font-weight:500; transition:color .2s; }
-        .staff-bar-back:hover { color:#fff; }
 
         /* LOADING / ERROR */
         .loading-page { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; gap:16px; color:var(--text-dim); font-size:14px; font-weight:500; }
@@ -70,9 +63,9 @@
         .error-btn:hover { opacity:.85; }
 
         /* HERO */
-        .hero { background:linear-gradient(135deg,#1a1030 0%,#2d1b69 50%,#1e1245 100%); padding:40px 24px 48px; color:#fff; position:relative; overflow:hidden; }
+        .hero { background:linear-gradient(135deg,#1a1030 0%,#2d1b69 50%,#1e1245 100%); padding:40px 0 48px; color:#fff; position:relative; overflow:hidden; }
         .hero::before { content:''; position:absolute; top:-50%; right:-20%; width:500px; height:500px; background:radial-gradient(circle,rgba(120,124,245,.15),transparent 70%); pointer-events:none; }
-        .hero-inner { max-width:960px; margin:0 auto; position:relative; z-index:1; }
+        .hero-inner { max-width:960px; margin:0 auto; padding:0 24px; position:relative; z-index:1; }
         .hero-welcome { font-size:14px; font-weight:500; color:rgba(255,255,255,.5); margin-bottom:4px; }
         .hero-company { font-size:12px; font-weight:600; color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; }
         .hero-name { font-size:clamp(22px,4vw,32px); font-weight:800; line-height:1.2; letter-spacing:-.5px; }
@@ -88,11 +81,28 @@
         /* CONTENT */
         .content { max-width:960px; margin:0 auto; padding:0 24px 48px; }
 
+        /* INNER TABS */
+        .inner-tabs { display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; margin:20px 0; }
+        .inner-tab { flex:1; padding:10px 12px; border-radius:9px; border:none; background:transparent; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-dim); cursor:pointer; transition:all .2s; text-align:center; white-space:nowrap; display:flex; align-items:center; justify-content:center; gap:6px; }
+        .inner-tab:hover { color:var(--text); background:var(--surface-2); }
+        .inner-tab.active { background:var(--primary); color:#fff; box-shadow:0 2px 8px rgba(120,124,245,.3); }
+        .inner-tab svg { width:15px; height:15px; flex-shrink:0; }
+        .inner-tab-badge { font-size:11px; font-weight:700; background:rgba(255,255,255,.2); padding:1px 6px; border-radius:6px; }
+        .inner-tab.active .inner-tab-badge { background:rgba(255,255,255,.25); }
+        .inner-tab:not(.active) .inner-tab-badge { background:var(--surface-2); }
+        .tab-pane { display:none; }
+        .tab-pane.active { display:block; }
+
         /* STATS ROW */
         .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:20px 0; }
-        .stat-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); padding:18px; text-align:center; transition:transform .2s,box-shadow .2s; }
+        .stat-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); padding:16px 14px; text-align:center; transition:transform .2s,box-shadow .2s; position:relative; overflow:hidden; }
+        .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:var(--radius) var(--radius) 0 0; }
+        .stat-card:nth-child(1)::before { background:linear-gradient(90deg,#787cf5,#a78bfa); }
+        .stat-card:nth-child(2)::before { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+        .stat-card:nth-child(3)::before { background:linear-gradient(90deg,#00cec9,#34d399); }
+        .stat-card:nth-child(4)::before { background:linear-gradient(90deg,#e17355,#fb923c); }
         .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
-        .stat-icon { width:36px; height:36px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px; font-size:16px; }
+        .stat-icon { width:36px; height:36px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:8px; font-size:16px; }
         .stat-icon.i-budget { background:var(--primary-light); }
         .stat-icon.i-hours { background:var(--green-bg); }
         .stat-icon.i-modules { background:var(--amber-bg); }
@@ -112,11 +122,17 @@
         .section-badge { margin-left:auto; font-size:12px; font-weight:600; color:var(--text-dim); background:var(--bg); padding:4px 10px; border-radius:100px; }
 
         /* CHARTS ROW */
-        .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+        .charts-row { display:grid; grid-template-columns:1fr; gap:16px; margin-bottom:16px; }
         .chart-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); padding:24px; }
         .chart-title { font-size:14px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
         .chart-title-dot { width:8px; height:8px; border-radius:50%; }
-        .chart-wrap { position:relative; max-height:260px; }
+        .chart-layout { display:flex; align-items:center; gap:32px; }
+        .chart-canvas-wrap { width:180px; height:180px; flex-shrink:0; }
+        .chart-canvas-wrap canvas { width:100%!important; height:100%!important; }
+        .chart-legend { flex:1; display:flex; flex-direction:column; gap:10px; }
+        .chart-legend-item { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text); font-weight:500; }
+        .chart-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+        .chart-legend-hours { margin-left:auto; font-size:12px; color:var(--text-dim); font-weight:600; white-space:nowrap; }
 
         /* MODULES */
         .module-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg); }
@@ -170,6 +186,14 @@
         .stage-task { font-size:13px; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
         .stage-task-hours { font-weight:600; color:var(--text); margin-left:auto; white-space:nowrap; }
         .stage-cost { font-size:13px; font-weight:600; color:var(--primary); margin-top:6px; }
+        .stage-total-row { display:flex; justify-content:space-between; padding:14px 16px; font-weight:700; font-size:14px; border-top:2px solid var(--border); margin-top:8px; color:var(--primary); }
+        .stage-module { margin-top:10px; }
+        .stage-module:first-child { margin-top:0; }
+        .stage-module-hdr { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+        .stage-module-num { width:22px; height:22px; border-radius:6px; background:var(--primary-light); color:var(--primary); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .stage-module-name { font-size:13px; font-weight:700; color:var(--text); }
+        .stage-module-hours { margin-left:auto; font-size:12px; font-weight:600; color:var(--text-dim); white-space:nowrap; }
+        .stage-module-tasks { padding-left:30px; display:flex; flex-direction:column; gap:2px; }
 
         /* ROLES BREAKDOWN */
         .role-row { display:flex; align-items:center; gap:12px; padding:6px 0; }
@@ -179,33 +203,57 @@
         .role-hours { font-size:13px; font-weight:600; color:var(--text-dim); width:50px; text-align:right; flex-shrink:0; }
 
         /* PERSPECTIVES */
-        .persp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .persp-card { padding:16px; background:var(--bg); border-radius:var(--radius-sm); border:1px solid var(--border); }
-        .persp-title { font-size:14px; font-weight:700; margin-bottom:4px; }
-        .persp-desc { font-size:13px; color:var(--text-dim); line-height:1.5; }
+        .persp-wrap { background:linear-gradient(135deg,#f8f6ff 0%,#f0f4ff 50%,#f6f0ff 100%); border-radius:var(--radius); padding:28px 24px 24px; position:relative; overflow:hidden; }
+        .persp-wrap::before { content:''; position:absolute; top:-40px; right:-40px; width:160px; height:160px; background:radial-gradient(circle,rgba(124,93,250,.08) 0%,transparent 70%); pointer-events:none; }
+        .persp-header { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+        .persp-header-icon { width:28px; height:28px; color:#7c5dfa; opacity:.7; flex-shrink:0; }
+        .persp-header-title { font-size:15px; font-weight:600; color:var(--text); letter-spacing:-.01em; }
+        .persp-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .persp-card { padding:14px 16px; background:rgba(255,255,255,.75); backdrop-filter:blur(4px); border-radius:10px; border:none; transition:transform .2s,box-shadow .2s; }
+        .persp-card:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(124,93,250,.1); }
+        .persp-card-dot { width:6px; height:6px; border-radius:50%; background:linear-gradient(135deg,#7c5dfa,#a78bfa); display:inline-block; margin-right:8px; vertical-align:middle; flex-shrink:0; }
+        .persp-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:5px; display:flex; align-items:center; }
+        .persp-desc { font-size:12.5px; color:#6b7280; line-height:1.55; padding-left:14px; }
 
         /* PAYMENT FUNNEL */
         .pay-list { display:flex; flex-direction:column; gap:0; }
-        .pay-item { display:flex; align-items:center; gap:14px; padding:14px 16px; border-bottom:1px solid var(--border); position:relative; }
+        .pay-item { display:flex; flex-wrap:wrap; align-items:flex-start; gap:12px 14px; padding:14px 16px; border-bottom:1px solid var(--border); position:relative; }
         .pay-item:last-child { border-bottom:none; }
         .pay-item.active { background:var(--primary-light); border-radius:var(--radius-sm); border:1px solid var(--primary-border); margin:0 -1px; }
-        .pay-num { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+        .pay-num { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; margin-top:2px; }
         .pay-num.active { background:var(--primary); color:#fff; }
         .pay-num.pending { background:var(--border); color:var(--text-dim); }
         .pay-info { flex:1; min-width:0; }
+        .pay-row-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
         .pay-name { font-size:14px; font-weight:600; }
         .pay-hours { font-size:12px; color:var(--text-dim); }
-        .pay-cost { font-size:16px; font-weight:700; white-space:nowrap; flex-shrink:0; }
-        .pay-status { font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+        .pay-deliv { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+        .pay-deliv-tag { display:inline-block; padding:2px 8px; background:rgba(124,93,250,.06); color:#6b5ce7; font-size:11px; font-weight:500; border-radius:4px; line-height:1.5; }
+        .pay-cost { font-size:16px; font-weight:700; white-space:nowrap; }
+        .pay-status { font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; white-space:nowrap; }
         .pay-status.current { background:var(--primary-light); color:var(--primary); }
         .pay-status.waiting { background:var(--bg); color:var(--text-light); }
+        .pay-status.done { background:rgba(16,185,129,.1); color:#059669; }
         .pay-cta { margin-top:16px; padding:20px; background:linear-gradient(135deg,rgba(120,124,245,.06),rgba(167,139,250,.06)); border:1px solid var(--primary-border); border-radius:var(--radius); text-align:center; }
         .pay-cta-title { font-size:15px; font-weight:700; margin-bottom:4px; }
         .pay-cta-desc { font-size:13px; color:var(--text-dim); margin-bottom:14px; }
         .pay-cta-btn { display:inline-flex; align-items:center; gap:8px; padding:12px 28px; border-radius:100px; background:var(--primary); color:#fff; font-size:14px; font-weight:600; text-decoration:none; transition:opacity .2s; }
         .pay-cta-btn:hover { opacity:.85; }
         .pay-cta-btn svg { width:16px; height:16px; }
+        .pay-btn-wrap { margin:20px 0 8px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+        .pay-cta-link { display:inline-block; font-size:13px; color:var(--text-dim); text-decoration:underline; text-underline-offset:3px; transition:color .2s; }
+        .pay-cta-link:hover { color:var(--primary); }
         .pay-total { display:flex; justify-content:space-between; padding:14px 16px; font-weight:700; border-top:2px solid var(--border); margin-top:4px; }
+
+        /* DISCOUNT BANNER */
+        .discount-banner { background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:16px 22px; margin:16px 0 8px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+        .discount-tags { display:flex; flex-wrap:wrap; gap:8px; flex:1; min-width:0; }
+        .discount-tag { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:1px solid #bbf7d0; border-radius:100px; font-size:12px; font-weight:700; color:#16a34a; letter-spacing:-.01em; }
+        .discount-tag svg { flex-shrink:0; opacity:.7; }
+        .discount-info { text-align:right; flex-shrink:0; line-height:1.3; }
+        .discount-old { font-size:16px; font-weight:700; color:#b0b8c4; text-decoration:line-through; }
+        .discount-save { font-size:12px; font-weight:600; color:#16a34a; margin-top:2px; }
+        @media(max-width:480px) { .discount-banner { flex-direction:column; align-items:stretch; gap:10px; padding:14px 16px; } .discount-info { text-align:left; } }
 
         /* PROMO BANNER */
         .promo-banner { background:linear-gradient(135deg,#1a1030 0%,#2d1b69 50%,#1e1245 100%); border-radius:var(--radius); padding:28px 28px 24px; margin:20px 0 4px; position:relative; overflow:hidden; color:#fff; }
@@ -264,15 +312,29 @@
         }
         @media (max-width:640px) {
             .nav-inner { padding:0 16px; }
-            .hero { padding:32px 16px 40px; }
+            .hero { padding:32px 0 40px; }
+            .hero-inner { padding:0 16px; }
             .content { padding:0 12px 32px; }
             .project-tabs { padding:0 12px; }
             .stats { grid-template-columns:repeat(2,1fr); gap:8px; }
             .stat-card { padding:14px 10px; }
             .persp-grid { grid-template-columns:1fr; }
+            .persp-wrap { padding:20px 16px 18px; }
             .stat-value { font-size:18px; }
             .section { padding:18px 16px; }
             .footer { padding:20px 12px 32px; flex-direction:column; text-align:center; }
+            .chart-layout { flex-direction:column; gap:20px; }
+            .chart-canvas-wrap { width:160px; height:160px; margin:0 auto; }
+            .chart-legend { align-items:flex-start; }
+            .chart-card { padding:18px 16px; }
+            .inner-tabs { gap:2px; padding:3px; }
+            .inner-tab { padding:8px 6px; font-size:12px; gap:4px; }
+            .inner-tab svg { width:13px; height:13px; }
+            .inner-tab-badge { font-size:10px; padding:1px 5px; }
+            .pay-item { gap:8px 10px; padding:12px 14px; }
+            .pay-deliv-tag { font-size:10px; padding:1px 6px; }
+            .pay-cost { font-size:15px; }
+            .pay-name { font-size:13px; }
         }
     </style>
 </head>
@@ -281,10 +343,10 @@
 <nav class="nav">
     <div class="nav-inner">
         <a href="https://rusneurosoft.ru" target="_blank" class="nav-logo">
-            <img src="/img/logo-icon.png" alt="РусНейроСофт"><span>РусНейроСофт</span>
+            <img src="/img/logo-icon.png" alt="НейроСофт"><span>НейроСофт</span>
         </a>
         <div class="nav-right">
-            <a href="#chat" class="nav-btn" id="navChatBtn" onclick="event.preventDefault(); var c=document.getElementById('cabinetChat'); if(c){c.scrollIntoView({behavior:'smooth',block:'center'}); c.querySelector('.cw-input')?.focus();}">
+            <a href="#chat" class="nav-btn" id="navChatBtn" onclick="event.preventDefault(); if(window.switchInnerTab){switchInnerTab('chat');} var c=document.getElementById('cabinetChat'); if(c){c.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){var inp=c.querySelector('.cw-input');if(inp)inp.focus();},100);}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
                 Написать нам
             </a>
@@ -292,16 +354,10 @@
     </div>
 </nav>
 
-<div class="staff-bar" id="staffBar">
-    <div class="staff-bar-inner">
-        <div class="staff-bar-left"><div class="staff-bar-dot"></div><span>Просмотр кабинета клиента</span></div>
-        <a href="javascript:history.back()" class="staff-bar-back" id="staffBackLink">&larr; Назад</a>
-    </div>
-</div>
 
 <style>@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}.sk{background:linear-gradient(90deg,#e8e9f0 25%,#f0f0f5 50%,#e8e9f0 75%);background-size:800px 100%;animation:shimmer 1.5s infinite linear;border-radius:8px}</style>
 <div id="loadingState" class="loading-page" style="min-height:auto;padding:0;gap:0;align-items:stretch">
-    <div style="background:linear-gradient(135deg,#1a1030 0%,#2d1b69 50%,#1e1245 100%);padding:40px 24px 48px"><div style="max-width:960px;margin:0 auto"><div style="height:14px;width:100px;background:rgba(255,255,255,.08);border-radius:6px;margin-bottom:12px"></div><div style="height:28px;width:220px;background:rgba(255,255,255,.12);border-radius:8px"></div></div></div>
+    <div style="background:linear-gradient(135deg,#1a1030 0%,#2d1b69 50%,#1e1245 100%);padding:40px 0 48px"><div style="max-width:960px;margin:0 auto;padding:0 24px"><div style="height:14px;width:100px;background:rgba(255,255,255,.08);border-radius:6px;margin-bottom:12px"></div><div style="height:28px;width:220px;background:rgba(255,255,255,.12);border-radius:8px"></div></div></div>
     <div style="max-width:960px;margin:0 auto;padding:20px 24px;width:100%">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:18px;text-align:center"><div class="sk" style="width:36px;height:36px;border-radius:10px;margin:0 auto 10px"></div><div class="sk" style="height:22px;width:60%;margin:0 auto 6px"></div><div class="sk" style="height:10px;width:50%;margin:0 auto"></div></div><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:18px;text-align:center"><div class="sk" style="width:36px;height:36px;border-radius:10px;margin:0 auto 10px"></div><div class="sk" style="height:22px;width:55%;margin:0 auto 6px"></div><div class="sk" style="height:10px;width:45%;margin:0 auto"></div></div><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:18px;text-align:center"><div class="sk" style="width:36px;height:36px;border-radius:10px;margin:0 auto 10px"></div><div class="sk" style="height:22px;width:50%;margin:0 auto 6px"></div><div class="sk" style="height:10px;width:55%;margin:0 auto"></div></div><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:18px;text-align:center"><div class="sk" style="width:36px;height:36px;border-radius:10px;margin:0 auto 10px"></div><div class="sk" style="height:22px;width:45%;margin:0 auto 6px"></div><div class="sk" style="height:10px;width:50%;margin:0 auto"></div></div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px"><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:24px"><div class="sk" style="height:14px;width:120px;margin-bottom:16px"></div><div class="sk" style="height:160px;border-radius:10px"></div></div><div style="background:#fff;border-radius:16px;border:1px solid #e8e9f0;padding:24px"><div class="sk" style="height:14px;width:140px;margin-bottom:16px"></div><div class="sk" style="height:160px;border-radius:10px"></div></div></div>
@@ -332,7 +388,7 @@
     <div class="content" id="dashboardArea"></div>
 
     <footer class="footer">
-        <div class="footer-copy">&copy; 2026 <a href="https://rusneurosoft.ru" target="_blank">РусНейроСофт</a></div>
+        <div class="footer-copy">&copy; 2026 <a href="https://rusneurosoft.ru" target="_blank">НейроСофт</a></div>
         <div class="footer-links">
             <a href="https://t.me/IT_anasta" target="_blank">Telegram</a>
             <a href="mailto:info@rusneurosoft.ru">info@rusneurosoft.ru</a>
@@ -355,7 +411,6 @@
     var DATA = null;
     var activeProjectIdx = 0;
     var budgetChart = null;
-    var hoursChart = null;
     var promoTimerInterval = null;
 
     fetch('/api/cabinet/' + cabinetToken)
@@ -385,20 +440,6 @@
         else document.getElementById('heroWelcome').textContent = 'Добро пожаловать';
         if (client.company) { var el = document.getElementById('heroCompany'); el.textContent = client.company; el.style.display = ''; }
 
-        if (isStaff) {
-            document.getElementById('staffBar').style.display = 'block';
-            var bl = document.getElementById('staffBackLink');
-            var urlParams = new URLSearchParams(window.location.search);
-            var fromParam = urlParams.get('from');
-            var proposalToken = urlParams.get('proposal_token');
-            if (fromParam === 'proposal' && proposalToken) {
-                bl.href = '/proposal-edit/' + proposalToken;
-                bl.textContent = '\u2190 К предложению';
-            } else if (client.uuid) {
-                bl.href = '/client/' + client.uuid;
-                bl.textContent = '\u2190 Карточка клиента';
-            }
-        }
 
         var projects = DATA.projects || [];
         var standalone = DATA.standalone_proposals || [];
@@ -456,6 +497,8 @@
             hourly_rate: first.hourly_rate || 0,
             creator: first.creator,
             is_virtual: true,
+            discount_items: first.discount_items || [],
+            base_cost_no_discount: first.base_cost_no_discount || 0,
         };
     }
 
@@ -488,7 +531,7 @@
 
     function renderDashboard(project, isStaff, staff) {
         if (budgetChart) { budgetChart.destroy(); budgetChart = null; }
-        if (hoursChart) { hoursChart.destroy(); hoursChart = null; }
+        chatInited = false;
 
         var area = document.getElementById('dashboardArea');
         var modules = project.modules || [];
@@ -544,7 +587,7 @@
 
         var html = '';
 
-        // Promo banner
+        // Promo banner (always visible above tabs)
         var promo = DATA.promo || {};
         var promoActive = promo.enabled && promo.expires_at && !promo.expired;
         var promoShow = promo.enabled && promo.started_at;
@@ -570,15 +613,28 @@
                 html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoMins">00</span><span class="promo-timer-label">минут</span></div>';
                 html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoSecs">00</span><span class="promo-timer-label">секунд</span></div>';
                 html += '</div>';
-                html += '<button class="promo-cta" onclick="var p=document.querySelector(\'.pay-item.active\');if(p){p.scrollIntoView({behavior:\'smooth\',block:\'center\'});}">Забронировать скидку <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>';
+                html += '<button class="promo-cta" onclick="switchInnerTab(\'pay\')">Забронировать скидку <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>';
             } else {
                 html += '<div class="promo-expired-msg">Срок действия предложения истёк</div>';
             }
-            
             html += '</div></div>';
         }
 
-        // Stats
+        // === Inner Tabs ===
+        var hasStages = stages.length > 0;
+        var hasPayment = paymentPhases.length > 0;
+        var hasPerspectives = perspectives.length > 0;
+        var hasDocuments = proposals.length > 0 && !isKPMode;
+
+        html += '<div class="inner-tabs fade-up" id="innerTabs">';
+        html += '<button type="button" class="inner-tab active" data-tab="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Обзор</button>';
+        if (hasStages) html += '<button type="button" class="inner-tab" data-tab="dev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Разработка</button>';
+        // Таб оплаты убран — оплата теперь на вкладке Обзор
+        html += '<button type="button" class="inner-tab" data-tab="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Чат</button>';
+        html += '</div>';
+
+        // === TAB: Overview ===
+        html += '<div class="tab-pane active" id="pane-overview">';
         var timelineLabel = '—';
         if (timeline) {
             var tw2 = resolveRange(timeline);
@@ -591,45 +647,44 @@
         if (!isKPMode && meetingCount) {
             html += statCard('i-hours', '🎥', meetingCount, plural(meetingCount, 'встреча', 'встречи', 'встреч'));
         } else {
-            html += statCard('i-hours', '📋', stages.length || '—', plural(stages.length || 0, 'этап', 'этапа', 'этапов'));
+            var phaseCount = paymentPhases.length || stages.length || 0;
+            html += statCard('i-hours', '📋', phaseCount || '—', plural(phaseCount, 'этап', 'этапа', 'этапов'));
         }
         html += '</div>';
-
-        // Chart — module distribution only
-        if (modules.length >= 2) {
-            html += '<div class="charts-row fade-up">';
-            html += '<div class="chart-card" style="grid-column:1/-1;max-width:500px;margin:0 auto"><div class="chart-title"><div class="chart-title-dot" style="background:var(--primary)"></div>Структура проекта</div><div class="chart-wrap"><canvas id="chartBudget"></canvas></div></div>';
+        var discountItems = project.discount_items || [];
+        if (discountItems.length > 0) {
+            var baseCND = project.base_cost_no_discount || 0;
+            html += '<div class="discount-banner fade-up">';
+            html += '<div class="discount-tags">';
+            discountItems.forEach(function(di) {
+                html += '<span class="discount-tag">' + esc(di.name) + ' ' + di.percent + '%</span>';
+            });
+            html += '</div>';
+            if (baseCND && baseCND > totalC) {
+                html += '<div class="discount-info"><div class="discount-old">' + fmtCost(baseCND, currency) + '</div><div class="discount-save">Экономия ' + fmtCost(Math.round(baseCND - totalC), currency) + '</div></div>';
+            }
             html += '</div>';
         }
-
-        // Stages stepper
-        if (stages.length) {
-            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>';
-            html += '<div class="section-title">Этапы разработки</div>';
-            html += '<div class="section-badge">' + stages.length + ' ' + plural(stages.length, 'этап', 'этапа', 'этапов') + '</div></div>';
-            html += '<div class="stages-list">';
-            stages.forEach(function(s, i) {
-                var tasks = s.tasks || [];
-                var phaseHours = 0; tasks.forEach(function(t) { phaseHours += Number(t.hours || 0); });
-                html += '<div class="stage-item"><div class="stage-dot"></div><div class="stage-line"></div>';
-                html += '<div class="stage-hdr">' + esc(s.name || 'Этап ' + (i + 1)) + '</div>';
-                if (tasks.length) {
-                    html += '<div class="stage-tasks">';
-                    tasks.forEach(function(t) {
-                        html += '<div class="stage-task"><span>' + esc(t.name || '') + '</span>';
-                        if (t.hours) html += '<span class="stage-task-hours">' + t.hours + ' ч</span>';
-                        html += '</div>';
-                    });
-                    html += '</div>';
-                }
-                if (phaseHours) html += '<div class="stage-cost">' + phaseHours + ' часов</div>';
-                html += '</div>';
+        if (modules.length >= 2) {
+            html += '<div class="charts-row fade-up">';
+            html += '<div class="chart-card"><div class="chart-title"><div class="chart-title-dot" style="background:var(--primary)"></div>Распределение работ</div>';
+            html += '<div class="chart-layout"><div class="chart-canvas-wrap"><canvas id="chartBudget"></canvas></div>';
+            html += '<div class="chart-legend" id="chartLegend"></div></div></div>';
+            html += '</div>';
+        }
+        // Модули проекта — убран, данные уже в диаграмме "Распределение работ"
+        if (hasPerspectives) {
+            html += '<div class="persp-wrap fade-up">';
+            html += '<div class="persp-header"><svg class="persp-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>';
+            html += '<span class="persp-header-title">Что даст проект вашему бизнесу</span></div>';
+            html += '<div class="persp-grid">';
+            perspectives.forEach(function(p) {
+                html += '<div class="persp-card"><div class="persp-title"><span class="persp-card-dot"></span>' + esc(p.title || '') + '</div>';
+                html += '<div class="persp-desc">' + esc(p.description || '') + '</div></div>';
             });
             html += '</div></div>';
         }
-
-        // Payment funnel
-        if (paymentPhases.length) {
+        if (hasPayment) {
             var contactLink = 'https://t.me/IT_anasta';
             if (creator && creator.telegram) {
                 var tg = String(creator.telegram).replace('@', '');
@@ -637,7 +692,6 @@
             }
             var payTotal = 0;
             paymentPhases.forEach(function(pp) { payTotal += Number(pp.cost || 0); });
-
             html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>';
             html += '<div class="section-title">Этапы оплаты</div>';
             if (promoActive) {
@@ -645,25 +699,46 @@
             }
             html += '</div>';
             html += '<div class="pay-list">';
+            var firstUnpaid = -1;
+            paymentPhases.forEach(function(pp, i) { if (pp.status !== 'paid' && firstUnpaid < 0) firstUnpaid = i; });
+            if (firstUnpaid < 0) firstUnpaid = paymentPhases.length;
             paymentPhases.forEach(function(pp, i) {
-                var isFirst = i === 0;
+                var isPaid = pp.status === 'paid';
+                var isCurrent = !isPaid && i === firstUnpaid;
                 var phaseCost = Number(pp.cost || 0);
                 var discountedCost = promoActive ? Math.round(phaseCost * (1 - (promo.discount_percent||10) / 100)) : phaseCost;
-                html += '<div class="pay-item' + (isFirst ? ' active' : '') + '">';
-                html += '<div class="pay-num ' + (isFirst ? 'active' : 'pending') + '">' + (i + 1) + '</div>';
-                html += '<div class="pay-info"><div class="pay-name">' + esc(pp.name) + '</div><div class="pay-hours">' + pp.hours + ' ч</div></div>';
+                html += '<div class="pay-item' + (isCurrent ? ' active' : '') + '">';
+                html += '<div class="pay-num ' + (isPaid ? 'active' : isCurrent ? 'active' : 'pending') + '">' + (isPaid ? '✓' : (i + 1)) + '</div>';
+                var delivHtml = '';
+                if (pp.deliverables && pp.deliverables.length) {
+                    delivHtml = '<div class="pay-deliv">';
+                    pp.deliverables.forEach(function(d) {
+                        delivHtml += '<span class="pay-deliv-tag">' + esc(d) + '</span>';
+                    });
+                    delivHtml += '</div>';
+                }
+                html += '<div class="pay-info"><div class="pay-name">' + esc(pp.name) + '</div>' + delivHtml + '</div>';
+                html += '<div class="pay-row-right">';
                 if (promoActive) {
                     html += '<div class="pay-cost"><span style="text-decoration:line-through;color:var(--text-light);font-size:13px;font-weight:500;margin-right:6px">' + fmtCost(phaseCost, currency) + '</span>' + fmtCost(discountedCost, currency) + '</div>';
                 } else {
                     html += '<div class="pay-cost">' + fmtCost(phaseCost, currency) + '</div>';
                 }
-                html += '<div class="pay-status ' + (isFirst ? 'current' : 'waiting') + '">' + (isFirst ? 'К оплате' : 'Ожидает') + '</div>';
+                var statusCls = isPaid ? 'done' : isCurrent ? 'current' : 'waiting';
+                var statusText = isPaid ? 'Оплачено' : isCurrent ? 'К оплате' : 'Ожидает';
+                html += '<div class="pay-status ' + statusCls + '">' + statusText + '</div>';
                 html += '</div>';
-                if (isFirst) {
+                html += '</div>';
+                if (isCurrent) {
+                    var ctaTitle = i === 0 ? 'Оплатите первый этап — и мы начнём работу' : 'Оплатите следующий этап';
+                    var ctaDesc = i === 0 ? 'Мы приступим к работе в течение 1-2 рабочих дней после оплаты' : 'После оплаты мы продолжим разработку';
                     html += '<div class="pay-cta">';
-                    html += '<div class="pay-cta-title">Оплатите первый этап — и мы начнём работу</div>';
-                    html += '<div class="pay-cta-desc">Мы приступим к работе в течение 1-2 рабочих дней после оплаты</div>';
-                    html += '<a href="' + contactLink + '" target="_blank" class="pay-cta-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>Связаться для оплаты</a>';
+                    html += '<div class="pay-cta-title">' + ctaTitle + '</div>';
+                    html += '<div class="pay-cta-desc">' + ctaDesc + '</div>';
+                    html += '<div class="pay-btn-wrap">';
+                    html += '<iframe src="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1GA34L1VIV7.260304&" width="230" height="54" frameborder="0" allowtransparency="true" scrolling="no" style="border:none;overflow:hidden;"></iframe>';
+                    html += '<a href="' + contactLink + '" target="_blank" class="pay-cta-link">Или свяжитесь с нами напрямую</a>';
+                    html += '</div>';
                     html += '</div>';
                 }
             });
@@ -678,48 +753,7 @@
             }
             html += '</div>';
         }
-
-        // Modules
-        if (modules.length) {
-            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>';
-            html += '<div class="section-title">Модули проекта</div>';
-            html += '<div class="section-badge">' + (totalH ? Math.round(totalH) + ' ч' : modules.length + ' шт') + '</div></div>';
-            var maxH = 0;
-            modules.forEach(function(m) {
-                var t = m.total || {};
-                var h = resolveRange(t) || Number(m.total_hours || m.hours || 0);
-                if (h > maxH) maxH = h;
-            });
-            modules.forEach(function(m, i) {
-                var name = m.name || m.module || 'Модуль ' + (i + 1);
-                var t = m.total || {};
-                var h = resolveRange(t) || Number(m.total_hours || m.hours || 0);
-                var pct = maxH > 0 ? (h / maxH * 100) : 0;
-                var color = COLORS[i % COLORS.length];
-                html += '<div class="module-row">';
-                html += '<div class="module-num">' + (i + 1) + '</div>';
-                html += '<div class="module-info"><div class="module-name">' + esc(name) + '</div>';
-                html += '<div class="module-bar"><div class="module-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
-                if (h) html += '<div class="module-hours">' + Math.round(h) + ' ч</div>';
-                html += '</div>';
-            });
-            html += '</div>';
-        }
-
-        // Perspectives
-        if (perspectives.length) {
-            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>';
-            html += '<div class="section-title">Перспективы развития</div></div>';
-            html += '<div class="persp-grid">';
-            perspectives.forEach(function(p) {
-                html += '<div class="persp-card"><div class="persp-title">' + esc(p.title || '') + '</div>';
-                html += '<div class="persp-desc">' + esc(p.description || '') + '</div></div>';
-            });
-            html += '</div></div>';
-        }
-
-        // Documents
-        if (proposals.length) {
+        if (hasDocuments) {
             html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>';
             html += '<div class="section-title">Документы</div><div class="section-badge">' + proposals.length + '</div></div>';
             proposals.forEach(function(p) {
@@ -732,29 +766,89 @@
             });
             html += '</div>';
         }
+        html += '</div>';
 
-        // Chat
-        var chatTitle = isStaff ? 'Чат с клиентом' : 'Чат с командой';
+        // === TAB: Development ===
+        if (hasStages) {
+            html += '<div class="tab-pane" id="pane-dev">';
+            html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>';
+            html += '<div class="section-title">Этапы разработки</div>';
+            html += '<div class="section-badge">' + stages.length + ' ' + plural(stages.length, 'этап', 'этапа', 'этапов') + '</div></div>';
+            html += '<div class="stages-list">';
+            stages.forEach(function(s, i) {
+                var tasks = s.tasks || [];
+                var phaseHours = 0; tasks.forEach(function(t) { phaseHours += Number(t.hours || 0); });
+                html += '<div class="stage-item"><div class="stage-dot"></div><div class="stage-line"></div>';
+                html += '<div class="stage-hdr">' + esc(s.name || 'Этап ' + (i + 1)) + '</div>';
+                if (tasks.length) {
+                    var hasModules = tasks.some(function(t) { return t.module; });
+                    if (hasModules) {
+                        var moduleOrder = [];
+                        var moduleMap = {};
+                        tasks.forEach(function(t) {
+                            var key = t.module || '_ungrouped';
+                            if (!moduleMap[key]) { moduleMap[key] = []; moduleOrder.push(key); }
+                            moduleMap[key].push(t);
+                        });
+                        html += '<div class="stage-tasks">';
+                        moduleOrder.forEach(function(key, mi) {
+                            var mTasks = moduleMap[key];
+                            var mHours = 0; mTasks.forEach(function(t) { mHours += Number(t.hours || 0); });
+                            html += '<div class="stage-module">';
+                            html += '<div class="stage-module-hdr"><span class="stage-module-num">' + (mi + 1) + '</span>';
+                            html += '<span class="stage-module-name">' + esc(key === '_ungrouped' ? 'Прочее' : key) + '</span>';
+                            html += '<span class="stage-module-hours">' + mHours + ' ч</span></div>';
+                            html += '<div class="stage-module-tasks">';
+                            mTasks.forEach(function(t) {
+                                html += '<div class="stage-task"><span>' + esc(t.name || '') + '</span>';
+                                if (t.hours) html += '<span class="stage-task-hours">' + t.hours + ' ч</span>';
+                                html += '</div>';
+                            });
+                            html += '</div></div>';
+                        });
+                        html += '</div>';
+                    } else {
+                        html += '<div class="stage-tasks">';
+                        tasks.forEach(function(t) {
+                            html += '<div class="stage-task"><span>' + esc(t.name || '') + '</span>';
+                            if (t.hours) html += '<span class="stage-task-hours">' + t.hours + ' ч</span>';
+                            html += '</div>';
+                        });
+                        html += '</div>';
+                    }
+                }
+                if (phaseHours) html += '<div class="stage-cost">' + phaseHours + ' часов</div>';
+                html += '</div>';
+            });
+            var devTotalHours = 0;
+            stages.forEach(function(s) {
+                var h = 0; (s.tasks || []).forEach(function(t) { h += Number(t.hours || 0); });
+                devTotalHours += h;
+            });
+            html += '<div class="stage-total-row"><span>Итого</span><span>' + devTotalHours + ' часов</span></div>';
+            html += '</div></div>';
+            html += '</div>';
+        }
+
+        // pane-pay убран — оплата перенесена в pane-overview
+
+        // === TAB: Chat ===
+        var chatTitle = 'Чат с командой';
+        html += '<div class="tab-pane" id="pane-chat">';
         html += '<div class="section chat-section fade-up"><div class="section-hdr"><div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>';
         html += '<div class="section-title">' + esc(chatTitle) + '</div></div>';
         html += '<div class="chat-wrap" id="cabinetChat" style="height:420px"></div></div>';
+        html += '</div>';
 
         area.innerHTML = html;
+
+        // Init tab switching
+        initInnerTabs(chatTitle, isStaff, staff);
 
         // Init chart
         if (modules.length >= 2) {
             renderCharts(modules);
         }
-
-        // Init chat
-        ChatWidget.init({
-            container: '#cabinetChat',
-            messagesUrl: '/api/cabinet/' + cabinetToken + '/messages',
-            sendUrl: '/api/cabinet/' + cabinetToken + '/messages',
-            headerTitle: chatTitle,
-            headerSub: isStaff ? ('Вы: ' + (staff.name || 'Менеджер')) : 'Мы ответим в ближайшее время',
-            pollInterval: 5000,
-        });
         scrollToChatIfNeeded();
         startPromoTimer();
     }
@@ -791,11 +885,45 @@
         promoTimerInterval = setInterval(tick, 1000);
     }
 
+    var chatInited = false;
+
+    function initInnerTabs(chatTitle, isStaff, staff) {
+        var tabsWrap = document.getElementById('innerTabs');
+        if (!tabsWrap) return;
+        tabsWrap.addEventListener('click', function(e) {
+            var btn = e.target.closest('.inner-tab');
+            if (!btn) return;
+            var tab = btn.dataset.tab;
+            switchInnerTab(tab, chatTitle, isStaff, staff);
+        });
+    }
+
+    window.switchInnerTab = function(tab, chatTitle, isStaff, staff) {
+        var tabsWrap = document.getElementById('innerTabs');
+        if (tabsWrap) {
+            tabsWrap.querySelectorAll('.inner-tab').forEach(function(t) { t.classList.toggle('active', t.dataset.tab === tab); });
+        }
+        document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
+        var pane = document.getElementById('pane-' + tab);
+        if (pane) pane.classList.add('active');
+
+        if (tab === 'chat' && !chatInited) {
+            chatInited = true;
+            ChatWidget.init({
+                container: '#cabinetChat',
+                messagesUrl: '/api/cabinet/' + cabinetToken + '/messages',
+                sendUrl: '/api/cabinet/' + cabinetToken + '/messages',
+                headerTitle: chatTitle || 'Чат с командой',
+                headerSub: (isStaff ? ('Вы: ' + ((staff && staff.name) || 'Менеджер')) : 'Мы ответим в ближайшее время'),
+                pollInterval: 5000,
+            });
+        }
+    };
+
     function scrollToChatIfNeeded() {
         if (window.location.hash === '#chat') {
             setTimeout(function() {
-                var c = document.getElementById('cabinetChat');
-                if (c) { c.scrollIntoView({ behavior: 'smooth', block: 'center' }); c.querySelector('.cw-input')?.focus(); }
+                switchInnerTab('chat');
             }, 300);
         }
     }
@@ -819,38 +947,42 @@
                 type: 'doughnut',
                 data: {
                     labels: labels,
-                    datasets: [{ data: hours, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }],
+                    datasets: [{ data: hours, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 4 }],
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    cutout: '65%',
+                    cutout: '62%',
                     plugins: {
-                        legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 12, family: 'Manrope', weight: '500' }, color: '#6b7085' } },
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1a1a2e',
+                            titleFont: { family: 'Manrope', size: 13, weight: '600' },
+                            bodyFont: { family: 'Manrope', size: 12 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(ctx) { return ctx.label + ': ' + ctx.raw + ' ч'; }
+                            }
+                        }
                     },
                 },
             });
-        }
 
-        var canvasH = document.getElementById('chartHours');
-        if (canvasH) {
-            hoursChart = new Chart(canvasH, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ data: hours, backgroundColor: colors, borderRadius: 6, borderSkipped: false, barThickness: 24 }],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    indexAxis: 'y',
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { font: { size: 11, family: 'Manrope' }, color: '#6b7085' } },
-                        y: { grid: { display: false }, ticks: { font: { size: 12, family: 'Manrope', weight: '600' }, color: '#1a1a2e' } },
-                    },
-                },
-            });
+            var legendEl = document.getElementById('chartLegend');
+            if (legendEl) {
+                var totalH = hours.reduce(function(a, b) { return a + b; }, 0);
+                var legendHtml = '';
+                labels.forEach(function(lbl, i) {
+                    var pct = totalH > 0 ? Math.round(hours[i] / totalH * 100) : 0;
+                    legendHtml += '<div class="chart-legend-item">'
+                        + '<span class="chart-legend-dot" style="background:' + colors[i] + '"></span>'
+                        + '<span>' + esc(lbl) + '</span>'
+                        + '<span class="chart-legend-hours">' + hours[i] + ' ч (' + pct + '%)</span>'
+                        + '</div>';
+                });
+                legendEl.innerHTML = legendHtml;
+            }
         }
     }
 
@@ -881,7 +1013,7 @@
 
     function renderEmpty(isStaff, staff) {
         var area = document.getElementById('dashboardArea');
-        var chatTitle = isStaff ? 'Чат с клиентом' : 'Чат с командой';
+        var chatTitle = 'Чат с командой';
         var html = '';
 
         // Promo banner in empty state

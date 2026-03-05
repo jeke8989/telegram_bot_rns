@@ -6,10 +6,15 @@
     }
 
     function getDefaultRedirect(role, data) {
+        if (role === 'user') {
+            if (data && data.cabinet_token) return '/cabinet/' + data.cabinet_token;
+            return '/my-cabinet';
+        }
+        if (role === 'seller') {
+            if (explicitNext) return explicitNext;
+            return '/seller';
+        }
         if (explicitNext) return explicitNext;
-        if (role === 'user' && data && data.cabinet_token) return '/cabinet/' + data.cabinet_token;
-        if (role === 'user') return '/my-cabinet';
-        if (role === 'seller') return '/seller';
         return '/projects';
     }
 
@@ -47,8 +52,9 @@
                 body: JSON.stringify({ initData: tg.initData }),
             });
             var data = await resp.json();
-            if (data.ok) {
-                window.location.replace(getDefaultRedirect(data.role, data));
+            if (data.ok && data.session_token) {
+                var next = encodeURIComponent(getDefaultRedirect(data.role, data));
+                window.location.replace('/auth/callback?token=' + data.session_token + '&next=' + next);
                 return;
             }
         } catch (e) {

@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <link rel="stylesheet" href="/css/tokens.css?v=1772292397">
-    <link rel="stylesheet" href="/css/base.css?v=1772292397">
-    <link rel="stylesheet" href="/css/components/sidebar.css?v=1772292397">
-    <link rel="stylesheet" href="/css/components/buttons.css?v=1772292397">
-    <link rel="stylesheet" href="/css/components/cards.css?v=1772292397">
-    <link rel="stylesheet" href="/css/components/inputs.css?v=1772292397">
-    <link rel="stylesheet" href="/css/components/modals.css?v=1772292397">
-    <link rel="stylesheet" href="/css/components/badges.css?v=1772292397">
-    <link rel="stylesheet" href="/css/components/toast.css?v=1772292397">
-    <link rel="stylesheet" href="/css/layouts/page-shell.css?v=1772292397">
-    <link rel="stylesheet" href="/css/layouts/responsive.css?v=1772292397">
+    <link rel="stylesheet" href="/css/tokens.css?v=1772410000">
+    <link rel="stylesheet" href="/css/base.css?v=1772410000">
+    <link rel="stylesheet" href="/css/components/sidebar.css?v=1772410000">
+    <link rel="stylesheet" href="/css/components/buttons.css?v=1772410000">
+    <link rel="stylesheet" href="/css/components/cards.css?v=1772410000">
+    <link rel="stylesheet" href="/css/components/inputs.css?v=1772410000">
+    <link rel="stylesheet" href="/css/components/modals.css?v=1772410000">
+    <link rel="stylesheet" href="/css/components/badges.css?v=1772410000">
+    <link rel="stylesheet" href="/css/components/toast.css?v=1772410000">
+    <link rel="stylesheet" href="/css/layouts/page-shell.css?v=1772410000">
+    <link rel="stylesheet" href="/css/layouts/responsive.css?v=1772410000">
     <title>Редактирование предложения</title>
     <style>
         .top-breadcrumb { padding:10px 24px; border-bottom:1px solid var(--border); background:var(--bg); display:flex; align-items:center; gap:6px; font-size:.82rem; color:var(--text-dim); }
@@ -23,300 +23,283 @@
         .top-breadcrumb a:hover { color:var(--accent); }
         .breadcrumb-sep { opacity:.4; }
         .breadcrumb-current { color:var(--text); font-weight:600; }
-
         .page-container { max-width:1100px; margin:0 auto; padding:24px; }
 
-        .page-actions { display:flex; align-items:center; gap:10px; margin-bottom:24px; }
-        .btn-regenerate {
-            display:inline-flex; align-items:center; gap:7px;
-            padding:9px 18px; border-radius:10px; border:1px solid var(--accent);
-            background:rgba(108,92,231,.08); color:var(--accent);
-            font-size:.85rem; font-weight:600; cursor:pointer; font-family:inherit;
-            transition:background .15s, border-color .15s;
-        }
+        .editor-header-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px; }
+        .editor-header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+        .btn-regenerate { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:var(--radius-btn); border:1px solid var(--accent); background:rgba(108,92,231,.08); color:var(--accent); font-size:.82rem; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s; white-space:nowrap; }
         .btn-regenerate:hover { background:rgba(108,92,231,.16); }
         .btn-regenerate:disabled { opacity:.5; cursor:not-allowed; }
         .btn-regenerate svg { flex-shrink:0; }
+        .editor-header-title { font-size:.95rem; font-weight:700; color:var(--text); }
 
-        .field-row { display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
-        .field-group { flex:1; min-width:200px; }
-        .field-group label { display:block; font-size:.75rem; color:var(--text-dim); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-        .field-input {
-            width:100%; background:var(--surface); border:1px solid var(--border);
-            border-radius:10px; color:var(--text); font-size:.9rem; padding:10px 14px;
-            outline:none; transition:border-color var(--transition); font-family:inherit;
-        }
+        .field-grid { display:grid; gap:12px; }
+        .field-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .field-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+        .field-group { min-width:0; }
+        .field-group label { display:block; font-size:.68rem; color:var(--text-dim); margin-bottom:4px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+        .field-input { width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:.85rem; padding:8px 10px; outline:none; transition:border-color var(--transition); font-family:inherit; box-sizing:border-box; }
         .field-input:focus { border-color:var(--accent); }
-        .field-input-sm { max-width:140px; }
         select.field-input { cursor:pointer; }
+        .field-with-actions { display:flex; align-items:flex-end; gap:6px; }
+        .field-with-actions .field-group { flex:1; min-width:0; }
+        .field-action-btn { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim); cursor:pointer; transition:all .15s; flex-shrink:0; text-decoration:none; }
+        .field-action-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(108,92,231,.08); }
+        .field-action-btn svg { flex-shrink:0; }
+        .field-action-btn[style*="display:none"] + .field-action-btn { margin-left:0; }
 
-        .section-divider { display:flex; align-items:center; gap:12px; margin:28px 0 14px; }
-        .section-divider-title { font-size:1rem; font-weight:700; white-space:nowrap; }
+        /* ── Searchable dropdown ── */
+        .search-select { position:relative; }
+        .search-select-trigger { width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:.88rem; padding:9px 32px 9px 12px; outline:none; cursor:pointer; font-family:inherit; box-sizing:border-box; transition:border-color var(--transition); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+        .search-select-trigger:focus, .search-select.open .search-select-trigger { border-color:var(--accent); }
+        .search-select-trigger::after { content:''; position:absolute; right:12px; top:50%; transform:translateY(-50%); border:4px solid transparent; border-top:5px solid var(--text-dim); }
+        .search-select-trigger.placeholder { color:var(--text-dim); }
+        .search-select-dropdown { display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); z-index:200; max-height:260px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.4); flex-direction:column; }
+        .search-select.open .search-select-dropdown { display:flex; }
+        .search-select-search { width:100%; background:var(--surface-2); border:none; border-bottom:1px solid var(--border); color:var(--text); font-size:.85rem; padding:10px 12px; outline:none; font-family:inherit; box-sizing:border-box; }
+        .search-select-search::placeholder { color:var(--text-dim); }
+        .search-select-options { overflow-y:auto; max-height:210px; }
+        .search-select-option { padding:8px 12px; cursor:pointer; font-size:.85rem; color:var(--text); transition:background .1s; }
+        .search-select-option:hover { background:var(--surface-2); }
+        .search-select-option.active { background:rgba(108,92,231,.15); color:var(--accent); }
+        .search-select-option.empty { color:var(--text-dim); cursor:default; font-style:italic; }
+        .search-select-clear { position:absolute; right:28px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-dim); cursor:pointer; padding:2px; display:flex; align-items:center; z-index:1; }
+        .search-select-clear:hover { color:var(--red); }
+
+        
+
+        /* ── Section divider ── */
+        .section-divider { display:flex; align-items:center; gap:12px; margin:24px 0 12px; }
+        .section-divider-title { font-size:.92rem; font-weight:700; white-space:nowrap; }
         .section-divider-line { flex:1; height:1px; background:var(--border); }
+        .section-divider-badge { font-size:.75rem; font-weight:600; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+        .section-divider-badge.design { background:rgba(253,121,168,.12); color:var(--pink); }
+        .section-divider-badge.dev { background:rgba(108,92,231,.1); color:var(--accent); }
+        
+        .stage-empty-hint { color:var(--text-dim); font-size:.82rem; padding:12px 0 4px; font-style:italic; }
 
         /* ── Module card ── */
-        .module-card {
-            background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-            margin-bottom:12px; overflow:hidden;
-        }
-        .module-header {
-            display:flex; align-items:center; gap:10px; padding:12px 16px;
-            background:var(--surface-2); border-bottom:1px solid var(--border); cursor:pointer;
-        }
+        .module-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; overflow:hidden; }
+        .module-header { display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--surface-2); border-bottom:1px solid var(--border); cursor:pointer; }
         .module-header:hover { background:var(--surface-3); }
         .module-collapse-icon { transition:transform var(--transition); color:var(--text-dim); flex-shrink:0; }
         .module-card.collapsed .module-collapse-icon { transform:rotate(-90deg); }
         .module-card.collapsed .module-body { display:none; }
-        .module-name-input {
-            flex:1; background:transparent; border:1px solid transparent; border-radius:6px;
-            color:var(--text); font-size:.92rem; font-weight:600; padding:4px 8px;
-            outline:none; transition:border-color var(--transition); font-family:inherit;
-            min-width:0;
-        }
+        .module-name-input { flex:1; background:transparent; border:1px solid transparent; border-radius:6px; color:var(--text); font-size:.88rem; font-weight:600; padding:3px 7px; outline:none; transition:border-color var(--transition); font-family:inherit; min-width:0; }
         .module-name-input:focus { border-color:var(--accent); background:var(--surface); }
-        .module-hours-badge {
-            background:rgba(108,92,231,.1); color:var(--accent); font-size:.78rem; font-weight:700;
-            padding:4px 10px; border-radius:6px; white-space:nowrap; flex-shrink:0;
-        }
-        .module-delete-btn {
-            background:none; border:none; color:var(--text-dim); cursor:pointer;
-            padding:4px; border-radius:6px; transition:var(--transition);
-            display:flex; align-items:center; flex-shrink:0;
-        }
+        .module-hours-badge { background:rgba(108,92,231,.1); color:var(--accent); font-size:.75rem; font-weight:700; padding:3px 9px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+        .module-delete-btn { background:none; border:none; color:var(--text-dim); cursor:pointer; padding:6px; border-radius:6px; transition:var(--transition); display:inline-flex; align-items:center; flex-shrink:0; user-select:none; }
         .module-delete-btn:hover { color:var(--red); background:rgba(225,115,85,.12); }
-        .module-body { padding:14px 16px; }
+        .module-delete-btn svg, .add-row-btn svg, .add-work-btn svg { pointer-events:none; }
+        .module-body { padding:12px 14px; }
 
-        /* ── Work items ── */
-        .work-item {
-            display:flex; align-items:center; gap:8px; margin-bottom:6px;
-        }
-        .work-item-name {
-            flex:1; background:var(--surface-2); border:1px solid var(--border);
-            border-radius:8px; color:var(--text); font-size:.85rem; padding:8px 12px;
-            outline:none; transition:border-color var(--transition); font-family:inherit;
-            min-width:0;
-        }
+        .work-item { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
+        .work-item-name { flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:.82rem; padding:7px 10px; outline:none; transition:border-color var(--transition); font-family:inherit; min-width:0; }
         .work-item-name:focus { border-color:var(--accent); }
-        .work-item-hours {
-            width:70px; background:var(--surface-2); border:1px solid var(--border);
-            border-radius:8px; color:var(--text); font-size:.85rem; padding:8px 10px;
-            text-align:center; outline:none; transition:border-color var(--transition);
-            font-family:inherit; flex-shrink:0;
-        }
+        .work-item-hours { width:60px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:.82rem; padding:7px 8px; text-align:center; outline:none; transition:border-color var(--transition); font-family:inherit; flex-shrink:0; }
         .work-item-hours:focus { border-color:var(--accent); }
-        .work-item-unit { font-size:.75rem; color:var(--text-dim); flex-shrink:0; }
-        .work-item-delete {
-            background:none; border:none; color:var(--text-dim); cursor:pointer;
-            padding:4px; border-radius:4px; transition:var(--transition);
-            display:flex; align-items:center; flex-shrink:0;
-        }
-        .work-item-delete:hover { color:var(--red); }
-
-        .add-row-btn {
-            background:none; border:1px dashed var(--border); border-radius:8px;
-            color:var(--text-dim); cursor:pointer; padding:6px 12px; font-size:.82rem;
-            font-family:inherit; transition:var(--transition); display:inline-flex;
-            align-items:center; gap:6px;
-        }
+        .work-item-unit { font-size:.72rem; color:var(--text-dim); flex-shrink:0; }
+        .work-item-delete { background:none; border:none; color:var(--text-dim); cursor:pointer; padding:6px; border-radius:4px; transition:var(--transition); display:inline-flex; align-items:center; flex-shrink:0; user-select:none; font-size:16px; font-weight:700; line-height:1; }
+        .work-item-delete:hover { color:var(--red); background:rgba(225,115,85,.08); }
+        .add-row-btn { background:none; border:1px dashed var(--border); border-radius:6px; color:var(--text-dim); cursor:pointer; padding:5px 10px; font-size:.78rem; font-family:inherit; transition:var(--transition); display:inline-flex; align-items:center; gap:5px; }
         .add-row-btn:hover { border-color:var(--accent); color:var(--accent); }
 
-        /* ── Totals card ── */
-        .totals-card {
-            background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-            padding:20px; margin-top:16px;
-        }
-        .totals-row {
-            display:flex; justify-content:space-between; align-items:center;
-            padding:10px 0;
-        }
+        /* ── Overhead ── */
+        .overhead-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; gap:14px; }
+        .overhead-label { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+        .overhead-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .overhead-icon.pm { background:rgba(108,92,231,.12); color:var(--accent); }
+        .overhead-icon.qa { background:rgba(0,206,201,.12); color:var(--green); }
+        .overhead-icon.mkt { background:rgba(253,203,110,.12); color:var(--orange); }
+        .overhead-icon.seller { background:rgba(253,121,168,.12); color:#fd79a8; }
+        .overhead-icon.custom { background:rgba(139,143,168,.1); color:var(--text-dim); }
+        .overhead-icon.discount { background:rgba(0,206,201,.12); color:var(--green); }
+        .overhead-card.discount { border-color:rgba(0,206,201,.25); background:rgba(0,206,201,.04); }
+        .overhead-card.discount .overhead-hours, .overhead-card.discount .overhead-cost { color:var(--green); }
+        .overhead-name { font-size:.88rem; font-weight:600; color:var(--text); }
+        .overhead-name-input { background:transparent; border:1px solid transparent; border-radius:5px; color:var(--text); font-size:.85rem; font-weight:600; padding:2px 6px; outline:none; font-family:inherit; min-width:120px; max-width:200px; }
+        .overhead-name-input:focus { border-color:var(--accent); background:var(--surface); }
+        .overhead-desc { font-size:.72rem; color:var(--text-dim); margin-top:1px; }
+        .overhead-pct-wrap { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+        .overhead-pct-input { width:52px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:.85rem; padding:6px 6px; text-align:center; outline:none; font-family:inherit; }
+        .overhead-pct-input:focus { border-color:var(--accent); }
+        .overhead-pct-symbol { font-size:.78rem; color:var(--text-dim); }
+        .overhead-hours { font-size:.85rem; color:var(--text); font-weight:600; min-width:60px; text-align:right; flex-shrink:0; }
+        .overhead-cost { font-size:.85rem; color:var(--text-dim); min-width:80px; text-align:right; flex-shrink:0; }
+        .overhead-delete { background:none; border:none; color:var(--text-dim); cursor:pointer; padding:4px; border-radius:4px; display:inline-flex; align-items:center; transition:var(--transition); flex-shrink:0; }
+        .overhead-delete:hover { color:var(--red); background:rgba(225,115,85,.1); }
+        .overhead-add-btn { background:none; border:1px dashed var(--border); border-radius:var(--radius); color:var(--text-dim); cursor:pointer; padding:10px 16px; font-size:.82rem; font-family:inherit; transition:var(--transition); display:flex; align-items:center; gap:8px; margin-top:6px; }
+        .overhead-add-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+        /* ── Totals ── */
+        .totals-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-top:14px; }
+        .totals-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; }
         .totals-row + .totals-row { border-top:1px solid var(--border); }
-        .totals-label { font-size:.88rem; color:var(--text-dim); font-weight:500; }
-        .totals-value { font-size:1.1rem; font-weight:700; color:var(--text); }
-        .totals-value.highlight { color:var(--accent); font-size:1.2rem; }
-        .totals-value.cost { color:var(--green); font-size:1.3rem; }
+        .totals-label { font-size:.85rem; color:var(--text-dim); font-weight:500; }
+        .totals-value { font-size:1rem; font-weight:700; color:var(--text); }
+        .totals-value.accent { color:var(--accent); }
+        .totals-value.green { color:var(--green); font-size:1.15rem; }
+        .totals-row.grand { padding:12px 0 4px; }
+        .totals-row.grand .totals-label { font-size:.92rem; font-weight:700; color:var(--text); }
 
-        /* ── Save bar ── */
-        .save-bar {
-            position:sticky; bottom:0; left:0; right:0;
-            background:var(--surface); border-top:1px solid var(--border);
-            padding:12px 24px; display:flex; justify-content:flex-end; gap:12px;
-            z-index:50;
-        }
+        /* ── Payment Phases ── */
+        .pay-phases { margin-top:14px; }
+        .pay-phase { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:14px; }
+        .pay-phase-num { width:28px; height:28px; border-radius:50%; background:rgba(120,124,245,.1); color:var(--accent); font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
+        .pay-phase-num.paid { background:rgba(16,185,129,.15); color:#059669; }
+        .pay-phase-body { flex:1; min-width:0; }
+        .pay-phase-top { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+        .pay-phase-name { font-size:.88rem; font-weight:600; color:var(--text); flex:1; }
+        .pay-phase-cost { font-size:.92rem; font-weight:700; color:var(--text); white-space:nowrap; }
+        .pay-phase-delivs { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
+        .pay-phase-deliv { font-size:.72rem; padding:3px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:100px; color:var(--text-dim); }
+        .pay-phase-status { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:100px; font-size:.72rem; font-weight:600; cursor:pointer; transition:var(--transition); flex-shrink:0; }
+        .pay-phase-status.pending { background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.25); color:#f59e0b; }
+        .pay-phase-status.pending:hover { background:rgba(245,158,11,.18); }
+        .pay-phase-status.paid { background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.25); color:#059669; }
+        .pay-phase-status.paid:hover { background:rgba(16,185,129,.18); }
+        .pay-phase-date { font-size:.7rem; color:var(--text-dim); margin-top:4px; }
 
-        /* ── Client selector ── */
-        .client-selector { position:relative; }
-        .client-selector select { appearance:none; background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8fa8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center; padding-right:32px; }
-        .client-card-inline { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-top:12px; }
-        .client-card-inline .cc-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .client-card-inline .cc-label { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
-        .client-card-inline .cc-value { font-size:.86rem; color:var(--text); }
-        .client-card-inline .cc-value a { color:var(--accent); text-decoration:none; }
-        .client-card-inline .cc-value a:hover { text-decoration:underline; }
-        .client-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-        .client-card-header span { font-size:.85rem; font-weight:600; }
-        .client-link-btn { font-size:.78rem; color:var(--accent); background:none; border:none; cursor:pointer; font-family:inherit; text-decoration:underline; }
+        .save-bar { position:sticky; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); padding:12px 24px; display:flex; justify-content:flex-end; gap:12px; z-index:50; }
 
-        /* ── Regenerate modal ── */
         .regen-modal { max-width:560px; }
-        .regen-field { margin-bottom:16px; }
-        .regen-field label { display:block; font-size:.78rem; color:var(--text-dim); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-        .regen-field textarea {
-            width:100%; min-height:120px; background:var(--surface-2); border:1px solid var(--border);
-            border-radius:10px; color:var(--text); font-size:.88rem; padding:10px 14px;
-            outline:none; font-family:inherit; resize:vertical; transition:border-color var(--transition);
-        }
+        .regen-field { margin-bottom:14px; }
+        .regen-field label { display:block; font-size:.75rem; color:var(--text-dim); margin-bottom:5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+        .regen-field textarea { width:100%; min-height:110px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:.85rem; padding:10px 12px; outline:none; font-family:inherit; resize:vertical; transition:border-color var(--transition); box-sizing:border-box; }
         .regen-field textarea:focus { border-color:var(--accent); }
-        .regen-field input, .regen-field select {
-            width:100%; background:var(--surface-2); border:1px solid var(--border);
-            border-radius:10px; color:var(--text); font-size:.88rem; padding:10px 14px;
-            outline:none; font-family:inherit; transition:border-color var(--transition);
-        }
+        .regen-field input, .regen-field select { width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:.85rem; padding:9px 12px; outline:none; font-family:inherit; transition:border-color var(--transition); box-sizing:border-box; }
         .regen-field input:focus, .regen-field select:focus { border-color:var(--accent); }
-        .regen-row { display:flex; gap:12px; }
+        .regen-row { display:flex; gap:10px; }
         .regen-row .regen-field { flex:1; min-width:0; }
-        .regen-spinner { display:none; align-items:center; gap:10px; padding:20px; justify-content:center; color:var(--text-dim); font-size:.9rem; }
+        .regen-spinner { display:none; align-items:center; gap:10px; padding:20px; justify-content:center; color:var(--text-dim); font-size:.88rem; }
         .regen-spinner.active { display:flex; }
         .regen-spinner svg { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
         @media (max-width:768px) {
-            .page-container { padding:16px; }
-            .field-row { flex-direction:column; }
-            .field-group { min-width:unset; }
-            .page-actions { flex-wrap:wrap; }
+            .page-container { padding:14px; }
+            .field-grid-3, .field-grid-4 { grid-template-columns:1fr; }
+            .overhead-card { flex-wrap:wrap; gap:8px; }
+            .overhead-hours, .overhead-cost { text-align:left; }
             .regen-row { flex-direction:column; }
+            .editor-header-top { flex-direction:column; align-items:flex-start; gap:10px; }
         }
     </style>
 </head>
 <body>
     <aside class="sidebar" id="sidebar"></aside>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
     <div class="main-content">
         <div class="mobile-header">
             <button class="mobile-menu-btn" id="mobileMenuBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
             <span class="mobile-header-title">Редактирование</span>
         </div>
-
         <div class="top-breadcrumb">
-            <a href="/proposals">Предложения</a>
-            <span class="breadcrumb-sep">&rsaquo;</span>
-            <span class="breadcrumb-current" id="breadcrumbName">Загрузка...</span>
+            <a href="/proposals">Предложения</a><span class="breadcrumb-sep">&rsaquo;</span><span class="breadcrumb-current" id="breadcrumbName">Загрузка...</span>
         </div>
-
         <div id="editorContent">
             <div class="page-container">
-                <div class="field-row"><div class="field-group" style="flex:2"><div class="sk" style="height:10px;width:100px;margin-bottom:8px"></div><div class="sk" style="height:42px;border-radius:10px"></div></div><div class="field-group"><div class="sk" style="height:10px;width:50px;margin-bottom:8px"></div><div class="sk" style="height:42px;border-radius:10px"></div></div></div>
-                <div class="field-row"><div class="field-group"><div class="sk" style="height:10px;width:70px;margin-bottom:8px"></div><div class="sk" style="height:42px;width:140px;border-radius:10px"></div></div><div class="field-group"><div class="sk" style="height:10px;width:50px;margin-bottom:8px"></div><div class="sk" style="height:42px;width:140px;border-radius:10px"></div></div></div>
-                <div style="margin:32px 0 16px"><div class="sk" style="height:18px;width:80px"></div></div>
-                <div class="module-card"><div style="padding:14px 16px;background:var(--surface-2);border-bottom:1px solid var(--border)"><div class="sk" style="height:16px;width:40%;border-radius:6px"></div></div><div style="padding:16px"><div class="sk" style="height:36px;margin-bottom:6px;border-radius:8px"></div><div class="sk" style="height:36px;margin-bottom:6px;border-radius:8px"></div><div class="sk" style="height:36px;border-radius:8px"></div></div></div>
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px">
+                    <div class="field-grid field-grid-2" style="margin-bottom:14px"><div class="field-group"><div class="sk" style="height:10px;width:100px;margin-bottom:6px"></div><div class="sk" style="height:38px;border-radius:8px"></div></div><div class="field-group"><div class="sk" style="height:10px;width:50px;margin-bottom:6px"></div><div class="sk" style="height:38px;border-radius:8px"></div></div></div>
+                </div>
+                <div class="module-card"><div style="padding:12px 14px;background:var(--surface-2)"><div class="sk" style="height:14px;width:40%;border-radius:6px"></div></div><div style="padding:12px 14px"><div class="sk" style="height:32px;margin-bottom:5px;border-radius:6px"></div><div class="sk" style="height:32px;border-radius:6px"></div></div></div>
             </div>
         </div>
-
         <div class="save-bar" id="saveBar" style="display:none">
             <button class="btn-secondary" onclick="window.location.href='/proposals'">Отмена</button>
             <button class="btn-primary" id="saveBtn">Сохранить изменения</button>
         </div>
     </div>
-
-    <!-- Regenerate modal -->
     <div class="modal-overlay" id="regenOverlay">
         <div class="modal regen-modal">
             <h3>Перегенерировать КП</h3>
             <div id="regenForm">
-                <div class="regen-field">
-                    <label>Описание проекта / ТЗ</label>
-                    <textarea id="regenDescription" placeholder="Опишите проект, его цели и функциональность..."></textarea>
-                </div>
-                <div class="regen-row">
-                    <div class="regen-field">
-                        <label>Тип</label>
-                        <select id="regenType">
-                            <option value="mvp">MVP</option>
-                            <option value="full">Full</option>
-                        </select>
-                    </div>
-                    <div class="regen-field">
-                        <label>Дизайн</label>
-                        <select id="regenDesign">
-                            <option value="full_design">Полный дизайн</option>
-                            <option value="wireframes">Только вайрфреймы</option>
-                            <option value="no_design">Без дизайна</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="regen-row">
-                    <div class="regen-field">
-                        <label>Ставка / час</label>
-                        <input type="number" id="regenRate" step="0.01" placeholder="50">
-                    </div>
-                    <div class="regen-field">
-                        <label>Валюта</label>
-                        <select id="regenCurrency">
-                            <option value="$">$ USD</option>
-                            <option value="₽">₽ RUB</option>
-                            <option value="€">€ EUR</option>
-                        </select>
-                    </div>
-                    <div class="regen-field">
-                        <label>Бюджет (опц.)</label>
-                        <input type="number" id="regenBudget" placeholder="—">
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn-secondary" id="regenCancel">Отмена</button>
-                    <button class="btn-primary" id="regenSubmit">Сгенерировать</button>
-                </div>
+                <div class="regen-field"><label>Описание проекта / ТЗ</label><textarea id="regenDescription" placeholder="Опишите проект, его цели и функциональность..."></textarea></div>
+                <div class="regen-row"><div class="regen-field"><label>Тип</label><select id="regenType"><option value="mvp">MVP</option><option value="full">Full</option></select></div><div class="regen-field"><label>Дизайн</label><select id="regenDesign"><option value="full_design">Полный дизайн</option><option value="wireframes">Только вайрфреймы</option><option value="no_design">Без дизайна</option></select></div></div>
+                <div class="regen-row"><div class="regen-field"><label>Ставка / час</label><input type="number" id="regenRate" step="0.01" placeholder="50"></div><div class="regen-field"><label>Валюта</label><select id="regenCurrency"><option value="$">$ USD</option><option value="₽">₽ RUB</option><option value="€">€ EUR</option></select></div><div class="regen-field"><label>Бюджет (опц.)</label><input type="number" id="regenBudget" placeholder="—"></div></div>
+                <div class="modal-actions"><button class="btn-secondary" id="regenCancel">Отмена</button><button class="btn-primary" id="regenSubmit">Сгенерировать</button></div>
             </div>
-            <div class="regen-spinner" id="regenSpinner">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-6.22-8.56"/></svg>
-                Генерация сметы...
+            <div class="regen-spinner" id="regenSpinner"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-6.22-8.56"/></svg>Генерация сметы...</div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="paymentOverlay">
+        <div class="modal" style="max-width:420px">
+            <h3 id="paymentTitle">Подтверждение оплаты</h3>
+            <p id="paymentDesc" style="font-size:.88rem;color:var(--text-dim);margin-bottom:16px"></p>
+            <div class="regen-field"><label>Дата оплаты</label><input type="date" id="paymentDate"></div>
+            <div class="regen-field"><label>Комментарий (необязательно)</label><input type="text" id="paymentComment" placeholder="Номер платежа, способ оплаты..."></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="paymentCancel">Отмена</button>
+                <button class="btn-secondary" id="paymentUnpay" style="display:none;color:var(--red)">Снять оплату</button>
+                <button class="btn-primary" id="paymentConfirm">Оплачено</button>
             </div>
         </div>
     </div>
-
+    <div class="modal-overlay" id="overheadOverlay">
+        <div class="modal" style="max-width:400px">
+            <h3>Новый блок расходов</h3>
+            <div class="regen-field"><label>Название</label><input type="text" id="overheadName" placeholder="Например: Скидка за предоплату"></div>
+            <div class="regen-field"><label>Процент (отрицательный = скидка)</label><input type="number" id="overheadPct" placeholder="-10" step="1"></div>
+            <div class="modal-actions"><button class="btn-secondary" id="overheadCancel">Отмена</button><button class="btn-primary" id="overheadOk">Добавить</button></div>
+        </div>
+    </div>
     <div class="toast" id="toast"></div>
 
     <script>
     const TOKEN = window.location.pathname.split('/')[2];
     let proposalData = null;
     let allClients = [];
+    let allSellers = [];
     let selectedClientData = null;
+    const DEFAULT_OVERHEAD = { pm_percent: 15, qa_percent: 10, marketing_percent: 5 };
+    const STAGES = [
+        { key: 'design', title: 'UX/UI Дизайн', css: 'design', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' },
+        { key: 'dev', title: 'Разработка', css: 'dev', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>' },
+    ];
+    const DESIGN_MODULE_TEMPLATES = {
+        full_design: { name: 'UX/UI Дизайн', stage: 'design', sub_items: [
+            { name: 'Анализ и исследование', hours: 8 },
+            { name: 'Вайрфреймы ключевых экранов', hours: 12 },
+            { name: 'UI-дизайн и компоненты', hours: 16 },
+            { name: 'Дизайн-система и гайдлайны', hours: 8 },
+            { name: 'Согласование и правки', hours: 6 },
+        ]},
+        wireframes: { name: 'Проектирование интерфейсов', stage: 'design', sub_items: [
+            { name: 'Структура экранов и навигация', hours: 6 },
+            { name: 'Вайрфреймы ключевых страниц', hours: 10 },
+            { name: 'Согласование и правки', hours: 4 },
+        ]},
+    };
 
     function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-    function showToast(msg, isError) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.className = 'toast show' + (isError ? ' error' : '');
-        setTimeout(() => t.className = 'toast', 2500);
-    }
-
+    function showToast(msg, isError) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : ''); setTimeout(() => t.className = 'toast', 2500); }
     function normalizeHours(val) {
         if (typeof val === 'number') return val;
-        if (val && typeof val === 'object' && ('min' in val || 'max' in val)) {
-            return Math.round(((val.min || 0) + (val.max || 0)) / 2);
-        }
+        if (val && typeof val === 'object' && ('min' in val || 'max' in val)) return Math.round(((val.min||0)+(val.max||0))/2);
         return parseInt(val) || 0;
     }
 
+    function guessStage(mod) {
+        const n = (mod.name || '').toLowerCase();
+        if (/дизайн|ux|ui|wireframe|вайрфрейм|макет|интерфейс/.test(n)) return 'design';
+        return 'dev';
+    }
+
     function normalizeEstimation(est) {
-        if (!est || !est.modules) return est;
-        (est.modules || []).forEach(mod => {
-            (mod.sub_items || []).forEach(si => {
-                if (si && typeof si.hours !== 'number') si.hours = normalizeHours(si.hours);
-            });
+        if (!est) est = { modules: [] };
+        if (!est.modules) est.modules = [];
+        est.modules.forEach(mod => {
+            (mod.sub_items || []).forEach(si => { if (si && typeof si.hours !== 'number') si.hours = normalizeHours(si.hours); });
             mod.total = (mod.sub_items || []).reduce((s, si) => s + (si.hours || 0), 0);
+            if (!mod.stage) mod.stage = guessStage(mod);
+            if (mod.stage === 'testing') mod.stage = 'dev';
         });
+        if (!est.overhead || !est.overhead.pm_percent) est.overhead = { ...DEFAULT_OVERHEAD };
+        if (!est.overhead.custom_items) est.overhead.custom_items = [];
         return est;
     }
 
-    async function authFetch(url, opts) {
-        const res = await fetch(url, opts);
-        if (res.status === 401) { window.location.href = '/login'; throw new Error('unauthorized'); }
-        return res;
-    }
-
+    async function authFetch(url, opts) { const res = await fetch(url, opts); if (res.status === 401) { window.location.href = '/login'; throw new Error('unauthorized'); } return res; }
     async function loadProposal() {
         try {
             const res = await authFetch('/api/proposal/' + TOKEN);
@@ -324,193 +307,303 @@
             proposalData = await res.json();
             proposalData.estimation = normalizeEstimation(proposalData.estimation || {});
             renderEditor();
-        } catch(e) {
-            document.getElementById('editorContent').innerHTML =
-                '<div style="padding:40px;text-align:center;color:var(--red)">Не удалось загрузить предложение</div>';
+        } catch(e) { document.getElementById('editorContent').innerHTML = '<div style="padding:40px;text-align:center;color:var(--red)">Не удалось загрузить предложение</div>'; }
+    }
+    async function loadClientsList() { try { const r = await authFetch('/api/clients'); if (r.ok) allClients = await r.json(); } catch {} }
+    async function loadSelectedClient(uuid) { if (!uuid) { selectedClientData = null; return; } try { const r = await authFetch('/api/client/' + uuid); if (r.ok) selectedClientData = await r.json(); } catch {} }
+    async function loadSellersList() { try { const r = await authFetch('/api/sellers'); if (r.ok) allSellers = await r.json(); } catch {} }
+
+    function createSearchSelect(containerId, items, selectedId, placeholder, onSelect) {
+        const container = document.getElementById(containerId); if (!container) return;
+        container.innerHTML = ''; container.classList.add('search-select');
+        const trigger = document.createElement('div'); trigger.className = 'search-select-trigger'; trigger.tabIndex = 0;
+        const clearBtn = document.createElement('button'); clearBtn.className = 'search-select-clear';
+        clearBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        clearBtn.style.display = selectedId ? '' : 'none';
+        const dropdown = document.createElement('div'); dropdown.className = 'search-select-dropdown';
+        const searchInput = document.createElement('input'); searchInput.className = 'search-select-search'; searchInput.placeholder = 'Поиск...';
+        const optionsList = document.createElement('div'); optionsList.className = 'search-select-options';
+        dropdown.appendChild(searchInput); dropdown.appendChild(optionsList);
+        container.appendChild(trigger); container.appendChild(clearBtn); container.appendChild(dropdown);
+        function setVal() { const sel = items.find(i => i.id === selectedId); if (sel) { trigger.textContent = sel.label; trigger.classList.remove('placeholder'); clearBtn.style.display = ''; } else { trigger.textContent = placeholder; trigger.classList.add('placeholder'); clearBtn.style.display = 'none'; } }
+        function renderOpts(f) { const q = (f||'').toLowerCase(); const fl = items.filter(i => !q || i.label.toLowerCase().includes(q)); optionsList.innerHTML = '';
+            if (!fl.length) { const e = document.createElement('div'); e.className = 'search-select-option empty'; e.textContent = 'Ничего не найдено'; optionsList.appendChild(e); return; }
+            fl.forEach(item => { const o = document.createElement('div'); o.className = 'search-select-option' + (item.id === selectedId ? ' active' : ''); o.textContent = item.label;
+                o.addEventListener('click', e => { e.stopPropagation(); selectedId = item.id; setVal(); container.classList.remove('open'); onSelect(item); }); optionsList.appendChild(o); }); }
+        trigger.addEventListener('click', e => { e.stopPropagation(); const isOpen = container.classList.contains('open'); document.querySelectorAll('.search-select.open').forEach(el => el.classList.remove('open')); if (!isOpen) { container.classList.add('open'); searchInput.value = ''; renderOpts(''); setTimeout(() => searchInput.focus(), 10); } });
+        clearBtn.addEventListener('click', e => { e.stopPropagation(); selectedId = null; setVal(); onSelect(null); });
+        searchInput.addEventListener('input', () => renderOpts(searchInput.value)); searchInput.addEventListener('click', e => e.stopPropagation());
+        document.addEventListener('click', () => container.classList.remove('open'));
+        setVal(); renderOpts('');
+    }
+
+    async function ensureCabinetToken(uuid) {
+        try {
+            const r = await authFetch('/api/client/' + uuid + '/ensure-cabinet', { method: 'POST' });
+            if (r.ok) { const d = await r.json(); return d.cabinet_token || null; }
+        } catch {}
+        return null;
+    }
+
+    async function updateClientActions() {
+        const cabinetBtn = document.getElementById('clientCabinetBtn');
+        const cardBtn = document.getElementById('clientCardBtn');
+        if (!cabinetBtn || !cardBtn) return;
+        if (selectedClientData) {
+            const c = selectedClientData;
+            if (!c.cabinet_token && c.uuid) c.cabinet_token = await ensureCabinetToken(c.uuid);
+            if (c.cabinet_token) {
+                cabinetBtn.href = '/cabinet/' + encodeURIComponent(c.cabinet_token) + '?from=proposal&proposal_token=' + encodeURIComponent(TOKEN);
+                cabinetBtn.style.display = '';
+            } else { cabinetBtn.style.display = 'none'; }
+            cardBtn.href = '/client/' + c.uuid;
+            cardBtn.style.display = '';
+        } else {
+            cabinetBtn.style.display = 'none';
+            cardBtn.style.display = 'none';
         }
     }
 
-    async function loadClientsList() {
-        try {
-            const res = await authFetch('/api/clients');
-            if (res.ok) allClients = await res.json();
-        } catch {}
-    }
-
-    async function loadSelectedClient(clientUuid) {
-        if (!clientUuid) { selectedClientData = null; return; }
-        try {
-            const res = await authFetch('/api/client/' + clientUuid);
-            if (res.ok) selectedClientData = await res.json();
-        } catch {}
-    }
-
-    function renderClientCard() {
-        const container = document.getElementById('clientCardContainer');
-        if (!container) return;
-        if (!selectedClientData) { container.innerHTML = ''; return; }
-        const c = selectedClientData;
-        const cabinetLink = c.cabinet_token
-            ? '<a class="client-link-btn" href="/cabinet/'+escapeHtml(c.cabinet_token)+'?from=proposal&proposal_token='+encodeURIComponent(TOKEN)+'" target="_blank">Кабинет клиента</a>'
-            : '';
-        container.innerHTML =
-            '<div class="client-card-inline"><div class="client-card-header"><span>Карточка клиента</span><div style="display:flex;gap:8px;align-items:center">'
-            + cabinetLink
-            + '<button class="client-link-btn" onclick="window.location.href=\'/client/'+c.uuid+'\'">Открыть полную карточку</button></div></div>'
-            + '<div class="cc-grid">'
-            + (c.company ? '<div><div class="cc-label">Компания</div><div class="cc-value">'+escapeHtml(c.company)+'</div></div>' : '')
-            + (c.email ? '<div><div class="cc-label">Email</div><div class="cc-value"><a href="mailto:'+escapeHtml(c.email)+'">'+escapeHtml(c.email)+'</a></div></div>' : '')
-            + (c.phone ? '<div><div class="cc-label">Телефон</div><div class="cc-value">'+escapeHtml(c.phone)+'</div></div>' : '')
-            + (c.telegram ? '<div><div class="cc-label">Telegram</div><div class="cc-value">'+escapeHtml(c.telegram)+'</div></div>' : '')
-            + '</div></div>';
-    }
+    function getDesignType() { return document.getElementById('fDesign')?.value || proposalData.design_type || 'no_design'; }
 
     function renderEditor() {
         const est = proposalData.estimation || {};
         document.getElementById('breadcrumbName').textContent = proposalData.project_name || 'Без названия';
         document.title = (proposalData.project_name || 'Предложение') + ' — Редактирование';
+        const overhead = est.overhead || { ...DEFAULT_OVERHEAD };
+        const designType = proposalData.design_type || 'no_design';
 
-        let clientOptions = '<option value="">— Без клиента —</option>';
-        allClients.forEach(c => {
-            const label = c.name + (c.company ? ' ('+c.company+')' : '');
-            const selected = proposalData.client_id === c.id ? 'selected' : '';
-            clientOptions += '<option value="'+c.uuid+'" data-id="'+c.id+'" '+selected+'>'+escapeHtml(label)+'</option>';
+        let html = '<div class="page-container">'
+        + '<div class="editor-header-card">'
+        +   '<div class="editor-header-top"><span class="editor-header-title">Параметры предложения</span>'
+        +     '<div style="display:flex;align-items:center;gap:8px">'
+        +       '<button class="field-action-btn" id="copyLinkBtn" title="Скопировать публичную ссылку" style="width:auto;padding:0 10px;gap:6px;font-size:.78rem;font-weight:600;font-family:inherit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button>'
+        +       '<button class="btn-regenerate" id="regenBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Перегенерировать</button>'
+        +     '</div></div>'
+        +   '<div class="field-grid field-grid-3" style="margin-bottom:12px">'
+        +     '<div class="field-group"><label>Название проекта</label><input class="field-input" id="fProjectName" value="'+escapeHtml(proposalData.project_name || '')+'"></div>'
+        +     '<div class="field-group"><label>Клиент</label><div class="field-with-actions"><div class="field-group"><div id="clientSelectContainer"></div></div>'
+        +       '<a class="field-action-btn" id="clientCabinetBtn" href="#" target="_blank" title="Кабинет клиента" style="display:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></a>'
+        +       '<a class="field-action-btn" id="clientCardBtn" href="#" target="_blank" title="Карточка клиента" style="display:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2"/><circle cx="12" cy="7" r="4"/></svg></a>'
+        +     '</div></div>'
+        +     '<div class="field-group"><label>Продажник</label><div id="sellerSelectContainer"></div></div>'
+        +   '</div>'
+        +   '<div class="field-grid field-grid-4">'
+        +     '<div class="field-group"><label>Ставка в час</label><input class="field-input" type="number" step="0.01" id="fHourlyRate" value="'+(proposalData.hourly_rate||0)+'"></div>'
+        +     '<div class="field-group"><label>Валюта</label><select class="field-input" id="fCurrency"><option value="$" '+(proposalData.currency==='$'?'selected':'')+'>$ USD</option><option value="₽" '+(proposalData.currency==='₽'?'selected':'')+'>₽ RUB</option><option value="€" '+(proposalData.currency==='€'?'selected':'')+'>€ EUR</option></select></div>'
+        +     '<div class="field-group"><label>Тип</label><select class="field-input" id="fType"><option value="mvp" '+(proposalData.proposal_type==='mvp'?'selected':'')+'>MVP</option><option value="full" '+(proposalData.proposal_type==='full'?'selected':'')+'>Full</option></select></div>'
+        +     '<div class="field-group"><label>Дизайн</label><select class="field-input" id="fDesign"><option value="full_design" '+(designType==='full_design'?'selected':'')+'>Полный</option><option value="wireframes" '+(designType==='wireframes'?'selected':'')+'>Вайрфреймы</option><option value="no_design" '+(designType==='no_design'?'selected':'')+'>Без дизайна</option></select></div>'
+        +   '</div>'
+        + '</div>';
+
+        STAGES.forEach(st => {
+            const isDesign = st.key === 'design';
+            const hiddenAttr = (isDesign && designType === 'no_design') ? ' style="display:none"' : '';
+            html += '<div id="stageSection_'+st.key+'"'+hiddenAttr+'>'
+                + '<div class="section-divider"><span class="section-divider-badge '+st.css+'">'+st.icon+'</span><span class="section-divider-title">'+st.title+'</span><div class="section-divider-line"></div></div>'
+                + '<div id="modules_'+st.key+'"></div>'
+                + '<button class="add-row-btn" data-stage="'+st.key+'" style="margin-top:6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить модуль</button>'
+                + '</div>';
         });
 
-        const html =
-        '<div class="page-container">'
-        + '<div class="page-actions">'
-        +   '<button class="btn-regenerate" id="regenBtn">'
-        +     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>'
-        +     'Перегенерировать'
-        +   '</button>'
+        const svgPm = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
+        const svgQa = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+        const svgMkt = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+        const svgSeller = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>';
+        const svgDiscount = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>';
+        const svgCustom = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>';
+        const svgDel = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+        function overheadCard(id, icon, iconCls, name, desc, pct, opts) {
+            const isDiscount = pct < 0;
+            const cardCls = isDiscount ? ' discount' : '';
+            const deletable = opts && opts.deletable;
+            const editable = opts && opts.editableName;
+            var h = '<div class="overhead-card'+cardCls+'" data-over-id="'+id+'"><div class="overhead-label"><div class="overhead-icon '+iconCls+'">'+icon+'</div><div>';
+            if (editable) h += '<input class="overhead-name-input" data-over-name="'+id+'" value="'+escapeHtml(name)+'">';
+            else h += '<div class="overhead-name">'+escapeHtml(name)+'</div>';
+            if (desc) h += '<div class="overhead-desc">'+escapeHtml(desc)+'</div>';
+            h += '</div></div><div class="overhead-pct-wrap"><input class="overhead-pct-input" type="number" min="-100" max="100" step="1" data-over-pct="'+id+'" value="'+pct+'"><span class="overhead-pct-symbol">%</span></div><div class="overhead-hours" data-over-hours="'+id+'">0 ч</div><div class="overhead-cost" data-over-cost="'+id+'">0</div>';
+            if (deletable) h += '<span class="overhead-delete" data-over-del="'+id+'" role="button" tabindex="0">'+svgDel+'</span>';
+            h += '</div>';
+            return h;
+        }
+
+        html += '<div class="section-divider"><span class="section-divider-title">Накладные расходы</span><div class="section-divider-line"></div></div>'
+        + '<div class="overhead-section" id="overheadSection">'
+        + overheadCard('pm', svgPm, 'pm', 'Project Management', 'Управление проектом, коммуникации', overhead.pm_percent??15, null)
+        + overheadCard('qa', svgQa, 'qa', 'QA & Тестирование', 'Тестирование, баг-репорты', overhead.qa_percent??10, null)
+        + overheadCard('mkt', svgMkt, 'mkt', 'Маркетинг', 'Запуск, продвижение', overhead.marketing_percent??5, null);
+        if (proposalData.seller_id) {
+            html += overheadCard('seller', svgSeller, 'seller', 'Комиссия продажника', '', overhead.seller_percent??10, null);
+        }
+        (overhead.custom_items || []).forEach((ci, i) => {
+            const isNeg = (ci.percent || 0) < 0;
+            html += overheadCard('custom_'+i, isNeg ? svgDiscount : svgCustom, isNeg ? 'discount' : 'custom', ci.name || 'Блок', '', ci.percent || 0, { deletable: true, editableName: true });
+        });
+        html += '<div class="overhead-add-btn" id="addOverheadBtn" role="button" tabindex="0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить блок</div>'
         + '</div>'
-        + '<div class="field-row">'
-        +   '<div class="field-group" style="flex:2"><label>Название проекта</label><input class="field-input" id="fProjectName" value="'+escapeHtml(proposalData.project_name || '')+'"></div>'
-        +   '<div class="field-group client-selector"><label>Клиент</label><select class="field-input" id="fClientId">'+clientOptions+'</select></div>'
-        + '</div>'
-        + '<div id="clientCardContainer"></div>'
-        + '<div class="field-row">'
-        +   '<div class="field-group"><label>Ставка в час</label><input class="field-input field-input-sm" type="number" step="0.01" id="fHourlyRate" value="'+(proposalData.hourly_rate || 0)+'"></div>'
-        +   '<div class="field-group"><label>Валюта</label><select class="field-input field-input-sm" id="fCurrency"><option value="$" '+(proposalData.currency==='$'?'selected':'')+'>$ USD</option><option value="₽" '+(proposalData.currency==='₽'?'selected':'')+'>₽ RUB</option><option value="€" '+(proposalData.currency==='€'?'selected':'')+'>€ EUR</option></select></div>'
-        +   '<div class="field-group"><label>Тип</label><select class="field-input field-input-sm" id="fType"><option value="mvp" '+(proposalData.proposal_type==='mvp'?'selected':'')+'>MVP</option><option value="full" '+(proposalData.proposal_type==='full'?'selected':'')+'>Full</option></select></div>'
-        + '</div>'
-        + '<div class="section-divider"><span class="section-divider-title">Смета</span><div class="section-divider-line"></div></div>'
-        + '<div id="modulesContainer"></div>'
-        + '<button class="add-row-btn" id="addModuleBtn" style="margin-top:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить модуль</button>'
         + '<div class="section-divider"><span class="section-divider-title">Итого</span><div class="section-divider-line"></div></div>'
         + '<div class="totals-card" id="totalsCard"></div>'
-        + '</div>';
+        + '<div class="section-divider" style="margin-top:24px"><span class="section-divider-title">Этапы оплаты</span><div class="section-divider-line"></div></div>'
+        + '<div class="pay-phases" id="payPhasesSection"></div></div>';
 
         document.getElementById('editorContent').innerHTML = html;
         document.getElementById('saveBar').style.display = 'flex';
-
         renderModules();
         recalcTotals();
+        renderPaymentPhases();
+        initModulesDelegation();
+        initPaymentDelegation();
 
         document.getElementById('fHourlyRate').addEventListener('input', recalcTotals);
         document.getElementById('fCurrency').addEventListener('change', recalcTotals);
-        document.getElementById('addModuleBtn').addEventListener('click', addModule);
         document.getElementById('saveBtn').addEventListener('click', saveProposal);
         document.getElementById('regenBtn').addEventListener('click', openRegenModal);
-
-        document.getElementById('fClientId').addEventListener('change', async (e) => {
-            const uuid = e.target.value || null;
-            if (uuid) await loadSelectedClient(uuid);
-            else selectedClientData = null;
-            renderClientCard();
+        document.getElementById('copyLinkBtn').addEventListener('click', () => {
+            const url = window.location.origin + '/proposal/' + TOKEN;
+            navigator.clipboard.writeText(url).then(() => showToast('Ссылка скопирована')).catch(() => { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Ссылка скопирована'); });
+        });
+        document.getElementById('overheadSection').addEventListener('input', function(e) {
+            if (e.target.matches('[data-over-pct]') || e.target.matches('.overhead-name-input')) recalcTotals();
+        });
+        document.getElementById('overheadSection').addEventListener('click', function(e) {
+            const delBtn = e.target.closest('[data-over-del]');
+            if (delBtn) { deleteCustomOverhead(delBtn.dataset.overDel); }
+        });
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('#addOverheadBtn')) addCustomOverhead();
         });
 
-        if (proposalData.client_uuid) {
-            loadSelectedClient(proposalData.client_uuid).then(renderClientCard);
+        document.querySelectorAll('.add-row-btn[data-stage]').forEach(btn => {
+            btn.addEventListener('click', () => addModule(btn.dataset.stage));
+        });
+
+        document.getElementById('fDesign').addEventListener('change', handleDesignChange);
+
+        createSearchSelect('clientSelectContainer', allClients.map(c => ({ id: c.id, uuid: c.uuid, label: c.name + (c.company ? ' ('+c.company+')' : '') })), proposalData.client_id || null, '— Клиент —',
+            async (item) => { if (item) { proposalData.client_id = item.id; await loadSelectedClient(item.uuid); } else { proposalData.client_id = null; selectedClientData = null; } updateClientActions(); });
+        createSearchSelect('sellerSelectContainer', allSellers.map(s => ({ id: s.id, label: s.name + (s.username ? ' (@'+s.username+')' : '') })), proposalData.seller_id || null, '— Продажник —',
+            (item) => {
+                const prev = proposalData.seller_id;
+                proposalData.seller_id = item ? item.id : null;
+                if (item && !prev) { proposalData.estimation.overhead.seller_percent = proposalData.estimation.overhead.seller_percent || 10; renderEditor(); }
+                else if (!item && prev) { delete proposalData.estimation.overhead.seller_percent; renderEditor(); }
+            });
+
+        if (proposalData.client_uuid) loadSelectedClient(proposalData.client_uuid).then(updateClientActions);
+    }
+
+    function handleDesignChange() {
+        const dt = document.getElementById('fDesign').value;
+        const section = document.getElementById('stageSection_design');
+        const modules = proposalData.estimation.modules;
+        const hasDesignModules = modules.some(m => m.stage === 'design');
+
+        if (dt === 'no_design') {
+            section.style.display = 'none';
+            recalcTotals();
+        } else {
+            section.style.display = '';
+            if (!hasDesignModules) {
+                const tpl = DESIGN_MODULE_TEMPLATES[dt] || DESIGN_MODULE_TEMPLATES.full_design;
+                const newMod = JSON.parse(JSON.stringify(tpl));
+                newMod.total = newMod.sub_items.reduce((s, si) => s + si.hours, 0);
+                modules.push(newMod);
+                renderModules();
+                recalcTotals();
+                showToast('Добавлен модуль дизайна');
+            }
         }
     }
 
     function renderModules() {
-        const container = document.getElementById('modulesContainer');
-        container.innerHTML = '';
-        const modules = proposalData.estimation.modules || [];
-        modules.forEach((mod, idx) => container.appendChild(createModuleCard(mod, idx)));
+        STAGES.forEach(st => {
+            const container = document.getElementById('modules_' + st.key);
+            if (!container) return;
+            container.innerHTML = '';
+            const modules = proposalData.estimation.modules || [];
+            let hasAny = false;
+            modules.forEach((mod, idx) => {
+                if (mod.stage === st.key) {
+                    container.appendChild(createModuleCard(mod, idx));
+                    hasAny = true;
+                }
+            });
+            if (!hasAny) {
+                const hint = document.createElement('div');
+                hint.className = 'stage-empty-hint';
+                hint.textContent = 'Нет модулей в этом разделе';
+                container.appendChild(hint);
+            }
+        });
     }
 
     function createModuleCard(mod, idx) {
-        const card = document.createElement('div');
-        card.className = 'module-card';
-        card.dataset.idx = idx;
+        const card = document.createElement('div'); card.className = 'module-card'; card.dataset.idx = idx;
         const subItems = mod.sub_items || [];
         const total = subItems.reduce((s, si) => s + (si.hours || 0), 0);
         mod.total = total;
-
         let itemsHtml = '';
         subItems.forEach((si, siIdx) => {
-            itemsHtml +=
-                '<div class="work-item" data-si="'+siIdx+'">'
-                + '<input class="work-item-name" value="'+escapeHtml(si.name || '')+'" placeholder="Название работы">'
-                + '<input class="work-item-hours" type="number" min="0" value="'+(si.hours||0)+'">'
-                + '<span class="work-item-unit">ч</span>'
-                + '<button class="work-item-delete" title="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
-                + '</div>';
+            itemsHtml += '<div class="work-item" data-si="'+siIdx+'"><input class="work-item-name" value="'+escapeHtml(si.name||'')+'" placeholder="Название работы"><input class="work-item-hours" type="number" min="0" value="'+(si.hours||0)+'"><span class="work-item-unit">ч</span><span class="work-item-delete" data-mod="'+idx+'" data-si="'+siIdx+'" title="Удалить">&times;</span></div>';
         });
-
-        card.innerHTML =
-            '<div class="module-header">'
-            + '<svg class="module-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
-            + '<input class="module-name-input" value="'+escapeHtml(mod.name || 'Новый модуль')+'" placeholder="Название модуля">'
-            + '<span class="module-hours-badge" id="modBadge_'+idx+'">'+total+' ч</span>'
-            + '<button class="module-delete-btn" title="Удалить модуль"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>'
-            + '</div>'
-            + '<div class="module-body">'
-            + '<div class="work-items-list">'+itemsHtml+'</div>'
-            + '<button class="add-row-btn add-work-btn" style="margin-top:8px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить работу</button>'
-            + '</div>';
-
-        const header = card.querySelector('.module-header');
-        header.addEventListener('click', (e) => {
-            if (e.target.closest('.module-name-input') || e.target.closest('.module-delete-btn')) return;
-            card.classList.toggle('collapsed');
-        });
-
-        card.querySelector('.module-delete-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            proposalData.estimation.modules.splice(idx, 1);
-            renderModules();
-            recalcTotals();
-        });
-
-        card.querySelector('.module-name-input').addEventListener('input', (e) => {
-            proposalData.estimation.modules[idx].name = e.target.value;
-        });
-
+        card.innerHTML = '<div class="module-header"><svg class="module-collapse-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg><input class="module-name-input" value="'+escapeHtml(mod.name||'Новый модуль')+'" placeholder="Название модуля"><span class="module-hours-badge" id="modBadge_'+idx+'">'+total+' ч</span><span class="module-delete-btn" data-mod="'+idx+'" title="Удалить модуль"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></span></div><div class="module-body"><div class="work-items-list">'+itemsHtml+'</div><span class="add-row-btn add-work-btn" data-mod="'+idx+'" style="margin-top:6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить работу</span></div>';
+        card.querySelector('.module-header').addEventListener('click', e => { if (e.target.closest('.module-name-input') || e.target.closest('.module-delete-btn')) return; card.classList.toggle('collapsed'); });
+        card.querySelector('.module-name-input').addEventListener('input', e => { proposalData.estimation.modules[idx].name = e.target.value; });
         card.querySelectorAll('.work-item').forEach(row => {
             const siIdx = parseInt(row.dataset.si);
-            row.querySelector('.work-item-name').addEventListener('input', (e) => {
-                proposalData.estimation.modules[idx].sub_items[siIdx].name = e.target.value;
-            });
-            row.querySelector('.work-item-hours').addEventListener('input', (e) => {
-                proposalData.estimation.modules[idx].sub_items[siIdx].hours = parseInt(e.target.value) || 0;
-                updateModuleBadge(idx);
-                recalcTotals();
-            });
-            row.querySelector('.work-item-delete').addEventListener('click', () => {
-                proposalData.estimation.modules[idx].sub_items.splice(siIdx, 1);
-                renderModules();
-                recalcTotals();
-            });
+            row.querySelector('.work-item-name').addEventListener('input', e => { proposalData.estimation.modules[idx].sub_items[siIdx].name = e.target.value; });
+            row.querySelector('.work-item-hours').addEventListener('input', e => { proposalData.estimation.modules[idx].sub_items[siIdx].hours = parseInt(e.target.value)||0; updateModuleBadge(idx); recalcTotals(); });
         });
-
-        card.querySelector('.add-work-btn').addEventListener('click', () => {
-            if (!proposalData.estimation.modules[idx].sub_items) proposalData.estimation.modules[idx].sub_items = [];
-            proposalData.estimation.modules[idx].sub_items.push({ name: '', hours: 0 });
-            renderModules();
-            recalcTotals();
-        });
-
         return card;
+    }
+
+    let _delegationInit = false;
+    function initModulesDelegation() {
+        if (_delegationInit) return;
+        _delegationInit = true;
+        document.addEventListener('click', function(e) {
+            const delBtn = e.target.closest('.module-delete-btn');
+            if (delBtn) {
+                e.stopPropagation();
+                const idx = parseInt(delBtn.dataset.mod);
+                if (!isNaN(idx) && proposalData.estimation.modules[idx]) {
+                    proposalData.estimation.modules.splice(idx, 1);
+                    renderModules();
+                    recalcTotals();
+                }
+                return;
+            }
+            const workDel = e.target.closest('.work-item-delete');
+            if (workDel) {
+                e.stopPropagation();
+                const modIdx = parseInt(workDel.dataset.mod);
+                const siIdx = parseInt(workDel.dataset.si);
+                if (!isNaN(modIdx) && !isNaN(siIdx) && proposalData.estimation.modules[modIdx]) {
+                    proposalData.estimation.modules[modIdx].sub_items.splice(siIdx, 1);
+                    renderModules();
+                    recalcTotals();
+                }
+                return;
+            }
+            const addBtn = e.target.closest('.add-work-btn');
+            if (addBtn) {
+                const modIdx = parseInt(addBtn.dataset.mod);
+                if (!isNaN(modIdx) && proposalData.estimation.modules[modIdx]) {
+                    if (!proposalData.estimation.modules[modIdx].sub_items) proposalData.estimation.modules[modIdx].sub_items = [];
+                    proposalData.estimation.modules[modIdx].sub_items.push({ name: '', hours: 0 });
+                    renderModules();
+                    recalcTotals();
+                }
+                return;
+            }
+        });
     }
 
     function updateModuleBadge(idx) {
         const mod = proposalData.estimation.modules[idx];
-        const total = (mod.sub_items || []).reduce((s, si) => s + (si.hours || 0), 0);
+        const total = (mod.sub_items||[]).reduce((s, si) => s + (si.hours||0), 0);
         mod.total = total;
         const badge = document.getElementById('modBadge_' + idx);
         if (badge) badge.textContent = total + ' ч';
@@ -521,76 +614,339 @@
         const modules = est.modules || [];
         const rate = parseFloat(document.getElementById('fHourlyRate')?.value) || proposalData.hourly_rate || 0;
         const currency = document.getElementById('fCurrency')?.value || proposalData.currency || '$';
+        const designOff = getDesignType() === 'no_design';
+        const activeModules = designOff ? modules.filter(m => m.stage !== 'design') : modules;
+        const devHours = activeModules.reduce((s, m) => s + (m.total || 0), 0);
+        const fmt = v => { if (currency==='₽') return v.toLocaleString('ru-RU')+' ₽'; if (currency==='€') return '€'+v.toLocaleString('en-US'); return '$'+v.toLocaleString('en-US'); };
 
-        const totalHours = modules.reduce((s, m) => s + (m.total || 0), 0);
+        const pmPct = parseFloat(document.querySelector('[data-over-pct="pm"]')?.value) || 0;
+        const qaPct = parseFloat(document.querySelector('[data-over-pct="qa"]')?.value) || 0;
+        const mktPct = parseFloat(document.querySelector('[data-over-pct="mkt"]')?.value) || 0;
+        const pmHours = Math.round(devHours * pmPct / 100);
+        const qaHours = Math.round(devHours * qaPct / 100);
+        const mktHours = Math.round(devHours * mktPct / 100);
+
+        var sellerPct = 0; var sellerHours = 0;
+        const sellerInput = document.querySelector('[data-over-pct="seller"]');
+        if (sellerInput) { sellerPct = parseFloat(sellerInput.value) || 0; sellerHours = Math.round(devHours * sellerPct / 100); }
+
+        const customItems = est.overhead.custom_items || [];
+        var customTotalHours = 0;
+        customItems.forEach(function(ci, i) {
+            const inp = document.querySelector('[data-over-pct="custom_'+i+'"]');
+            if (inp) { ci.percent = parseFloat(inp.value) || 0; }
+            const nameInp = document.querySelector('[data-over-name="custom_'+i+'"]');
+            if (nameInp) ci.name = nameInp.value.trim() || ci.name;
+            const h = Math.round(devHours * (ci.percent || 0) / 100);
+            customTotalHours += h;
+            const hEl = document.querySelector('[data-over-hours="custom_'+i+'"]');
+            const cEl = document.querySelector('[data-over-cost="custom_'+i+'"]');
+            if (hEl) hEl.textContent = (h >= 0 ? '' : '') + h + ' ч';
+            if (cEl) cEl.textContent = (h < 0 ? '−' : '') + fmt(Math.abs(Math.round(h * rate)));
+        });
+
+        const overheadPositive = pmHours + qaHours + mktHours + sellerHours;
+        const totalHours = Math.max(0, devHours + overheadPositive + customTotalHours);
         const totalCost = Math.round(totalHours * rate * 100) / 100;
 
-        est.totals = { total_hours: totalHours, total_cost: totalCost };
+        est.overhead = { pm_percent: pmPct, qa_percent: qaPct, marketing_percent: mktPct, custom_items: customItems };
+        if (proposalData.seller_id) est.overhead.seller_percent = sellerPct;
+        est.totals = { dev_hours: devHours, pm_hours: pmHours, qa_hours: qaHours, marketing_hours: mktHours, seller_hours: sellerHours, total_hours: totalHours, total_cost: totalCost };
 
-        const card = document.getElementById('totalsCard');
-        if (!card) return;
+        function updateOver(id, hours) {
+            const hEl = document.querySelector('[data-over-hours="'+id+'"]');
+            const cEl = document.querySelector('[data-over-cost="'+id+'"]');
+            if (hEl) hEl.textContent = hours + ' ч';
+            if (cEl) cEl.textContent = fmt(Math.round(hours * rate));
+        }
+        updateOver('pm', pmHours);
+        updateOver('qa', qaHours);
+        updateOver('mkt', mktHours);
+        if (sellerInput) updateOver('seller', sellerHours);
 
-        const formatCost = (v) => {
-            if (currency === '₽') return v.toLocaleString('ru-RU') + ' ₽';
-            if (currency === '€') return '€' + v.toLocaleString('en-US');
-            return '$' + v.toLocaleString('en-US');
-        };
-
-        card.innerHTML =
-            '<div class="totals-row"><span class="totals-label">Всего часов</span><span class="totals-value highlight">'+totalHours+' ч</span></div>'
-            + '<div class="totals-row"><span class="totals-label">Стоимость ('+rate+' '+currency+'/ч)</span><span class="totals-value cost">'+formatCost(totalCost)+'</span></div>';
+        const card = document.getElementById('totalsCard'); if (!card) return;
+        const oh = overheadPositive + customTotalHours;
+        var discountLine = '';
+        if (customTotalHours < 0) {
+            discountLine = '<div class="totals-row"><span class="totals-label" style="color:var(--green)">Скидки</span><span class="totals-value" style="color:var(--green)">−'+fmt(Math.abs(Math.round(customTotalHours*rate)))+'</span></div>';
+        }
+        card.innerHTML = '<div class="totals-row"><span class="totals-label">Разработка (дизайн + код)</span><span class="totals-value">'+devHours+' ч &nbsp; '+fmt(Math.round(devHours*rate))+'</span></div>'
+            + '<div class="totals-row"><span class="totals-label">Накладные расходы</span><span class="totals-value">'+(overheadPositive)+' ч &nbsp; '+fmt(Math.round(overheadPositive*rate))+'</span></div>'
+            + discountLine
+            + '<div class="totals-row grand"><span class="totals-label">Итого</span><span class="totals-value accent">'+totalHours+' ч</span></div>'
+            + '<div class="totals-row grand"><span class="totals-label">Стоимость ('+rate+' '+currency+'/ч)</span><span class="totals-value green">'+fmt(totalCost)+'</span></div>';
+        renderPaymentPhases();
     }
 
-    function addModule() {
+    function addCustomOverhead() {
+        const overlay = document.getElementById('overheadOverlay');
+        const nameInp = document.getElementById('overheadName');
+        const pctInp = document.getElementById('overheadPct');
+        nameInp.value = '';
+        pctInp.value = '';
+        overlay.classList.add('open');
+        setTimeout(() => nameInp.focus(), 50);
+
+        function close() { overlay.classList.remove('open'); cleanup(); }
+        function cleanup() {
+            document.getElementById('overheadOk').removeEventListener('click', onOk);
+            document.getElementById('overheadCancel').removeEventListener('click', close);
+            overlay.removeEventListener('click', onBg);
+        }
+        function onBg(e) { if (e.target === overlay) close(); }
+        function onOk() {
+            const name = nameInp.value.trim();
+            if (!name) { nameInp.focus(); return; }
+            const pct = parseInt(pctInp.value);
+            if (isNaN(pct) || pct === 0) { showToast('Укажите процент (не 0)', true); pctInp.focus(); return; }
+            if (!proposalData.estimation.overhead.custom_items) proposalData.estimation.overhead.custom_items = [];
+            proposalData.estimation.overhead.custom_items.push({ id: Date.now().toString(36), name, percent: pct });
+            close();
+            renderEditor();
+        }
+        document.getElementById('overheadOk').addEventListener('click', onOk);
+        document.getElementById('overheadCancel').addEventListener('click', close);
+        overlay.addEventListener('click', onBg);
+    }
+
+    function deleteCustomOverhead(overId) {
+        const idx = parseInt(overId.replace('custom_', ''));
+        if (isNaN(idx)) return;
+        const items = proposalData.estimation.overhead.custom_items || [];
+        if (idx >= 0 && idx < items.length) {
+            items.splice(idx, 1);
+            renderEditor();
+        }
+    }
+
+    function addModule(stage) {
         if (!proposalData.estimation.modules) proposalData.estimation.modules = [];
-        proposalData.estimation.modules.push({
-            name: 'Новый модуль',
-            description: '',
-            sub_items: [{ name: '', hours: 0 }],
-            total: 0,
+        const defaults = { design: 'Новый модуль дизайна', dev: 'Новый модуль' };
+        proposalData.estimation.modules.push({ name: defaults[stage] || 'Новый модуль', stage: stage, description: '', sub_items: [{ name: '', hours: 0 }], total: 0 });
+        renderModules(); recalcTotals();
+    }
+
+    function buildStagesFromModules() {
+        const est = proposalData.estimation;
+        const modules = est.modules || [];
+        const overhead = est.overhead || {};
+        const rate = parseFloat(document.getElementById('fHourlyRate')?.value) || proposalData.hourly_rate || 0;
+        const designType = getDesignType();
+        const stages = [];
+        const stageMap = { design: [], dev: [] };
+        modules.forEach(m => {
+            const s = (m.stage === 'design') ? 'design' : 'dev';
+            stageMap[s].push(m);
         });
-        renderModules();
-        recalcTotals();
+
+        const allModHours = modules.reduce((s, m) => s + (m.total || 0), 0);
+        const pmPct = overhead.pm_percent || 0;
+        const qaPct = overhead.qa_percent || 0;
+        const mktPct = overhead.marketing_percent || 0;
+        const sellerPct = overhead.seller_percent || 0;
+        var customPctSum = 0;
+        (overhead.custom_items || []).forEach(ci => { customPctSum += (ci.percent || 0); });
+        const totalOverPct = pmPct + qaPct + mktPct + sellerPct + customPctSum;
+        const overheadTotal = Math.round(allModHours * totalOverPct / 100);
+
+        ['design', 'dev'].forEach(key => {
+            if (key === 'design' && designType === 'no_design') return;
+            const mods = stageMap[key] || [];
+            if (mods.length === 0 && key !== 'dev') return;
+            const tasks = [];
+            mods.forEach(m => { (m.sub_items || []).forEach(si => { if (si.name || si.hours) tasks.push({ name: si.name || 'Задача', hours: si.hours || 0, module: m.name }); }); });
+            const stageHours = mods.reduce((s, m) => s + (m.total || 0), 0);
+            const overheadShare = allModHours > 0 ? Math.round(overheadTotal * stageHours / allModHours) : 0;
+            stages.push({ name: key === 'design' ? 'UX/UI Дизайн' : 'Разработка приложения', tasks: tasks, _hours: stageHours, _cost: Math.round((stageHours + overheadShare) * rate) });
+        });
+
+        const qaHours = Math.round(allModHours * qaPct / 100);
+        if (qaHours > 0) {
+            stages.push({ name: 'Тестирование, отладка и деплой', tasks: [{ name: 'QA, тестирование и запуск', hours: qaHours }], _hours: qaHours, _cost: Math.round(qaHours * rate) });
+        }
+
+        est.stages = stages;
+    }
+
+    function getPaymentPhases() {
+        return proposalData.estimation.payment_phases || proposalData.payment_phases || [];
+    }
+
+    function computePaymentPhases() {
+        const est = proposalData.estimation;
+        const modules = est.modules || [];
+        const overhead = est.overhead || {};
+        const designType = getDesignType();
+        const rate = parseFloat(document.getElementById('fHourlyRate')?.value) || proposalData.hourly_rate || 0;
+        const currency = document.getElementById('fCurrency')?.value || proposalData.currency || '₽';
+
+        const designMods = [], devMods = [];
+        modules.forEach(m => {
+            const stage = m.stage || 'dev';
+            if (stage === 'design' && designType === 'no_design') return;
+            const h = (m.sub_items || []).reduce((s, si) => s + (si.hours || 0), 0);
+            const entry = { name: m.name || '', hours: h };
+            if (stage === 'design' && designType !== 'no_design') designMods.push(entry);
+            else devMods.push(entry);
+        });
+
+        const baseH = [...designMods, ...devMods].reduce((s, e) => s + e.hours, 0);
+        const jr = x => x >= 0 ? Math.floor(x + 0.5) : -Math.floor(-x + 0.5);
+        const pmH = jr(baseH * (overhead.pm_percent || 0) / 100);
+        const qaH = jr(baseH * (overhead.qa_percent || 0) / 100);
+        const mktH = jr(baseH * (overhead.marketing_percent || 0) / 100);
+        const sellerH = jr(baseH * (overhead.seller_percent || 0) / 100);
+        const customH = (overhead.custom_items || []).reduce((s, ci) => s + jr(baseH * (ci.percent || 0) / 100), 0);
+        const totalHours = Math.max(0, baseH + pmH + qaH + mktH + sellerH + customH);
+        const totalCost = jr(totalHours * rate);
+        if (totalCost <= 0) return [];
+
+        const hasDesign = designMods.reduce((s, d) => s + d.hours, 0) > 0 && designType !== 'no_design';
+        const half = Math.max(1, Math.floor(devMods.length / 2));
+        const mainMods = devMods.slice(0, half);
+        const restMods = devMods.slice(half);
+
+        const scopes = hasDesign ? [
+            { name: 'Аналитика и дизайн', pct: 25, deliverables: designMods.map(d => d.name).concat(['Техническое задание', 'Архитектура решения']) },
+            { name: 'Разработка ключевого функционала', pct: 35, deliverables: mainMods.map(m => m.name) },
+            { name: 'Интеграции и доработки', pct: 25, deliverables: restMods.map(m => m.name) },
+            { name: 'Тестирование и запуск', pct: 15, deliverables: ['Полное тестирование', 'Исправление замечаний', 'Запуск в продакшн'] },
+        ] : [
+            { name: 'Аналитика и проектирование', pct: 25, deliverables: ['Техническое задание', 'Архитектура решения', 'Прототип интерфейса'] },
+            { name: 'Разработка ключевого функционала', pct: 35, deliverables: mainMods.map(m => m.name) },
+            { name: 'Интеграции и доработки', pct: 25, deliverables: restMods.map(m => m.name) },
+            { name: 'Тестирование и запуск', pct: 15, deliverables: ['Полное тестирование', 'Исправление замечаний', 'Запуск в продакшн'] },
+        ];
+
+        const existing = getPaymentPhases();
+        let assigned = 0;
+        const phases = scopes.map((sc, i) => {
+            const isLast = i === scopes.length - 1;
+            const cost = isLast ? totalCost - assigned : Math.round(totalCost * sc.pct / 100);
+            assigned += cost;
+            const prev = existing[i] || {};
+            return {
+                name: sc.name,
+                cost,
+                deliverables: sc.deliverables.filter(Boolean),
+                status: prev.status || 'pending',
+                paid_at: prev.paid_at || null,
+                comment: prev.comment || '',
+            };
+        });
+        return phases;
+    }
+
+    function renderPaymentPhases() {
+        const container = document.getElementById('payPhasesSection');
+        if (!container) return;
+        const phases = computePaymentPhases();
+        proposalData.estimation.payment_phases = phases;
+        const currency = document.getElementById('fCurrency')?.value || proposalData.currency || '₽';
+        const fmt = n => n.toLocaleString('ru-RU');
+        let h = '';
+        phases.forEach((pp, i) => {
+            const isPaid = pp.status === 'paid';
+            const numCls = isPaid ? ' paid' : '';
+            const statusCls = isPaid ? 'paid' : 'pending';
+            const statusText = isPaid ? '✓ Оплачено' : 'Ожидает';
+            const delivs = (pp.deliverables || []).map(d => '<span class="pay-phase-deliv">' + escapeHtml(d) + '</span>').join('');
+            const dateStr = pp.paid_at ? '<div class="pay-phase-date">Оплата: ' + escapeHtml(pp.paid_at) + (pp.comment ? ' — ' + escapeHtml(pp.comment) : '') + '</div>' : '';
+            h += '<div class="pay-phase" data-phase-idx="' + i + '">'
+                + '<div class="pay-phase-num' + numCls + '">' + (i + 1) + '</div>'
+                + '<div class="pay-phase-body">'
+                + '<div class="pay-phase-top">'
+                + '<div class="pay-phase-name">' + escapeHtml(pp.name) + '</div>'
+                + '<div class="pay-phase-cost">' + fmt(pp.cost) + ' ' + currency + '</div>'
+                + '<div class="pay-phase-status ' + statusCls + '" data-pay-idx="' + i + '">' + statusText + '</div>'
+                + '</div>'
+                + (delivs ? '<div class="pay-phase-delivs">' + delivs + '</div>' : '')
+                + dateStr
+                + '</div></div>';
+        });
+        container.innerHTML = h;
+    }
+
+    let _payDelegationInit = false;
+    function initPaymentDelegation() {
+        if (_payDelegationInit) return;
+        _payDelegationInit = true;
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-pay-idx]');
+            if (!btn) return;
+            const idx = parseInt(btn.dataset.payIdx);
+            openPaymentModal(idx);
+        });
+    }
+
+    function openPaymentModal(idx) {
+        const phases = proposalData.estimation.payment_phases || [];
+        const pp = phases[idx];
+        if (!pp) return;
+        const overlay = document.getElementById('paymentOverlay');
+        const currency = document.getElementById('fCurrency')?.value || proposalData.currency || '₽';
+        const fmt = n => n.toLocaleString('ru-RU');
+        const isPaid = pp.status === 'paid';
+
+        document.getElementById('paymentTitle').textContent = isPaid ? 'Управление оплатой' : 'Подтверждение оплаты';
+        document.getElementById('paymentDesc').textContent = pp.name + ' — ' + fmt(pp.cost) + ' ' + currency;
+        document.getElementById('paymentDate').value = pp.paid_at || new Date().toISOString().slice(0, 10);
+        document.getElementById('paymentComment').value = pp.comment || '';
+        document.getElementById('paymentConfirm').style.display = isPaid ? 'none' : '';
+        document.getElementById('paymentUnpay').style.display = isPaid ? '' : 'none';
+
+        overlay.classList.add('open');
+
+        function close() { overlay.classList.remove('open'); cleanup(); }
+        function cleanup() {
+            document.getElementById('paymentConfirm').removeEventListener('click', onConfirm);
+            document.getElementById('paymentUnpay').removeEventListener('click', onUnpay);
+            document.getElementById('paymentCancel').removeEventListener('click', close);
+            overlay.removeEventListener('click', onBg);
+        }
+        function onBg(e) { if (e.target === overlay) close(); }
+        function onConfirm() {
+            pp.status = 'paid';
+            pp.paid_at = document.getElementById('paymentDate').value || new Date().toISOString().slice(0, 10);
+            pp.comment = document.getElementById('paymentComment').value.trim();
+            close();
+            renderPaymentPhases();
+            showToast('Этап отмечен как оплаченный. Сохраните изменения.');
+        }
+        function onUnpay() {
+            pp.status = 'pending';
+            pp.paid_at = null;
+            pp.comment = '';
+            close();
+            renderPaymentPhases();
+            showToast('Оплата снята. Сохраните изменения.');
+        }
+        document.getElementById('paymentConfirm').addEventListener('click', onConfirm);
+        document.getElementById('paymentUnpay').addEventListener('click', onUnpay);
+        document.getElementById('paymentCancel').addEventListener('click', close);
+        overlay.addEventListener('click', onBg);
     }
 
     async function saveProposal() {
-        const btn = document.getElementById('saveBtn');
-        btn.disabled = true;
-        btn.textContent = 'Сохранение...';
+        const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Сохранение...';
         try {
-            const clientSelect = document.getElementById('fClientId');
-            const selectedOption = clientSelect.options[clientSelect.selectedIndex];
-            const clientId = selectedOption ? parseInt(selectedOption.dataset.id) || null : null;
-            const clientName = clientId && selectedClientData ? selectedClientData.name : '';
+            buildStagesFromModules();
             const body = {
                 project_name: document.getElementById('fProjectName').value.trim(),
-                client_name: clientName,
-                client_id: clientId,
+                client_name: selectedClientData ? selectedClientData.name : '',
+                client_id: proposalData.client_id || null,
+                seller_id: proposalData.seller_id || null,
                 hourly_rate: parseFloat(document.getElementById('fHourlyRate').value) || 0,
                 currency: document.getElementById('fCurrency').value,
                 proposal_type: document.getElementById('fType').value,
+                design_type: getDesignType(),
                 estimation: proposalData.estimation,
             };
-            const res = await authFetch('/api/proposal/' + TOKEN, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                showToast('Ошибка: ' + (err.error || res.status), true);
-            } else {
-                const updated = await res.json();
-                proposalData = { ...proposalData, ...updated };
-                document.getElementById('breadcrumbName').textContent = proposalData.project_name || 'Без названия';
-                showToast('Изменения сохранены');
-            }
-        } catch(e) {
-            showToast('Ошибка при сохранении', true);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Сохранить изменения';
-        }
+            const res = await authFetch('/api/proposal/' + TOKEN, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (!res.ok) { const err = await res.json().catch(() => ({})); showToast('Ошибка: ' + (err.error || res.status), true); }
+            else { const updated = await res.json(); proposalData = { ...proposalData, ...updated }; document.getElementById('breadcrumbName').textContent = proposalData.project_name || 'Без названия'; showToast('Изменения сохранены'); }
+        } catch(e) { showToast('Ошибка при сохранении', true); }
+        finally { btn.disabled = false; btn.textContent = 'Сохранить изменения'; }
     }
 
     function openRegenModal() {
@@ -599,53 +955,32 @@
         document.getElementById('regenCurrency').value = document.getElementById('fCurrency').value || '$';
         document.getElementById('regenType').value = proposalData.proposal_type || 'mvp';
         document.getElementById('regenDesign').value = proposalData.design_type || 'no_design';
-
-        const configData = proposalData.config_data || {};
-        document.getElementById('regenDescription').value = configData.project_description || '';
-        document.getElementById('regenBudget').value = configData.budget || '';
-
+        const cd = proposalData.config_data || {};
+        document.getElementById('regenDescription').value = cd.project_description || '';
+        document.getElementById('regenBudget').value = cd.budget || '';
         document.getElementById('regenForm').style.display = '';
         document.getElementById('regenSpinner').classList.remove('active');
         overlay.classList.add('open');
     }
-
-    document.getElementById('regenCancel').addEventListener('click', () => {
-        document.getElementById('regenOverlay').classList.remove('open');
-    });
-
-    document.getElementById('regenOverlay').addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
-    });
-
+    document.getElementById('regenCancel').addEventListener('click', () => document.getElementById('regenOverlay').classList.remove('open'));
+    document.getElementById('regenOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
     document.getElementById('regenSubmit').addEventListener('click', async () => {
         const desc = document.getElementById('regenDescription').value.trim();
         if (!desc) { showToast('Заполните описание проекта', true); return; }
-
         const rate = parseFloat(document.getElementById('regenRate').value);
         if (!rate || rate <= 0) { showToast('Укажите ставку', true); return; }
-
         document.getElementById('regenForm').style.display = 'none';
         document.getElementById('regenSpinner').classList.add('active');
-
-        const budget = parseFloat(document.getElementById('regenBudget').value) || null;
-
         try {
-            const res = await authFetch('/api/proposal/' + TOKEN + '/regenerate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    description: desc,
-                    proposal_type: document.getElementById('regenType').value,
-                    design_type: document.getElementById('regenDesign').value,
-                    hourly_rate: rate,
-                    currency: document.getElementById('regenCurrency').value,
-                    budget: budget,
-                }),
-            });
+            const res = await authFetch('/api/proposal/' + TOKEN + '/regenerate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: desc, proposal_type: document.getElementById('regenType').value, design_type: document.getElementById('regenDesign').value, hourly_rate: rate, currency: document.getElementById('regenCurrency').value, budget: parseFloat(document.getElementById('regenBudget').value) || null }) });
             const data = await res.json();
             if (data.ok) {
                 proposalData = { ...proposalData, ...data };
+                if (typeof proposalData.estimation === 'string') {
+                    try { proposalData.estimation = JSON.parse(proposalData.estimation); } catch(_) { proposalData.estimation = {}; }
+                }
                 proposalData.estimation = normalizeEstimation(proposalData.estimation || {});
+                proposalData.design_type = data.design_type || proposalData.design_type;
                 document.getElementById('regenOverlay').classList.remove('open');
                 renderEditor();
                 showToast('КП перегенерировано');
@@ -655,16 +990,14 @@
                 showToast('Ошибка: ' + (data.error || 'unknown'), true);
             }
         } catch(e) {
+            console.error('Regen error:', e);
             document.getElementById('regenForm').style.display = '';
             document.getElementById('regenSpinner').classList.remove('active');
-            showToast('Ошибка генерации', true);
+            showToast('Ошибка: ' + (e.message || 'генерации'), true);
         }
     });
 
-    (async () => {
-        await loadClientsList();
-        loadProposal();
-    })();
+    (async () => { await Promise.all([loadClientsList(), loadSellersList()]); loadProposal(); })();
     </script>
     <script src="/sidebar.js"></script>
 </body>

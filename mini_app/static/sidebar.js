@@ -63,7 +63,7 @@
             <div class="sidebar-logo" id="sidebarLogo">
                 <svg ${SVG_ATTRS}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
             </div>
-            <span class="sidebar-brand">РусНейроСофт</span>
+            <span class="sidebar-brand">НейроСофт</span>
             <button class="sidebar-toggle" id="sidebarToggle" title="Свернуть меню">
                 <svg ${SVG_ATTRS}><polyline points="15 18 9 12 15 6"/></svg>
             </button>
@@ -101,7 +101,7 @@
             <div class="sidebar-logo" id="sidebarLogo">
                 <svg ${SVG_ATTRS}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
             </div>
-            <span class="sidebar-brand">РусНейроСофт</span>
+            <span class="sidebar-brand">НейроСофт</span>
             <button class="sidebar-toggle" id="sidebarToggle" title="Свернуть меню">
                 <svg ${SVG_ATTRS}><polyline points="15 18 9 12 15 6"/></svg>
             </button>

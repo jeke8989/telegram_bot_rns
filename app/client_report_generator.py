@@ -123,7 +123,7 @@ def generate_client_report_pdf(
     report_by_project: dict[int, list[dict]],
     begin_label: str,
     end_label: str,
-    company_name: str = "РусНейроСофт",
+    company_name: str = "НейроСофт",
 ) -> bytes:
     """Generate a professional PDF report for a client.
 
