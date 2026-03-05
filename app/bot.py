@@ -5152,17 +5152,32 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
             proposal_url = f"{self.config.webapp_url}/proposal/{token}"
 
             totals = estimation.get("totals", {})
-            total_hours = totals.get("total_hours", {})
-            total_cost = totals.get("total_cost", {})
+            raw_hours = totals.get("total_hours", 0)
+            raw_cost = totals.get("total_cost", 0)
             timeline = estimation.get("timeline_months", {})
+
+            if isinstance(raw_hours, dict):
+                hours_str = f"{raw_hours.get('min', 0):,.0f} – {raw_hours.get('max', 0):,.0f}"
+            else:
+                hours_str = f"{int(raw_hours):,}"
+
+            if isinstance(raw_cost, dict):
+                cost_str = f"{_fmt_number_inline(raw_cost.get('min', 0), currency)} – {_fmt_number_inline(raw_cost.get('max', 0), currency)}"
+            else:
+                cost_str = _fmt_number_inline(int(raw_cost), currency)
+
+            if isinstance(timeline, dict):
+                timeline_str = f"{timeline.get('min', 0)} – {timeline.get('max', 0)} мес."
+            else:
+                weeks = estimation.get("timeline_weeks", 0)
+                timeline_str = f"{weeks} нед." if weeks else "—"
 
             result_text = (
                 "✅ <b>Коммерческое предложение сформировано!</b>\n\n"
                 f"📋 Проект: <b>{project_name}</b>\n"
-                f"⏱ Часы: <b>{total_hours.get('min', 0):,.0f} – {total_hours.get('max', 0):,.0f}</b>\n"
-                f"💰 Стоимость: <b>{_fmt_number_inline(total_cost.get('min', 0), currency)} – "
-                f"{_fmt_number_inline(total_cost.get('max', 0), currency)}</b>\n"
-                f"📅 Сроки: <b>{timeline.get('min', 0)} – {timeline.get('max', 0)} мес.</b>\n\n"
+                f"⏱ Часы: <b>{hours_str}</b>\n"
+                f"💰 Стоимость: <b>{cost_str}</b>\n"
+                f"📅 Сроки: <b>{timeline_str}</b>\n\n"
                 f"🔗 <a href=\"{proposal_url}\">Открыть КП</a>"
             )
 
