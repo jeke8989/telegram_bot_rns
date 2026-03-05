@@ -1,6 +1,6 @@
 """
 AI-powered project estimation engine for commercial proposals.
-Uses Claude Sonnet 4.5 via OpenRouter to analyze project descriptions
+Uses Claude Opus via OpenRouter to analyze project descriptions
 and produce structured hour/cost breakdowns.
 
 Architecture:
@@ -31,7 +31,7 @@ _DEFAULT_PERSPECTIVES = [
 class ProposalCalculator:
     def __init__(self, openrouter_api_key: str):
         self.api_key = openrouter_api_key
-        self.model = "anthropic/claude-sonnet-4.5"
+        self.model = "anthropic/claude-opus-4-5"
         self.base_url = "https://openrouter.ai/api/v1"
 
     async def calculate_proposal(
@@ -110,57 +110,91 @@ class ProposalCalculator:
                 'Do NOT include any design module. All modules must have "stage": "dev".\n'
             )
 
-        return f"""You are a senior project estimator at a lean web agency.
+        from math import ceil
+        desc_len = len(project_description)
+        mvp = proposal_type.lower() == "mvp"
+        mod_min, mod_max = (3, 5) if mvp else (4, 7)
+        hr_min, hr_max = (50, 100) if mvp else (80, 200)
+
+        return f"""You are a senior technical estimator at НейроСофт — a lean web agency.
 We use AI-assisted coding (Cursor AI, Copilot), ready-made boilerplates, and CRUD generators.
-Our stack: Next.js + NestJS + PostgreSQL + Docker.
-AI tools give us 40% faster frontend and 30% faster backend vs. industry average.
-Hours below ALREADY account for this speedup — do NOT reduce further.
+Stack: Next.js / React + NestJS / Python + PostgreSQL + Docker.
+AI tools give us ~40 % faster frontend and ~30 % faster backend vs. industry average.
+The hour norms below ALREADY include this speedup — do NOT reduce further.
 
-## Hour Norms (per module, FULL scope)
-- Simple module (CRUD, list+card+forms): 6-12h
-- Medium module (dashboard, analytics, multi-step flows): 12-20h
-- Complex module (real-time, billing, document workflow): 18-35h
-- Auth & users (login, roles, profile): 8-14h
-- External API integration: 4-8h per integration
-- Preparation (architecture, DB design, kickoff): 8-14h
-
-## Scope Targets
-- MVP: 50-100 dev hours total (3-5 modules)
-- Full: 80-200 dev hours total (4-7 modules)
-
-## Input
-- Type: **{proposal_type.upper()}**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Scope : **{proposal_type.upper()}**
 - Design: **{design_label}**
-- Rate: **{hourly_rate} {currency}/h**
+- Rate  : **{hourly_rate} {currency}/h**
 {budget_section}{design_instruction}
-## Project Description
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROJECT DESCRIPTION ({desc_len} chars)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {project_description}
----
 
-## MODULE RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ESTIMATION RULES (follow strictly)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. Group related features into ONE module. Target: 3-5 modules (MVP) or 4-7 (Full).
-2. Each module: 2-5 sub_items, each with name + integer hours.
-3. ALWAYS include "Подготовка и проектирование" (stage: "dev") — architecture, DB, kickoff. 8-14h.
-4. Group ALL external integrations into one "Интеграции" module (stage: "dev").
-5. NO modules for PM, QA, Testing, Marketing — these are overhead.
-6. Module names: short business Russian ("Личный кабинет", "Каталог товаров").
-7. Each module has "stage": "dev". Design modules are added separately by the system.
+### 1. Module count & hour budget
+- {"MVP" if mvp else "Full"} project → exactly **{mod_min}–{mod_max} modules** (dev only, design is separate).
+- Total dev hours target: **{hr_min}–{hr_max} h**.
+- If the description is long, consolidate features into fewer, larger modules.
+  NEVER create a module per paragraph — group related functionality.
 
-## EXAMPLE (for reference — adapt to the actual project)
+### 2. Hour norms per module type
+| Type | Examples | Hours |
+|------|----------|-------|
+| Preparation | architecture, DB schema, infra, kickoff | 8–14 |
+| Auth & users | registration, login, roles, profiles | 8–14 |
+| Simple CRUD | list + card + create/edit forms | 8–14 |
+| Medium feature | dashboard, analytics, multi-step flows | 14–22 |
+| Complex feature | real-time, billing, document workflow | 20–35 |
+| Integrations (all) | each external API = 4–8h; group into ONE module | 8–20 |
 
-For a "CRM for beauty salon" (Full, rate 2000):
+### 3. Mandatory structure
+1. First module MUST be **"Подготовка и проектирование"** (8–14h):
+   - sub_items: architecture+DB design, infra setup, kickoff & sprint planning.
+2. Group ALL external integrations (APIs, bots, payment, etc.) into ONE **"Интеграции"** module.
+3. If description mentions auth/users → one **"Пользователи и авторизация"** module.
+4. Remaining features → group by business domain into 1-3 modules.
+
+### 4. What NOT to include
+- No PM, QA, testing, marketing modules (they are overhead, added separately).
+- No design modules (the system adds them automatically based on design type).
+- No deployment/DevOps module (covered by "Подготовка").
+
+### 5. Sub-items
+- 2–5 sub_items per module, each with `name` (string) and `hours` (integer).
+- Sub-item names: short, actionable Russian ("Регистрация и авторизация", "Календарь записей").
+- `total` field = exact sum of sub_item hours.
+
+### 6. Totals & timeline
+- `totals.total_hours` = sum of ALL module totals.
+- `totals.total_cost` = total_hours × {hourly_rate}.
+- `timeline_weeks` = ceil(total_hours / 40) — calculate, do not guess.
+- `team_size` = 2 for MVP, 3 for Full.
+
+### 7. Perspectives
+- 4–5 items describing **future enhancements** (not included in current scope).
+- Business-friendly Russian. Each has `title` + `description`.
+- Think about what would make the client want to continue development.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXAMPLE OUTPUT (for "CRM for beauty salon", Full, 2000 ₽/h)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {{
   "project_name": "CRM для салона красоты",
-  "project_description_short": "Система управления записями, клиентами и аналитикой для салона красоты",
+  "project_description_short": "Система управления записями, клиентами и аналитикой",
   "modules": [
     {{
       "name": "Подготовка и проектирование",
       "description": "Архитектура, база данных, настройка инфраструктуры",
       "stage": "dev",
       "sub_items": [
-        {{"name": "Проектирование архитектуры и базы данных", "hours": 5}},
+        {{"name": "Проектирование архитектуры и БД", "hours": 5}},
         {{"name": "Настройка инфраструктуры и CI/CD", "hours": 4}},
         {{"name": "Kickoff и планирование спринтов", "hours": 3}}
       ],
@@ -168,7 +202,7 @@ For a "CRM for beauty salon" (Full, rate 2000):
     }},
     {{
       "name": "Пользователи и авторизация",
-      "description": "Регистрация, авторизация, роли, профили",
+      "description": "Регистрация, роли, профили",
       "stage": "dev",
       "sub_items": [
         {{"name": "Регистрация и авторизация", "hours": 5}},
@@ -201,7 +235,7 @@ For a "CRM for beauty salon" (Full, rate 2000):
     }},
     {{
       "name": "Интеграции",
-      "description": "Telegram бот, платёжная система",
+      "description": "Telegram-бот, платёжная система",
       "stage": "dev",
       "sub_items": [
         {{"name": "Telegram Bot API", "hours": 6}},
@@ -211,31 +245,35 @@ For a "CRM for beauty salon" (Full, rate 2000):
     }}
   ],
   "totals": {{"total_hours": 72, "total_cost": 144000}},
-  "timeline_weeks": 4,
+  "timeline_weeks": 2,
   "team_size": 3,
   "perspectives": [
     {{"title": "Мобильное приложение", "description": "Удобное приложение для клиентов — запись в один клик с телефона"}},
     {{"title": "Программа лояльности", "description": "Бонусы и скидки для постоянных клиентов — повышают возвращаемость"}},
     {{"title": "Онлайн-оплата", "description": "Клиенты оплачивают услуги онлайн — меньше отмен и no-show"}},
-    {{"title": "SMS и WhatsApp рассылки", "description": "Автоматические напоминания снижают количество пропущенных записей на 40%"}},
     {{"title": "Аналитика по сотрудникам", "description": "Отслеживайте загрузку и эффективность каждого мастера"}}
   ]
 }}
 
-## OUTPUT FORMAT
-
-Return ONLY valid JSON (no markdown, no ```). Structure EXACTLY as the example above.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Return ONLY valid JSON. No markdown, no ```, no explanations.
 Keys: project_name, project_description_short, modules, totals, timeline_weeks, team_size, perspectives.
-Do NOT include "stages" — they are generated automatically.
+Do NOT include "stages" — they are generated automatically by the system.
 
-CRITICAL RULES:
-- ALL hours = single integers
-- total_cost = total_hours * {hourly_rate}
-- Module total = sum of sub_items hours
-- totals.total_hours = sum of all module totals
-- All text in Russian
-- perspectives: 4-6 items, business-friendly language
-- Double-check math
+FINAL CHECKLIST (verify before responding):
+✓ Module count: {mod_min}–{mod_max}
+✓ Total hours: {hr_min}–{hr_max}
+✓ First module = "Подготовка и проектирование"
+✓ All integrations in one module
+✓ No PM/QA/Testing/Marketing/Design modules
+✓ Every module has "stage": "dev"
+✓ total = exact sum of sub_item hours
+✓ totals.total_hours = sum of all module totals
+✓ totals.total_cost = total_hours × {hourly_rate}
+✓ timeline_weeks = ceil(total_hours / 40)
+✓ All text in Russian
 """
 
     # ------------------------------------------------------------------
@@ -420,7 +458,7 @@ CRITICAL RULES:
                     f"{self.base_url}/chat/completions",
                     json=payload,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=120),
+                    timeout=aiohttp.ClientTimeout(total=180),
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
