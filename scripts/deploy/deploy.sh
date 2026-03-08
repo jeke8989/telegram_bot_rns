@@ -22,6 +22,7 @@ sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no \
     app/kimai_client.py \
     app/config.py \
     app/proposal_calculator.py \
+    app/s3_client.py \
     "$SERVER:$REMOTE_DIR/app/"
 
 # Deploy app/assets (client banners etc.)

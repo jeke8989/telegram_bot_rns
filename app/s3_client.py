@@ -154,6 +154,56 @@ class S3Client:
             logger.error(f"KP unexpected S3 error: {e}")
             return None
 
+    _DOC_CONTENT_TYPES = {
+        "pdf": "application/pdf",
+        "doc": "application/msword",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "xls": "application/vnd.ms-excel",
+        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "gif": "image/gif",
+        "zip": "application/zip",
+        "txt": "text/plain",
+    }
+
+    def upload_document(self, proposal_token: str, filename: str, file_bytes: bytes, content_type: str = None) -> str | None:
+        """Upload a document for a proposal to S3 and return the public URL."""
+        key = f"proposals/{proposal_token}/documents/{filename}"
+        if not content_type:
+            ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+            content_type = self._DOC_CONTENT_TYPES.get(ext, "application/octet-stream")
+        try:
+            client = self._get_client()
+            client.put_object(
+                Bucket=self.bucket,
+                Key=key,
+                Body=file_bytes,
+                ContentType=content_type,
+                ACL="public-read",
+            )
+            url = f"{self.endpoint}/{self.bucket}/{key}"
+            logger.info(f"Proposal {proposal_token}: document uploaded — {len(file_bytes)} bytes -> {url}")
+            return url
+        except ClientError as e:
+            logger.error(f"Proposal {proposal_token}: S3 document upload error: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Proposal {proposal_token}: unexpected S3 document error: {e}")
+            return None
+
+    def delete_document(self, s3_key: str) -> bool:
+        """Delete a document from S3 by its key."""
+        try:
+            client = self._get_client()
+            client.delete_object(Bucket=self.bucket, Key=s3_key)
+            logger.info(f"Document deleted from S3: {s3_key}")
+            return True
+        except Exception as e:
+            logger.error(f"S3 document delete error ({s3_key}): {e}")
+            return False
+
     def check_connection(self) -> bool:
         """Verify S3 connection works."""
         try:

@@ -66,7 +66,19 @@
         .search-select-clear { position:absolute; right:28px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-dim); cursor:pointer; padding:2px; display:flex; align-items:center; z-index:1; }
         .search-select-clear:hover { color:var(--red); }
 
-        
+        /* ── Multi-select chips ── */
+        .multi-select { position:relative; }
+        .multi-select-box { display:flex; flex-wrap:wrap; gap:5px; min-height:36px; padding:5px 8px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:border-color var(--transition); align-items:center; }
+        .multi-select-box:hover, .multi-select.open .multi-select-box { border-color:var(--accent); }
+        .multi-select-chip { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; background:rgba(108,92,231,.12); color:var(--accent); border-radius:6px; font-size:.78rem; font-weight:600; white-space:nowrap; max-width:200px; }
+        .multi-select-chip span { overflow:hidden; text-overflow:ellipsis; }
+        .multi-select-chip-x { background:none; border:none; color:var(--accent); cursor:pointer; padding:0; font-size:14px; line-height:1; opacity:.7; transition:opacity .1s; display:flex; }
+        .multi-select-chip-x:hover { opacity:1; color:var(--red); }
+        .multi-select-placeholder { color:var(--text-dim); font-size:.85rem; padding:2px 4px; }
+        .multi-select-dropdown { display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); z-index:200; max-height:260px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.4); flex-direction:column; }
+        .multi-select.open .multi-select-dropdown { display:flex; }
+
+
 
         /* ── Section divider ── */
         .section-divider { display:flex; align-items:center; gap:12px; margin:24px 0 12px; }
@@ -131,6 +143,22 @@
         .overhead-add-btn { background:none; border:1px dashed var(--border); border-radius:var(--radius); color:var(--text-dim); cursor:pointer; padding:10px 16px; font-size:.82rem; font-family:inherit; transition:var(--transition); display:flex; align-items:center; gap:8px; margin-top:6px; }
         .overhead-add-btn:hover { border-color:var(--accent); color:var(--accent); }
 
+        /* ── Discount toggle ── */
+        .discount-toggle-row { display:flex; align-items:center; gap:14px; margin-top:14px; padding:12px 16px; background:rgba(16,185,129,.06); border:1px solid rgba(16,185,129,.18); border-radius:var(--radius-sm); transition:all .25s; }
+        .discount-toggle-row.inactive { background:var(--surface-2); border-color:var(--border); }
+        .toggle-switch { position:relative; width:44px; height:24px; flex-shrink:0; cursor:pointer; }
+        .toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
+        .toggle-slider { position:absolute; cursor:pointer; inset:0; background:var(--surface-3); border:1px solid var(--border); border-radius:24px; transition:all .25s; }
+        .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:2px; bottom:2px; background:var(--text-dim); border-radius:50%; transition:all .25s; }
+        .toggle-switch input:checked + .toggle-slider { background:rgba(16,185,129,.2); border-color:rgba(16,185,129,.4); }
+        .toggle-switch input:checked + .toggle-slider::before { transform:translateX(20px); background:#059669; }
+        .discount-label { font-size:.88rem; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; flex:1; }
+        .discount-label .discount-hint { font-size:.75rem; font-weight:400; color:var(--text-dim); }
+        .discount-pct-wrap { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+        .discount-pct-input { width:60px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:.85rem; padding:6px 8px; text-align:center; outline:none; font-family:inherit; transition:border-color .15s; }
+        .discount-pct-input:focus { border-color:var(--accent); }
+        .discount-pct-input:disabled { opacity:.4; cursor:not-allowed; }
+
         /* ── Totals ── */
         .totals-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-top:14px; }
         .totals-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; }
@@ -176,6 +204,76 @@
         .regen-spinner svg { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
+        /* ── Page Tabs ── */
+        .page-tabs { display:flex; gap:0; margin:0; padding:0 24px; background:var(--surface); border-bottom:1px solid var(--border); }
+        .page-tab { padding:12px 20px; font-size:.85rem; font-weight:600; color:var(--text-dim); cursor:pointer; border:none; background:none; font-family:inherit; position:relative; transition:color .2s; display:flex; align-items:center; gap:7px; }
+        .page-tab:hover { color:var(--text); }
+        .page-tab.active { color:var(--accent); }
+        .page-tab.active::after { content:''; position:absolute; bottom:0; left:12px; right:12px; height:2px; background:var(--accent); border-radius:2px 2px 0 0; }
+        .page-tab svg { flex-shrink:0; }
+        .page-tab .tab-badge { font-size:.68rem; padding:1px 6px; border-radius:10px; background:rgba(108,92,231,.12); color:var(--accent); font-weight:700; min-width:18px; text-align:center; }
+
+        /* ── Documents ── */
+        .docs-container { max-width:1100px; margin:0 auto; padding:24px; }
+        .docs-upload-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:40px 24px; text-align:center; cursor:pointer; transition:all .2s; background:var(--surface); }
+        .docs-upload-zone:hover, .docs-upload-zone.dragover { border-color:var(--accent); background:rgba(108,92,231,.04); }
+        .docs-upload-zone svg { color:var(--text-dim); margin-bottom:8px; }
+        .docs-upload-zone-title { font-size:.88rem; font-weight:600; color:var(--text); margin-bottom:4px; }
+        .docs-upload-zone-hint { font-size:.75rem; color:var(--text-dim); }
+        .docs-list { margin-top:20px; display:flex; flex-direction:column; gap:12px; }
+        .doc-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:border-color .2s,box-shadow .2s; }
+        .doc-card:hover { border-color:rgba(108,92,231,.3); box-shadow:0 2px 12px rgba(108,92,231,.06); }
+        .doc-card-header { display:flex; align-items:center; gap:12px; padding:16px 18px; }
+        .doc-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:.65rem; font-weight:700; text-transform:uppercase; }
+        .doc-icon.pdf { background:rgba(225,115,85,.12); color:var(--red); }
+        .doc-icon.img { background:rgba(108,92,231,.1); color:var(--accent); }
+        .doc-icon.doc { background:rgba(0,206,201,.1); color:var(--green); }
+        .doc-icon.other { background:rgba(139,143,168,.1); color:var(--text-dim); }
+        .doc-info { flex:1; min-width:0; }
+        .doc-name { font-size:.88rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .doc-meta { font-size:.72rem; color:var(--text-dim); margin-top:3px; display:flex; gap:8px; align-items:center; }
+        .doc-meta-badge { padding:1px 6px; border-radius:4px; font-size:.65rem; font-weight:600; }
+        .doc-meta-badge.admin { background:rgba(108,92,231,.1); color:var(--accent); }
+        .doc-meta-badge.client { background:rgba(245,158,11,.1); color:#f59e0b; }
+        .doc-actions { display:flex; gap:6px; flex-shrink:0; }
+        .doc-action-btn { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:6px; border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim); cursor:pointer; transition:all .15s; text-decoration:none; }
+        .doc-action-btn:hover { border-color:var(--accent); color:var(--accent); }
+        .doc-action-btn.delete:hover { border-color:var(--red); color:var(--red); background:rgba(225,115,85,.08); }
+        .doc-card-body { padding:0 18px 14px; }
+        .doc-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+        .doc-tag { padding:3px 10px; border-radius:100px; font-size:.7rem; font-weight:600; background:var(--surface-2); color:var(--text-dim); border:1px solid var(--border); }
+        .doc-comment { font-size:.8rem; color:var(--text-dim); line-height:1.5; padding:8px 12px; background:var(--surface-2); border-radius:var(--radius-sm); border:1px solid var(--border); }
+        .doc-card-footer { display:flex; align-items:center; gap:10px; padding:10px 18px; border-top:1px solid var(--border); background:var(--surface-2); }
+        .doc-vis-toggle { display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--text-dim); cursor:pointer; user-select:none; }
+        .doc-vis-toggle input { accent-color:var(--accent); width:14px; height:14px; cursor:pointer; }
+        .doc-edit-link { font-size:.75rem; color:var(--accent); cursor:pointer; border:none; background:none; font-family:inherit; font-weight:600; padding:0; margin-left:auto; }
+        .doc-edit-link:hover { text-decoration:underline; }
+        .docs-empty { text-align:center; padding:48px 24px; color:var(--text-dim); font-size:.88rem; }
+        .docs-empty svg { color:var(--text-dim); margin-bottom:12px; opacity:.5; }
+        .doc-uploading { opacity:.5; pointer-events:none; }
+        .doc-edit-panel { padding:12px 18px 16px; border-top:1px solid var(--border); background:rgba(108,92,231,.02); display:none; }
+        .doc-edit-panel.open { display:block; }
+        .doc-edit-row { margin-bottom:10px; }
+        .doc-edit-row label { display:block; font-size:.72rem; font-weight:600; color:var(--text-dim); margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px; }
+        .doc-edit-row input, .doc-edit-row textarea { width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px; font-size:.82rem; font-family:inherit; background:var(--surface); color:var(--text); resize:vertical; box-sizing:border-box; }
+        .doc-edit-row textarea { min-height:60px; }
+        .doc-edit-row input:focus, .doc-edit-row textarea:focus { outline:none; border-color:var(--accent); }
+        .doc-edit-actions { display:flex; gap:8px; justify-content:flex-end; }
+        .doc-edit-save { padding:6px 16px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; }
+        .doc-edit-save:hover { opacity:.9; }
+        .doc-stats { display:flex; gap:16px; margin-bottom:16px; }
+        .doc-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 16px; flex:1; text-align:center; }
+        .doc-stat-num { font-size:1.3rem; font-weight:700; color:var(--text); }
+        .doc-stat-label { font-size:.7rem; color:var(--text-dim); margin-top:2px; font-weight:500; }
+
+        /* ── Delete Confirm Popup ── */
+        .confirm-popup { max-width:380px; }
+        .confirm-popup p { font-size:.88rem; color:var(--text-dim); margin-bottom:16px; line-height:1.5; }
+        .confirm-popup .doc-preview { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--surface-2); border-radius:8px; margin-bottom:16px; }
+        .confirm-popup .doc-preview .doc-name { font-size:.82rem; }
+        .btn-danger { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--radius-btn); border:none; background:var(--red); color:#fff; font-size:.82rem; font-weight:600; cursor:pointer; font-family:inherit; transition:opacity .15s; }
+        .btn-danger:hover { opacity:.85; }
+
         @media (max-width:768px) {
             .page-container { padding:14px; }
             .field-grid-3, .field-grid-4 { grid-template-columns:1fr; }
@@ -197,12 +295,28 @@
         <div class="top-breadcrumb">
             <a href="/proposals">Предложения</a><span class="breadcrumb-sep">&rsaquo;</span><span class="breadcrumb-current" id="breadcrumbName">Загрузка...</span>
         </div>
+        <div class="page-tabs" id="pageTabs">
+            <button class="page-tab active" data-tab="calc"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>Расчёт</button>
+            <button class="page-tab" data-tab="docs"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Документы<span class="tab-badge" id="docsCount" style="display:none">0</span></button>
+        </div>
         <div id="editorContent">
             <div class="page-container">
                 <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px">
                     <div class="field-grid field-grid-2" style="margin-bottom:14px"><div class="field-group"><div class="sk" style="height:10px;width:100px;margin-bottom:6px"></div><div class="sk" style="height:38px;border-radius:8px"></div></div><div class="field-group"><div class="sk" style="height:10px;width:50px;margin-bottom:6px"></div><div class="sk" style="height:38px;border-radius:8px"></div></div></div>
                 </div>
                 <div class="module-card"><div style="padding:12px 14px;background:var(--surface-2)"><div class="sk" style="height:14px;width:40%;border-radius:6px"></div></div><div style="padding:12px 14px"><div class="sk" style="height:32px;margin-bottom:5px;border-radius:6px"></div><div class="sk" style="height:32px;border-radius:6px"></div></div></div>
+            </div>
+        </div>
+        <div id="docsContent" style="display:none">
+            <div class="page-container">
+                <div class="doc-stats" id="docsStats" style="display:none"></div>
+                <div class="docs-upload-zone" id="docsUploadZone">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <div class="docs-upload-zone-title">Перетащите файлы сюда или нажмите для выбора</div>
+                    <div class="docs-upload-zone-hint">PDF, DOC, DOCX, XLS, XLSX, PNG, JPG — до 50 МБ</div>
+                    <input type="file" id="docsFileInput" multiple style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.zip,.txt">
+                </div>
+                <div class="docs-list" id="docsList"></div>
             </div>
         </div>
         <div class="save-bar" id="saveBar" style="display:none">
@@ -243,6 +357,17 @@
             <div class="modal-actions"><button class="btn-secondary" id="overheadCancel">Отмена</button><button class="btn-primary" id="overheadOk">Добавить</button></div>
         </div>
     </div>
+    <div class="modal-overlay" id="deleteDocOverlay">
+        <div class="modal confirm-popup">
+            <h3>Удалить документ?</h3>
+            <div class="doc-preview" id="deleteDocPreview"></div>
+            <p>Документ будет удалён без возможности восстановления.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="deleteDocCancel">Отмена</button>
+                <button class="btn-danger" id="deleteDocConfirm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Удалить</button>
+            </div>
+        </div>
+    </div>
     <div class="toast" id="toast"></div>
 
     <script>
@@ -250,6 +375,7 @@
     let proposalData = null;
     let allClients = [];
     let allSellers = [];
+    let allProjects = [];
     let selectedClientData = null;
     const DEFAULT_OVERHEAD = { pm_percent: 15, qa_percent: 10, marketing_percent: 5 };
     const STAGES = [
@@ -312,6 +438,7 @@
     async function loadClientsList() { try { const r = await authFetch('/api/clients'); if (r.ok) allClients = await r.json(); } catch {} }
     async function loadSelectedClient(uuid) { if (!uuid) { selectedClientData = null; return; } try { const r = await authFetch('/api/client/' + uuid); if (r.ok) selectedClientData = await r.json(); } catch {} }
     async function loadSellersList() { try { const r = await authFetch('/api/sellers'); if (r.ok) allSellers = await r.json(); } catch {} }
+    async function loadProjectsList() { try { const r = await authFetch('/api/projects'); if (r.ok) allProjects = await r.json(); } catch {} }
 
     function createSearchSelect(containerId, items, selectedId, placeholder, onSelect) {
         const container = document.getElementById(containerId); if (!container) return;
@@ -335,6 +462,53 @@
         searchInput.addEventListener('input', () => renderOpts(searchInput.value)); searchInput.addEventListener('click', e => e.stopPropagation());
         document.addEventListener('click', () => container.classList.remove('open'));
         setVal(); renderOpts('');
+    }
+
+    let selectedClientIds = [];
+    function createClientMultiSelect(containerId, items, selectedIds) {
+        selectedClientIds = [...(selectedIds || [])];
+        const container = document.getElementById(containerId); if (!container) return;
+        container.innerHTML = ''; container.classList.add('multi-select');
+        const box = document.createElement('div'); box.className = 'multi-select-box';
+        const dropdown = document.createElement('div'); dropdown.className = 'multi-select-dropdown';
+        const searchInput = document.createElement('input'); searchInput.className = 'search-select-search'; searchInput.placeholder = 'Поиск клиента...';
+        const optionsList = document.createElement('div'); optionsList.className = 'search-select-options';
+        dropdown.appendChild(searchInput); dropdown.appendChild(optionsList);
+        container.appendChild(box); container.appendChild(dropdown);
+
+        function renderBox() {
+            box.innerHTML = '';
+            if (!selectedClientIds.length) {
+                const ph = document.createElement('span'); ph.className = 'multi-select-placeholder'; ph.textContent = '— Выберите клиентов —';
+                box.appendChild(ph);
+            } else {
+                selectedClientIds.forEach(cid => {
+                    const item = items.find(i => i.id === cid);
+                    if (!item) return;
+                    const chip = document.createElement('span'); chip.className = 'multi-select-chip';
+                    const label = document.createElement('span'); label.textContent = item.label; chip.appendChild(label);
+                    const x = document.createElement('button'); x.className = 'multi-select-chip-x'; x.innerHTML = '&times;'; x.type = 'button';
+                    x.addEventListener('click', e => { e.stopPropagation(); selectedClientIds = selectedClientIds.filter(id => id !== cid); renderBox(); renderOpts(searchInput.value); });
+                    chip.appendChild(x); box.appendChild(chip);
+                });
+            }
+        }
+        function renderOpts(f) {
+            const q = (f||'').toLowerCase();
+            const fl = items.filter(i => (!q || i.label.toLowerCase().includes(q)) && !selectedClientIds.includes(i.id));
+            optionsList.innerHTML = '';
+            if (!fl.length) { const e = document.createElement('div'); e.className = 'search-select-option empty'; e.textContent = selectedClientIds.length ? 'Все клиенты добавлены' : 'Ничего не найдено'; optionsList.appendChild(e); return; }
+            fl.forEach(item => {
+                const o = document.createElement('div'); o.className = 'search-select-option'; o.textContent = item.label;
+                o.addEventListener('click', e => { e.stopPropagation(); selectedClientIds.push(item.id); renderBox(); renderOpts(searchInput.value); });
+                optionsList.appendChild(o);
+            });
+        }
+        box.addEventListener('click', e => { e.stopPropagation(); const isOpen = container.classList.contains('open'); document.querySelectorAll('.multi-select.open').forEach(el => el.classList.remove('open')); if (!isOpen) { container.classList.add('open'); searchInput.value = ''; renderOpts(''); setTimeout(() => searchInput.focus(), 10); } });
+        searchInput.addEventListener('input', () => renderOpts(searchInput.value));
+        searchInput.addEventListener('click', e => e.stopPropagation());
+        document.addEventListener('click', () => container.classList.remove('open'));
+        renderBox(); renderOpts('');
     }
 
     async function ensureCabinetToken(uuid) {
@@ -366,6 +540,89 @@
 
     function getDesignType() { return document.getElementById('fDesign')?.value || proposalData.design_type || 'no_design'; }
 
+    function findToggleDiscount() {
+        const items = (proposalData.estimation?.overhead?.custom_items) || [];
+        return items.findIndex(ci => ci._toggle_discount);
+    }
+
+    function isDiscountEnabled() {
+        return findToggleDiscount() >= 0;
+    }
+
+    function getDiscountPercent() {
+        const idx = findToggleDiscount();
+        if (idx >= 0) return Math.abs(proposalData.estimation.overhead.custom_items[idx].percent || 15);
+        return 15;
+    }
+
+    function getDiscountExpires() {
+        const idx = findToggleDiscount();
+        if (idx >= 0) return proposalData.estimation.overhead.custom_items[idx].expires_at || '';
+        return '';
+    }
+
+    function buildDiscountToggleHtml(overhead) {
+        const enabled = isDiscountEnabled();
+        const pct = getDiscountPercent();
+        const expires = getDiscountExpires();
+        return '<div class="discount-toggle-row' + (enabled ? '' : ' inactive') + '" id="discountRow">'
+            + '<label class="toggle-switch"><input type="checkbox" id="discountToggle"' + (enabled ? ' checked' : '') + '><span class="toggle-slider"></span></label>'
+            + '<span class="discount-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>Скидка на проект<span class="discount-hint">Отображается клиенту в КП</span></span>'
+            + '<div class="discount-pct-wrap">'
+            + '<input class="discount-pct-input" type="number" min="1" max="100" id="discountPct" value="' + pct + '"' + (enabled ? '' : ' disabled') + '><span style="font-size:.82rem;color:var(--text-dim)">%</span>'
+            + '<span style="font-size:.72rem;color:var(--text-dim);margin:0 6px">до</span>'
+            + '<input class="discount-pct-input" type="date" id="discountExpires" value="' + escapeHtml(expires) + '"' + (enabled ? '' : ' disabled') + ' style="width:130px;text-align:left">'
+            + '</div>'
+            + '</div>';
+    }
+
+    function initDiscountToggle() {
+        const toggle = document.getElementById('discountToggle');
+        const pctInput = document.getElementById('discountPct');
+        const expiresInput = document.getElementById('discountExpires');
+        const row = document.getElementById('discountRow');
+        if (!toggle || !pctInput) return;
+
+        toggle.addEventListener('change', function() {
+            const items = proposalData.estimation.overhead.custom_items || [];
+            if (toggle.checked) {
+                const pct = parseInt(pctInput.value) || 15;
+                const expires = expiresInput ? expiresInput.value : '';
+                items.push({ _toggle_discount: true, name: 'Скидка ' + pct + '%', percent: -Math.abs(pct), expires_at: expires || null });
+                proposalData.estimation.overhead.custom_items = items;
+                pctInput.disabled = false;
+                if (expiresInput) expiresInput.disabled = false;
+                row.classList.remove('inactive');
+            } else {
+                const idx = findToggleDiscount();
+                if (idx >= 0) items.splice(idx, 1);
+                pctInput.disabled = true;
+                if (expiresInput) expiresInput.disabled = true;
+                row.classList.add('inactive');
+            }
+            renderEditor();
+        });
+
+        pctInput.addEventListener('input', function() {
+            const idx = findToggleDiscount();
+            if (idx >= 0) {
+                const pct = parseInt(pctInput.value) || 15;
+                proposalData.estimation.overhead.custom_items[idx].percent = -Math.abs(pct);
+                proposalData.estimation.overhead.custom_items[idx].name = 'Скидка ' + pct + '%';
+                recalcTotals();
+            }
+        });
+
+        if (expiresInput) {
+            expiresInput.addEventListener('change', function() {
+                const idx = findToggleDiscount();
+                if (idx >= 0) {
+                    proposalData.estimation.overhead.custom_items[idx].expires_at = expiresInput.value || null;
+                }
+            });
+        }
+    }
+
     function renderEditor() {
         const est = proposalData.estimation || {};
         document.getElementById('breadcrumbName').textContent = proposalData.project_name || 'Без названия';
@@ -382,11 +639,12 @@
         +     '</div></div>'
         +   '<div class="field-grid field-grid-3" style="margin-bottom:12px">'
         +     '<div class="field-group"><label>Название проекта</label><input class="field-input" id="fProjectName" value="'+escapeHtml(proposalData.project_name || '')+'"></div>'
-        +     '<div class="field-group"><label>Клиент</label><div class="field-with-actions"><div class="field-group"><div id="clientSelectContainer"></div></div>'
-        +       '<a class="field-action-btn" id="clientCabinetBtn" href="#" target="_blank" title="Кабинет клиента" style="display:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></a>'
-        +       '<a class="field-action-btn" id="clientCardBtn" href="#" target="_blank" title="Карточка клиента" style="display:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2"/><circle cx="12" cy="7" r="4"/></svg></a>'
-        +     '</div></div>'
+        +     '<div class="field-group"><label>Клиенты</label><div id="clientMultiSelect"></div></div>'
         +     '<div class="field-group"><label>Продажник</label><div id="sellerSelectContainer"></div></div>'
+        +   '</div>'
+        +   '<div class="field-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">'
+        +     '<div class="field-group"><label>Проект</label><div id="projectSelectContainer"></div></div>'
+        +     '<div class="field-group"><label>Статус</label><select class="field-input" id="fStatus"><option value="draft" '+(proposalData.proposal_status==='draft'?'selected':'')+'>Черновик</option><option value="sent" '+(proposalData.proposal_status==='sent'?'selected':'')+'>Отправлено</option><option value="accepted" '+(proposalData.proposal_status==='accepted'?'selected':'')+'>Принято</option><option value="rejected" '+(proposalData.proposal_status==='rejected'?'selected':'')+'>Отклонено</option></select></div>'
         +   '</div>'
         +   '<div class="field-grid field-grid-4">'
         +     '<div class="field-group"><label>Ставка в час</label><input class="field-input" type="number" step="0.01" id="fHourlyRate" value="'+(proposalData.hourly_rate||0)+'"></div>'
@@ -394,6 +652,7 @@
         +     '<div class="field-group"><label>Тип</label><select class="field-input" id="fType"><option value="mvp" '+(proposalData.proposal_type==='mvp'?'selected':'')+'>MVP</option><option value="full" '+(proposalData.proposal_type==='full'?'selected':'')+'>Full</option></select></div>'
         +     '<div class="field-group"><label>Дизайн</label><select class="field-input" id="fDesign"><option value="full_design" '+(designType==='full_design'?'selected':'')+'>Полный</option><option value="wireframes" '+(designType==='wireframes'?'selected':'')+'>Вайрфреймы</option><option value="no_design" '+(designType==='no_design'?'selected':'')+'>Без дизайна</option></select></div>'
         +   '</div>'
+        +   buildDiscountToggleHtml(est.overhead)
         + '</div>';
 
         STAGES.forEach(st => {
@@ -438,6 +697,7 @@
             html += overheadCard('seller', svgSeller, 'seller', 'Комиссия продажника', '', overhead.seller_percent??10, null);
         }
         (overhead.custom_items || []).forEach((ci, i) => {
+            if (ci._toggle_discount) return;
             const isNeg = (ci.percent || 0) < 0;
             html += overheadCard('custom_'+i, isNeg ? svgDiscount : svgCustom, isNeg ? 'discount' : 'custom', ci.name || 'Блок', '', ci.percent || 0, { deletable: true, editableName: true });
         });
@@ -480,9 +740,12 @@
         });
 
         document.getElementById('fDesign').addEventListener('change', handleDesignChange);
+        initDiscountToggle();
 
-        createSearchSelect('clientSelectContainer', allClients.map(c => ({ id: c.id, uuid: c.uuid, label: c.name + (c.company ? ' ('+c.company+')' : '') })), proposalData.client_id || null, '— Клиент —',
-            async (item) => { if (item) { proposalData.client_id = item.id; await loadSelectedClient(item.uuid); } else { proposalData.client_id = null; selectedClientData = null; } updateClientActions(); });
+        createClientMultiSelect('clientMultiSelect',
+            allClients.map(c => ({ id: c.id, uuid: c.uuid, label: c.name + (c.company ? ' ('+c.company+')' : '') })),
+            proposalData.client_ids || (proposalData.client_id ? [proposalData.client_id] : [])
+        );
         createSearchSelect('sellerSelectContainer', allSellers.map(s => ({ id: s.id, label: s.name + (s.username ? ' (@'+s.username+')' : '') })), proposalData.seller_id || null, '— Продажник —',
             (item) => {
                 const prev = proposalData.seller_id;
@@ -490,8 +753,25 @@
                 if (item && !prev) { proposalData.estimation.overhead.seller_percent = proposalData.estimation.overhead.seller_percent || 10; renderEditor(); }
                 else if (!item && prev) { delete proposalData.estimation.overhead.seller_percent; renderEditor(); }
             });
+        createSearchSelect('projectSelectContainer',
+            allProjects.map(p => {
+                let label = p.name;
+                if (p.kimai_project_id) label += ' (Kimai #' + p.kimai_project_id + ')';
+                return { id: p.id, label: label, client_id: p.client_id };
+            }),
+            proposalData.project_id || null,
+            '— Привязать к проекту —',
+            (item) => {
+                proposalData.project_id = item ? item.id : null;
+                if (item && item.client_id && !selectedClientIds.length) {
+                    selectedClientIds = [item.client_id];
+                    createClientMultiSelect('clientMultiSelect',
+                        allClients.map(c => ({ id: c.id, uuid: c.uuid, label: c.name + (c.company ? ' ('+c.company+')' : '') })),
+                        selectedClientIds
+                    );
+                }
+            });
 
-        if (proposalData.client_uuid) loadSelectedClient(proposalData.client_uuid).then(updateClientActions);
     }
 
     function handleDesignChange() {
@@ -933,13 +1213,14 @@
             buildStagesFromModules();
             const body = {
                 project_name: document.getElementById('fProjectName').value.trim(),
-                client_name: selectedClientData ? selectedClientData.name : '',
-                client_id: proposalData.client_id || null,
+                client_ids: selectedClientIds,
                 seller_id: proposalData.seller_id || null,
                 hourly_rate: parseFloat(document.getElementById('fHourlyRate').value) || 0,
                 currency: document.getElementById('fCurrency').value,
                 proposal_type: document.getElementById('fType').value,
                 design_type: getDesignType(),
+                project_id: proposalData.project_id || null,
+                proposal_status: document.getElementById('fStatus').value,
                 estimation: proposalData.estimation,
             };
             const res = await authFetch('/api/proposal/' + TOKEN, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -997,7 +1278,250 @@
         }
     });
 
-    (async () => { await Promise.all([loadClientsList(), loadSellersList()]); loadProposal(); })();
+    // ── Tab switching ──
+    let currentTab = 'calc';
+    let documents = [];
+    let docsLoaded = false;
+
+    document.getElementById('pageTabs').addEventListener('click', function(e) {
+        const tab = e.target.closest('.page-tab');
+        if (!tab) return;
+        const key = tab.dataset.tab;
+        if (key === currentTab) return;
+        currentTab = key;
+        document.querySelectorAll('.page-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === key));
+        document.getElementById('editorContent').style.display = key === 'calc' ? '' : 'none';
+        document.getElementById('saveBar').style.display = key === 'calc' ? 'flex' : 'none';
+        document.getElementById('docsContent').style.display = key === 'docs' ? '' : 'none';
+        if (key === 'docs' && !docsLoaded) loadDocuments();
+    });
+
+    // ── Documents logic ──
+    function getDocIconClass(name) {
+        const ext = (name || '').split('.').pop().toLowerCase();
+        if (ext === 'pdf') return 'pdf';
+        if (['png','jpg','jpeg','gif','svg','webp'].includes(ext)) return 'img';
+        if (['doc','docx','xls','xlsx','txt'].includes(ext)) return 'doc';
+        return 'other';
+    }
+    function getDocExt(name) { return (name || '').split('.').pop().toUpperCase().slice(0,4); }
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' Б';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' КБ';
+        return (bytes / 1048576).toFixed(1) + ' МБ';
+    }
+    function formatDocDate(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        return d.toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' });
+    }
+
+    async function loadDocuments() {
+        try {
+            const res = await authFetch('/api/proposal/' + TOKEN + '/documents');
+            if (res.ok) { documents = await res.json(); docsLoaded = true; }
+        } catch {}
+        renderDocuments();
+    }
+
+    function renderDocuments() {
+        const list = document.getElementById('docsList');
+        const badge = document.getElementById('docsCount');
+        if (documents.length > 0) {
+            badge.textContent = documents.length;
+            badge.style.display = '';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        // Stats
+        const statsEl = document.getElementById('docsStats');
+        if (documents.length > 0) {
+            const totalSize = documents.reduce((s,d) => s + (d.file_size||0), 0);
+            const visibleCount = documents.filter(d => d.visible_to_client !== false).length;
+            const clientCount = documents.filter(d => d.uploaded_by === 'client').length;
+            statsEl.innerHTML = '<div class="doc-stat"><div class="doc-stat-num">' + documents.length + '</div><div class="doc-stat-label">Файлов</div></div>'
+                + '<div class="doc-stat"><div class="doc-stat-num">' + formatFileSize(totalSize) + '</div><div class="doc-stat-label">Общий размер</div></div>'
+                + '<div class="doc-stat"><div class="doc-stat-num">' + visibleCount + '</div><div class="doc-stat-label">Видны клиенту</div></div>'
+                + '<div class="doc-stat"><div class="doc-stat-num">' + clientCount + '</div><div class="doc-stat-label">От клиента</div></div>';
+            statsEl.style.display = '';
+        } else {
+            statsEl.style.display = 'none';
+        }
+
+        if (!documents.length) {
+            list.innerHTML = '<div class="docs-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div>Документов пока нет</div><div style="font-size:.78rem;margin-top:4px">Загрузите файлы — договоры, ТЗ, макеты</div></div>';
+            return;
+        }
+        list.innerHTML = documents.map(doc => {
+            const cls = getDocIconClass(doc.original_name);
+            const ext = getDocExt(doc.original_name);
+            const isClient = doc.uploaded_by === 'client';
+            const uploaderLabel = isClient ? 'Клиент' : 'Админ';
+            const uploaderCls = isClient ? 'client' : 'admin';
+            const visible = doc.visible_to_client !== false;
+            const tags = (doc.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+            const comment = doc.comment || '';
+
+            let html = '<div class="doc-card" data-doc-id="'+doc.id+'">';
+            html += '<div class="doc-card-header">';
+            html += '<div class="doc-icon '+cls+'">'+escapeHtml(ext)+'</div>';
+            html += '<div class="doc-info"><div class="doc-name" title="'+escapeHtml(doc.original_name)+'">'+escapeHtml(doc.original_name)+'</div>';
+            html += '<div class="doc-meta"><span>'+formatFileSize(doc.file_size)+'</span><span>'+formatDocDate(doc.created_at)+'</span><span class="doc-meta-badge '+uploaderCls+'">'+uploaderLabel+'</span></div></div>';
+            html += '<div class="doc-actions">';
+            html += '<a class="doc-action-btn" href="'+escapeHtml(doc.s3_url)+'" target="_blank" title="Скачать"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a>';
+            html += '<button class="doc-action-btn delete" data-del-doc="'+doc.id+'" title="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
+            html += '</div></div>';
+
+            // Tags + comment body (only if present)
+            if (tags.length || comment) {
+                html += '<div class="doc-card-body">';
+                if (tags.length) {
+                    html += '<div class="doc-tags">' + tags.map(t => '<span class="doc-tag">'+escapeHtml(t)+'</span>').join('') + '</div>';
+                }
+                if (comment) {
+                    html += '<div class="doc-comment">'+escapeHtml(comment)+'</div>';
+                }
+                html += '</div>';
+            }
+
+            // Footer: visibility + edit
+            html += '<div class="doc-card-footer">';
+            html += '<label class="doc-vis-toggle"><input type="checkbox" data-vis-doc="'+doc.id+'"'+(visible?' checked':'')+'>Виден клиенту</label>';
+            html += '<button class="doc-edit-link" data-edit-doc="'+doc.id+'">Редактировать</button>';
+            html += '</div>';
+
+            // Edit panel (hidden)
+            html += '<div class="doc-edit-panel" id="docEdit'+doc.id+'">';
+            html += '<div class="doc-edit-row"><label>Теги (через запятую)</label><input type="text" data-tags-input="'+doc.id+'" value="'+escapeHtml(doc.tags||'')+'" placeholder="договор, ТЗ, макет"></div>';
+            html += '<div class="doc-edit-row"><label>Комментарий</label><textarea data-comment-input="'+doc.id+'" placeholder="Заметка к документу...">'+escapeHtml(comment)+'</textarea></div>';
+            html += '<div class="doc-edit-actions"><button class="doc-edit-save" data-save-doc="'+doc.id+'">Сохранить</button></div>';
+            html += '</div>';
+
+            html += '</div>';
+            return html;
+        }).join('');
+    }
+
+    // Upload via click / drag-n-drop
+    const uploadZone = document.getElementById('docsUploadZone');
+    const fileInput = document.getElementById('docsFileInput');
+    uploadZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => { if (fileInput.files.length) uploadFiles(fileInput.files); fileInput.value = ''; });
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files); });
+
+    async function uploadFiles(files) {
+        const fd = new FormData();
+        for (const f of files) fd.append('files', f);
+        uploadZone.classList.add('doc-uploading');
+        try {
+            const res = await authFetch('/api/proposal/' + TOKEN + '/documents', { method: 'POST', body: fd });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.documents) documents.unshift(...data.documents);
+                renderDocuments();
+                showToast('Загружено файлов: ' + (data.documents || []).length);
+            } else { showToast('Ошибка загрузки', true); }
+        } catch(e) { showToast('Ошибка загрузки', true); }
+        finally { uploadZone.classList.remove('doc-uploading'); }
+    }
+
+    // Document actions delegation
+    document.getElementById('docsList').addEventListener('click', function(e) {
+        // Delete
+        const delBtn = e.target.closest('[data-del-doc]');
+        if (delBtn) {
+            const docId = parseInt(delBtn.dataset.delDoc);
+            const doc = documents.find(d => d.id === docId);
+            if (doc) openDeleteDocModal(doc);
+            return;
+        }
+        // Edit toggle
+        const editBtn = e.target.closest('[data-edit-doc]');
+        if (editBtn) {
+            const panel = document.getElementById('docEdit' + editBtn.dataset.editDoc);
+            if (panel) panel.classList.toggle('open');
+            return;
+        }
+        // Save edits
+        const saveBtn = e.target.closest('[data-save-doc]');
+        if (saveBtn) {
+            saveDocMeta(parseInt(saveBtn.dataset.saveDoc));
+            return;
+        }
+    });
+
+    // Visibility toggle
+    document.getElementById('docsList').addEventListener('change', function(e) {
+        const cb = e.target.closest('[data-vis-doc]');
+        if (!cb) return;
+        const docId = parseInt(cb.dataset.visDoc);
+        updateDocField(docId, { visible_to_client: cb.checked });
+    });
+
+    async function updateDocField(docId, fields) {
+        try {
+            const res = await authFetch('/api/proposal/'+TOKEN+'/documents/'+docId, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(fields)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.document) {
+                    const idx = documents.findIndex(d => d.id === docId);
+                    if (idx >= 0) documents[idx] = data.document;
+                }
+            }
+        } catch {}
+    }
+
+    async function saveDocMeta(docId) {
+        const tagsInput = document.querySelector('[data-tags-input="'+docId+'"]');
+        const commentInput = document.querySelector('[data-comment-input="'+docId+'"]');
+        if (!tagsInput || !commentInput) return;
+        await updateDocField(docId, { tags: tagsInput.value, comment: commentInput.value });
+        // Update local
+        const doc = documents.find(d => d.id === docId);
+        if (doc) { doc.tags = tagsInput.value; doc.comment = commentInput.value; }
+        renderDocuments();
+        showToast('Сохранено');
+    }
+
+    function openDeleteDocModal(doc) {
+        const overlay = document.getElementById('deleteDocOverlay');
+        const preview = document.getElementById('deleteDocPreview');
+        const cls = getDocIconClass(doc.original_name);
+        const ext = getDocExt(doc.original_name);
+        preview.innerHTML = '<div class="doc-icon '+cls+'">'+escapeHtml(ext)+'</div><div class="doc-name">'+escapeHtml(doc.original_name)+'</div>';
+        overlay.classList.add('open');
+
+        function close() { overlay.classList.remove('open'); cleanup(); }
+        function cleanup() {
+            document.getElementById('deleteDocConfirm').removeEventListener('click', onConfirm);
+            document.getElementById('deleteDocCancel').removeEventListener('click', close);
+            overlay.removeEventListener('click', onBg);
+        }
+        function onBg(e) { if (e.target === overlay) close(); }
+        async function onConfirm() {
+            try {
+                const res = await authFetch('/api/proposal/'+TOKEN+'/documents/'+doc.id, { method: 'DELETE' });
+                if (res.ok) {
+                    documents = documents.filter(d => d.id !== doc.id);
+                    renderDocuments();
+                    showToast('Документ удалён');
+                } else { showToast('Ошибка удаления', true); }
+            } catch { showToast('Ошибка удаления', true); }
+            close();
+        }
+        document.getElementById('deleteDocConfirm').addEventListener('click', onConfirm);
+        document.getElementById('deleteDocCancel').addEventListener('click', close);
+        overlay.addEventListener('click', onBg);
+    }
+
+    (async () => { await Promise.all([loadClientsList(), loadSellersList(), loadProjectsList()]); loadProposal(); })();
     </script>
     <script src="/sidebar.js"></script>
 </body>

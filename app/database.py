@@ -613,6 +613,65 @@ class Database:
                 ON client_messages(client_id, created_at DESC)
             """)
 
+            # Proposal documents table
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS proposal_documents (
+                    id SERIAL PRIMARY KEY,
+                    proposal_token VARCHAR(32) NOT NULL,
+                    filename TEXT NOT NULL,
+                    original_name TEXT NOT NULL,
+                    s3_url TEXT NOT NULL,
+                    s3_key TEXT NOT NULL,
+                    file_size BIGINT DEFAULT 0,
+                    content_type VARCHAR(255) DEFAULT 'application/octet-stream',
+                    uploaded_by VARCHAR(50) DEFAULT 'admin',
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                )
+            """)
+            await conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_proposal_documents_token
+                ON proposal_documents(proposal_token, created_at DESC)
+            """)
+            # Add new document columns if missing
+            for col, coldef in [
+                ('comment', "TEXT DEFAULT ''"),
+                ('tags', "TEXT DEFAULT ''"),
+                ('visible_to_client', "BOOLEAN DEFAULT true"),
+            ]:
+                await conn.execute(f"""
+                    DO $$ BEGIN
+                        ALTER TABLE proposal_documents ADD COLUMN {col} {coldef};
+                    EXCEPTION WHEN duplicate_column THEN NULL;
+                    END $$;
+                """)
+
+            # Proposal ↔ Clients junction table (many-to-many)
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS proposal_clients (
+                    id SERIAL PRIMARY KEY,
+                    proposal_token VARCHAR(32) NOT NULL,
+                    client_id INTEGER NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    UNIQUE(proposal_token, client_id)
+                )
+            """)
+            await conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_proposal_clients_token
+                ON proposal_clients(proposal_token)
+            """)
+            await conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_proposal_clients_client
+                ON proposal_clients(client_id)
+            """)
+
+            # Backfill: migrate existing client_id into proposal_clients
+            await conn.execute("""
+                INSERT INTO proposal_clients (proposal_token, client_id)
+                SELECT token, client_id FROM commercial_proposals
+                WHERE client_id IS NOT NULL
+                ON CONFLICT (proposal_token, client_id) DO NOTHING
+            """)
+
             logger.info("Database tables initialized")
 
     async def save_user(self, telegram_id: int, first_name: str, last_name: str, username: str, language_code: str = None):
@@ -2431,14 +2490,100 @@ class Database:
     async def get_client_proposals(self, client_id: int) -> list[dict]:
         async with self.pool.acquire() as conn:
             rows = await conn.fetch("""
-                SELECT id, token, project_name, client_name, proposal_type,
-                       currency, hourly_rate, proposal_status, project_id,
-                       discount_percent,
-                       created_at, updated_at
-                FROM commercial_proposals WHERE client_id = $1
-                ORDER BY created_at DESC
+                SELECT DISTINCT cp.id, cp.token, cp.project_name, cp.client_name,
+                       cp.proposal_type, cp.currency, cp.hourly_rate,
+                       cp.proposal_status, cp.project_id, cp.discount_percent,
+                       cp.created_at, cp.updated_at
+                FROM commercial_proposals cp
+                LEFT JOIN proposal_clients pc ON pc.proposal_token = cp.token
+                WHERE cp.client_id = $1 OR pc.client_id = $1
+                ORDER BY cp.created_at DESC
             """, client_id)
             return [dict(r) for r in rows]
+
+    # ── Proposal Clients (many-to-many) ──
+
+    async def get_proposal_client_ids(self, proposal_token: str) -> list[int]:
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT client_id FROM proposal_clients WHERE proposal_token = $1",
+                proposal_token,
+            )
+            return [r['client_id'] for r in rows]
+
+    async def set_proposal_clients(self, proposal_token: str, client_ids: list[int]):
+        """Replace all client links for a proposal."""
+        async with self.pool.acquire() as conn:
+            async with conn.transaction():
+                await conn.execute(
+                    "DELETE FROM proposal_clients WHERE proposal_token = $1",
+                    proposal_token,
+                )
+                for cid in client_ids:
+                    await conn.execute(
+                        "INSERT INTO proposal_clients (proposal_token, client_id) "
+                        "VALUES ($1, $2) ON CONFLICT DO NOTHING",
+                        proposal_token, cid,
+                    )
+
+    # ── Proposal Documents ──
+
+    async def get_proposal_documents(self, proposal_token: str) -> list[dict]:
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT id, proposal_token, filename, original_name, s3_url, s3_key,
+                       file_size, content_type, uploaded_by, created_at,
+                       comment, tags, visible_to_client
+                FROM proposal_documents WHERE proposal_token = $1
+                ORDER BY created_at DESC
+            """, proposal_token)
+            return [dict(r) for r in rows]
+
+    async def add_proposal_document(self, proposal_token: str, filename: str,
+                                     original_name: str, s3_url: str, s3_key: str,
+                                     file_size: int, content_type: str,
+                                     uploaded_by: str = 'admin') -> dict:
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                INSERT INTO proposal_documents
+                    (proposal_token, filename, original_name, s3_url, s3_key, file_size, content_type, uploaded_by)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                RETURNING *
+            """, proposal_token, filename, original_name, s3_url, s3_key, file_size, content_type, uploaded_by)
+            return dict(row)
+
+    async def delete_proposal_document(self, doc_id: int) -> dict | None:
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                DELETE FROM proposal_documents WHERE id = $1 RETURNING *
+            """, doc_id)
+            return dict(row) if row else None
+
+    async def update_proposal_document(self, doc_id: int, comment: str = None,
+                                        tags: str = None, visible_to_client: bool = None) -> dict | None:
+        async with self.pool.acquire() as conn:
+            sets, vals, idx = [], [], 1
+            if comment is not None:
+                sets.append(f"comment = ${idx}"); vals.append(comment); idx += 1
+            if tags is not None:
+                sets.append(f"tags = ${idx}"); vals.append(tags); idx += 1
+            if visible_to_client is not None:
+                sets.append(f"visible_to_client = ${idx}"); vals.append(visible_to_client); idx += 1
+            if not sets:
+                return await self.get_proposal_document_by_id(doc_id)
+            vals.append(doc_id)
+            row = await conn.fetchrow(
+                f"UPDATE proposal_documents SET {', '.join(sets)} WHERE id = ${idx} RETURNING *",
+                *vals
+            )
+            return dict(row) if row else None
+
+    async def get_proposal_document_by_id(self, doc_id: int) -> dict | None:
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT * FROM proposal_documents WHERE id = $1", doc_id
+            )
+            return dict(row) if row else None
 
     async def get_client_projects(self, client_id: int) -> list[dict]:
         async with self.pool.acquire() as conn:

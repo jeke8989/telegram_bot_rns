@@ -334,7 +334,7 @@ async def proposal_api(request):
         total_cost = _jr(total_hours * hourly_rate)
 
         discount_items = [
-            {'name': ci.get('name', ''), 'percent': ci.get('percent', 0)}
+            {'name': ci.get('name', ''), 'percent': ci.get('percent', 0), 'expires_at': ci.get('expires_at')}
             for ci in custom_items_list if (ci.get('percent', 0) or 0) < 0
         ]
         base_cost_no_discount = _jr(
@@ -342,6 +342,8 @@ async def proposal_api(request):
         ) if discount_items else 0
 
         payment_phases = _build_payment_phases(estimation, hourly_rate, total_hours, total_cost)
+
+        client_ids = await db.get_proposal_client_ids(token)
 
         return web.json_response({
             'token': row['token'],
@@ -355,6 +357,7 @@ async def proposal_api(request):
             'config_data': config_data,
             'created_at': row['created_at'].isoformat() if row.get('created_at') else None,
             'client_id': row.get('client_id'),
+            'client_ids': client_ids,
             'client_uuid': str(row['client_uuid']) if row.get('client_uuid') else None,
             'seller_id': row.get('seller_id'),
             'seller_uuid': str(row['seller_uuid']) if row.get('seller_uuid') else None,
@@ -411,6 +414,92 @@ async def proposals_list_api(request):
         logger.error(f"Failed to list proposals: {e}", exc_info=True)
         return web.json_response({'error': 'server_error'}, status=500)
 
+@routes.post('/api/proposals')
+async def proposal_create_api(request):
+    """Create a new proposal with AI-generated estimation."""
+    require_session(request)
+    session = request.get('session', {})
+
+    try:
+        body = await request.json()
+    except Exception:
+        return web.json_response({'error': 'invalid json'}, status=400)
+
+    description = body.get('description', '').strip()
+    if not description:
+        return web.json_response({'error': 'description required'}, status=400)
+
+    proposal_type = body.get('proposal_type', 'mvp')
+    design_type = body.get('design_type', 'no_design')
+    hourly_rate = float(body.get('hourly_rate', 0))
+    currency = body.get('currency', '₽')
+    budget = body.get('budget')
+    budget_currency = body.get('budget_currency', currency)
+
+    if hourly_rate <= 0:
+        return web.json_response({'error': 'invalid hourly_rate'}, status=400)
+
+    if budget is not None:
+        try:
+            budget = float(budget)
+            if budget <= 0:
+                budget = None
+        except (ValueError, TypeError):
+            budget = None
+
+    openrouter_key = os.getenv('OPENROUTER_API_KEY', '')
+    if not openrouter_key:
+        return web.json_response({'error': 'AI service not configured'}, status=500)
+
+    calculator = ProposalCalculator(openrouter_key)
+    try:
+        estimation = await calculator.calculate_proposal(
+            project_description=description,
+            proposal_type=proposal_type,
+            budget_constraint=budget,
+            budget_currency=budget_currency,
+            design_type=design_type,
+            hourly_rate=hourly_rate,
+            currency=currency,
+        )
+    except Exception as e:
+        logger.error(f"Proposal creation generation failed: {e}", exc_info=True)
+        return web.json_response({'error': 'generation_failed'}, status=500)
+
+    if estimation.get('error'):
+        return web.json_response({'error': estimation.get('error_message', 'generation failed')}, status=500)
+
+    import uuid as _uuid
+    token = _uuid.uuid4().hex[:16]
+    project_name = estimation.get('project_name', 'Новое КП')
+
+    config_data = {
+        'project_description': description,
+        'budget': budget,
+    }
+
+    telegram_id = int(session.get('telegram_id', 0)) or None
+
+    try:
+        await db.save_commercial_proposal(
+            token=token,
+            project_name=project_name,
+            client_name='',
+            proposal_type=proposal_type,
+            design_type=design_type,
+            currency=currency,
+            hourly_rate=hourly_rate,
+            estimation=estimation,
+            config_data=config_data,
+            created_by_telegram_id=telegram_id,
+        )
+    except Exception as e:
+        logger.error(f"Failed to save new proposal: {e}", exc_info=True)
+        return web.json_response({'error': 'save_failed'}, status=500)
+
+    return web.json_response({'ok': True, 'token': token})
+
+
 @routes.patch('/api/proposal/{token}')
 async def proposal_update_api(request):
     """Update proposal (auth required)."""
@@ -432,16 +521,35 @@ async def proposal_update_api(request):
         if not updated:
             return web.json_response({'error': 'not_found'}, status=404)
 
-        new_client_id = updated.get('client_id')
-        if old_client_id != new_client_id:
-            if new_client_id:
-                await db.recalc_user_client_status(new_client_id)
-            if old_client_id:
-                await db.recalc_user_client_status(old_client_id)
+        # Handle multi-client assignment
+        if 'client_ids' in data:
+            new_client_ids = [int(cid) for cid in (data['client_ids'] or []) if cid]
+            old_client_ids = await db.get_proposal_client_ids(token)
+            await db.set_proposal_clients(token, new_client_ids)
+            # Recalc status for all affected clients
+            all_affected = set(old_client_ids) | set(new_client_ids)
+            for cid in all_affected:
+                try:
+                    await db.recalc_user_client_status(cid)
+                except Exception:
+                    pass
+            # Keep legacy client_id in sync (first client or null)
+            primary_cid = new_client_ids[0] if new_client_ids else None
+            if primary_cid != updated.get('client_id'):
+                await db.update_commercial_proposal(token, client_id=primary_cid)
+        else:
+            new_client_id = updated.get('client_id')
+            if old_client_id != new_client_id:
+                if new_client_id:
+                    await db.recalc_user_client_status(new_client_id)
+                if old_client_id:
+                    await db.recalc_user_client_status(old_client_id)
 
         estimation = updated.get('estimation') or {}
         if isinstance(estimation, str):
             estimation = json.loads(estimation)
+
+        final_client_ids = await db.get_proposal_client_ids(token)
 
         return web.json_response({
             'token': updated['token'],
@@ -454,6 +562,7 @@ async def proposal_update_api(request):
             'estimation': estimation,
             'updated_at': updated['updated_at'].isoformat() if updated.get('updated_at') else None,
             'client_id': updated.get('client_id'),
+            'client_ids': final_client_ids,
             'seller_id': updated.get('seller_id'),
             'project_id': updated.get('project_id'),
             'proposal_status': updated.get('proposal_status', 'draft'),
@@ -593,6 +702,177 @@ async def proposal_regenerate_api(request):
         'client_id': proposal.get('client_id'),
         'client_uuid': str(client_uuid) if client_uuid else None,
     })
+
+
+# ========== Proposal Documents ==========
+
+@routes.get('/api/proposal/{token}/documents')
+async def proposal_documents_list(request):
+    """List documents for a proposal. Public (same as proposal view)."""
+    token = request.match_info['token']
+    docs = await db.get_proposal_documents(token)
+    for d in docs:
+        if d.get('created_at'):
+            d['created_at'] = d['created_at'].isoformat()
+    return web.json_response(docs)
+
+
+@routes.post('/api/proposal/{token}/documents')
+async def proposal_document_upload(request):
+    """Upload document(s) for a proposal. Auth required. Multipart form."""
+    require_session(request)
+    token = request.match_info['token']
+
+    proposal = await db.get_commercial_proposal(token)
+    if not proposal:
+        return web.json_response({'error': 'proposal not found'}, status=404)
+
+    reader = await request.multipart()
+    uploaded = []
+
+    while True:
+        part = await reader.next()
+        if part is None:
+            break
+        if part.name != 'files':
+            continue
+
+        original_name = part.filename or 'file'
+        file_bytes = await part.read(decode=False)
+        if not file_bytes:
+            continue
+
+        ext = original_name.rsplit('.', 1)[-1].lower() if '.' in original_name else ''
+        safe_name = f"{uuid.uuid4().hex[:12]}.{ext}" if ext else uuid.uuid4().hex[:12]
+        content_type = part.headers.get('Content-Type', '') or 'application/octet-stream'
+
+        s3_url = s3_client.upload_document(token, safe_name, file_bytes, content_type)
+        if not s3_url:
+            continue
+
+        s3_key = f"proposals/{token}/documents/{safe_name}"
+        doc = await db.add_proposal_document(
+            proposal_token=token,
+            filename=safe_name,
+            original_name=original_name,
+            s3_url=s3_url,
+            s3_key=s3_key,
+            file_size=len(file_bytes),
+            content_type=content_type,
+            uploaded_by='admin',
+        )
+        if doc.get('created_at'):
+            doc['created_at'] = doc['created_at'].isoformat()
+        uploaded.append(doc)
+
+    return web.json_response({'ok': True, 'documents': uploaded})
+
+
+@routes.patch('/api/proposal/{token}/documents/{doc_id}')
+async def proposal_document_update(request):
+    """Update document metadata (comment, tags, visibility). Admin only."""
+    require_session(request)
+    token = request.match_info['token']
+    doc_id = int(request.match_info['doc_id'])
+
+    doc = await db.get_proposal_document_by_id(doc_id)
+    if not doc or doc['proposal_token'] != token:
+        return web.json_response({'error': 'not found'}, status=404)
+
+    body = await request.json()
+    updated = await db.update_proposal_document(
+        doc_id,
+        comment=body.get('comment'),
+        tags=body.get('tags'),
+        visible_to_client=body.get('visible_to_client'),
+    )
+    if updated and updated.get('created_at'):
+        updated['created_at'] = updated['created_at'].isoformat()
+    return web.json_response({'ok': True, 'document': updated})
+
+
+@routes.delete('/api/proposal/{token}/documents/{doc_id}')
+async def proposal_document_delete(request):
+    """Delete a proposal document. Admin only."""
+    require_session(request)
+    token = request.match_info['token']
+    doc_id = int(request.match_info['doc_id'])
+
+    doc = await db.get_proposal_document_by_id(doc_id)
+    if not doc or doc['proposal_token'] != token:
+        return web.json_response({'error': 'not found'}, status=404)
+
+    s3_client.delete_document(doc['s3_key'])
+    await db.delete_proposal_document(doc_id)
+    return web.json_response({'ok': True})
+
+
+# Cabinet document upload (client-facing, token-based auth)
+@routes.get('/api/cabinet/{token}/proposal/{proposal_token}/documents')
+async def cabinet_proposal_documents_list(request):
+    """List documents for a proposal in client cabinet."""
+    cabinet_token = request.match_info['token']
+    proposal_token = request.match_info['proposal_token']
+    client = await db.get_client_by_cabinet_token(cabinet_token)
+    if not client:
+        return web.json_response({'error': 'unauthorized'}, status=401)
+    docs = await db.get_proposal_documents(proposal_token)
+    # Filter: only show docs visible to client
+    docs = [d for d in docs if d.get('visible_to_client', True)]
+    for d in docs:
+        if d.get('created_at'):
+            d['created_at'] = d['created_at'].isoformat()
+    return web.json_response(docs)
+
+
+@routes.post('/api/cabinet/{token}/proposal/{proposal_token}/documents')
+async def cabinet_proposal_document_upload(request):
+    """Upload document from client cabinet."""
+    cabinet_token = request.match_info['token']
+    proposal_token = request.match_info['proposal_token']
+    client = await db.get_client_by_cabinet_token(cabinet_token)
+    if not client:
+        return web.json_response({'error': 'unauthorized'}, status=401)
+
+    reader = await request.multipart()
+    uploaded = []
+
+    while True:
+        part = await reader.next()
+        if part is None:
+            break
+        if part.name != 'files':
+            continue
+
+        original_name = part.filename or 'file'
+        file_bytes = await part.read(decode=False)
+        if not file_bytes:
+            continue
+
+        ext = original_name.rsplit('.', 1)[-1].lower() if '.' in original_name else ''
+        safe_name = f"{uuid.uuid4().hex[:12]}.{ext}" if ext else uuid.uuid4().hex[:12]
+        content_type = part.headers.get('Content-Type', '') or 'application/octet-stream'
+
+        s3_url = s3_client.upload_document(proposal_token, safe_name, file_bytes, content_type)
+        if not s3_url:
+            continue
+
+        s3_key = f"proposals/{proposal_token}/documents/{safe_name}"
+        doc = await db.add_proposal_document(
+            proposal_token=proposal_token,
+            filename=safe_name,
+            original_name=original_name,
+            s3_url=s3_url,
+            s3_key=s3_key,
+            file_size=len(file_bytes),
+            content_type=content_type,
+            uploaded_by='client',
+        )
+        if doc.get('created_at'):
+            doc['created_at'] = doc['created_at'].isoformat()
+        uploaded.append(doc)
+
+    return web.json_response({'ok': True, 'documents': uploaded})
 
 
 # ========== API Endpoints ==========
@@ -1040,6 +1320,7 @@ _PUBLIC_PREFIXES = (
 _STAFF_ONLY_PREFIXES = (
     '/projects', '/api/projects',
     '/project/', '/api/project/',
+    '/proposals', '/api/proposals',
     '/employees', '/api/employees',
     '/api/kimai/',
     '/seller',
@@ -3480,7 +3761,7 @@ async def get_cabinet_data(request):
         payment_phases = _build_payment_phases(est, hourly_rate, total_hours, total_cost)
 
         discount_items = [
-            {'name': ci.get('name', ''), 'percent': ci.get('percent', 0)}
+            {'name': ci.get('name', ''), 'percent': ci.get('percent', 0), 'expires_at': ci.get('expires_at')}
             for ci in custom_items if (ci.get('percent', 0) or 0) < 0
         ]
         base_cost_no_discount = _js_round(
@@ -3768,6 +4049,7 @@ async def list_projects(request):
             'client_id': p.get('client_id'),
             'client_name': p.get('client_name'),
             'client_company': p.get('client_company'),
+            'kimai_project_id': p.get('kimai_project_id'),
         })
     return web.json_response(result)
 

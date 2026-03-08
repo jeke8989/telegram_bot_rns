@@ -771,7 +771,7 @@
             var est = d.estimation || {};
             var cfg = d.config_data || {};
             var companyName = cfg.company_name || 'НейроСофт';
-            var projectName = est.project_name || d.project_name || 'Проект';
+            var projectName = d.project_name || est.project_name || 'Проект';
 
             document.title = projectName + ' — ' + companyName;
             document.getElementById('heroTitle').textContent = projectName;
@@ -947,7 +947,6 @@
                         }
                         var badgeHtml = '';
                         if (isPaid) badgeHtml = '<span class="pricing-phase-badge paid">Оплачено</span>';
-                        else if (isCurrent) badgeHtml = '<span class="pricing-phase-badge current">К оплате</span>';
                         var phase = document.createElement('div');
                         phase.className = 'pricing-phase';
                         phase.innerHTML = '<div class="pricing-phase-num">' + (isPaid ? '✓' : (i + 1)) + '</div><div class="pricing-phase-info"><div class="pricing-phase-name">' + esc(pp.name) + '</div>' + delivHtml + '</div><div class="pricing-phase-cost">' + formatNum(pp.cost || 0) + currency + badgeHtml + '</div>';

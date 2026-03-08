@@ -79,10 +79,10 @@
         .project-tab.active { color:var(--primary); background:var(--bg); border-color:var(--primary-border); }
 
         /* CONTENT */
-        .content { max-width:960px; margin:0 auto; padding:0 24px 48px; }
+        .content { max-width:960px; margin:0 auto; padding:24px 24px 48px; flex:1; width:100%; box-sizing:border-box; }
 
         /* INNER TABS */
-        .inner-tabs { display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; margin:20px 0; }
+        .inner-tabs { display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; margin:24px 0 20px; }
         .inner-tab { flex:1; padding:10px 12px; border-radius:9px; border:none; background:transparent; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-dim); cursor:pointer; transition:all .2s; text-align:center; white-space:nowrap; display:flex; align-items:center; justify-content:center; gap:6px; }
         .inner-tab:hover { color:var(--text); background:var(--surface-2); }
         .inner-tab.active { background:var(--primary); color:#fff; box-shadow:0 2px 8px rgba(120,124,245,.3); }
@@ -156,6 +156,27 @@
         .doc-arrow { color:var(--text-light); flex-shrink:0; transition:transform .2s; }
         .doc-link:hover .doc-arrow { color:var(--primary); transform:translateX(3px); }
         .doc-arrow svg { width:16px; height:16px; }
+
+        /* FILE DOCS */
+        .file-docs-upload { border:2px dashed var(--border); border-radius:var(--radius-sm); padding:24px 16px; text-align:center; cursor:pointer; transition:all .2s; background:var(--bg); margin-bottom:12px; }
+        .file-docs-upload:hover, .file-docs-upload.dragover { border-color:var(--primary-border); background:var(--primary-light); }
+        .file-docs-upload svg { color:var(--text-dim); margin-bottom:6px; }
+        .file-docs-upload-title { font-size:13px; font-weight:600; color:var(--text); }
+        .file-docs-upload-hint { font-size:11px; color:var(--text-dim); margin-top:2px; }
+        .file-doc-item { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); margin-top:8px; }
+        .file-doc-ext { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:10px; font-weight:700; text-transform:uppercase; }
+        .file-doc-ext.pdf { background:rgba(225,115,85,.1); color:var(--coral); }
+        .file-doc-ext.img { background:var(--primary-light); color:var(--primary); }
+        .file-doc-ext.doc { background:var(--green-bg); color:var(--green); }
+        .file-doc-ext.other { background:var(--surface-2); color:var(--text-dim); }
+        .file-doc-info { flex:1; min-width:0; }
+        .file-doc-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .file-doc-meta { font-size:11px; color:var(--text-dim); margin-top:2px; display:flex; gap:6px; }
+        .file-doc-dl { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid var(--border); color:var(--text-dim); text-decoration:none; transition:.15s; flex-shrink:0; }
+        .file-doc-dl:hover { border-color:var(--primary-border); color:var(--primary); }
+        .file-doc-tags { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+        .file-doc-tag { padding:2px 8px; border-radius:100px; font-size:10px; font-weight:600; background:var(--surface-2); color:var(--text-dim); border:1px solid var(--border); }
+        .file-doc-comment { font-size:12px; color:var(--text-dim); line-height:1.4; margin-top:6px; padding:6px 10px; background:var(--surface-2); border-radius:6px; border:1px solid var(--border); }
 
         /* CHAT */
         .chat-section { padding:0; overflow:hidden; }
@@ -287,13 +308,69 @@
             .promo-price-new { font-size:22px; }
         }
 
+        /* CARDS VIEW TABS */
+        .cards-tabs { display:flex; gap:4px; margin:0 0 20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; }
+        .cards-tab { flex:1; text-align:center; padding:10px 16px; border-radius:10px; font-size:14px; font-weight:600; color:var(--text-dim); cursor:pointer; transition:all .25s; border:none; background:none; font-family:inherit; }
+        .cards-tab.active { background:var(--surface); color:var(--text); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+        .cards-tab:not(.active):hover { color:var(--text); }
+        .cards-tab-icon { display:inline-block; vertical-align:-2px; margin-right:6px; }
+        .cards-tab-pane { display:none; }
+        .cards-tab-pane.active { display:block; }
+
+        /* PROPOSAL CARDS */
+        .proposal-cards-grid { display:grid; grid-template-columns:1fr; gap:20px; }
+        .proposal-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:0; cursor:pointer; transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s,border-color .3s; position:relative; overflow:hidden; }
+        .proposal-card:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(120,124,245,.1); border-color:rgba(120,124,245,.25); }
+        .proposal-card-inner { padding:28px 28px 24px; }
+        .proposal-card-accent { height:4px; background:linear-gradient(90deg,#787cf5 0%,#a78bfa 50%,#c4b5fd 100%); }
+        .proposal-card.has-discount .proposal-card-accent { background:linear-gradient(90deg,#00cec9 0%,#10b981 50%,#34d399 100%); }
+        .proposal-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:20px; }
+        .proposal-card-name { font-size:18px; font-weight:700; color:var(--text); line-height:1.35; flex:1; min-width:0; letter-spacing:-.2px; }
+        .proposal-card-status { font-size:11px; font-weight:600; padding:5px 12px; border-radius:100px; white-space:nowrap; flex-shrink:0; text-transform:uppercase; letter-spacing:.3px; }
+        .proposal-card-status.draft { background:rgba(139,143,168,.08); color:#8b8fa8; }
+        .proposal-card-status.sent { background:rgba(108,92,231,.08); color:#6c5ce7; }
+        .proposal-card-status.approved { background:rgba(0,206,201,.08); color:#00cec9; }
+        .proposal-card-status.in_progress { background:rgba(245,158,11,.08); color:#f59e0b; }
+        .proposal-card-status.completed { background:rgba(16,185,129,.08); color:#059669; }
+        .proposal-card-progress { margin-bottom:20px; }
+        .proposal-card-progress-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:12px; color:var(--text-dim); font-weight:500; }
+        .proposal-card-progress-bar { display:flex; gap:4px; height:6px; }
+        .proposal-card-progress-seg { flex:1; border-radius:3px; transition:background .3s; }
+        .proposal-card-progress-seg.paid { background:linear-gradient(90deg,#10b981,#34d399); }
+        .proposal-card-progress-seg.current { background:linear-gradient(90deg,#787cf5,#a78bfa); }
+        .proposal-card-progress-seg.pending { background:var(--border); }
+        .proposal-card-modules { margin-bottom:20px; display:flex; gap:6px; flex-wrap:wrap; }
+        .proposal-card-mod-tag { padding:4px 10px; background:var(--surface-2); border-radius:6px; font-size:12px; font-weight:500; color:var(--text-dim); }
+        .proposal-card-discount-banner { display:flex; align-items:center; gap:10px; padding:12px 16px; margin-bottom:20px; border-radius:10px; background:linear-gradient(135deg,rgba(0,206,201,.06) 0%,rgba(16,185,129,.06) 100%); border:1px solid rgba(0,206,201,.15); }
+        .proposal-card-discount-badge { display:inline-flex; align-items:center; justify-content:center; padding:4px 12px; border-radius:6px; background:linear-gradient(135deg,#00cec9,#10b981); color:#fff; font-size:13px; font-weight:800; letter-spacing:-.2px; white-space:nowrap; }
+        .proposal-card-discount-text { font-size:13px; color:var(--text-dim); font-weight:500; line-height:1.3; }
+        .proposal-card-discount-saving { font-weight:700; color:#00cec9; }
+        .proposal-card-bottom { display:flex; align-items:center; justify-content:space-between; padding-top:20px; border-top:1px solid var(--border); }
+        .proposal-card-price { font-size:22px; font-weight:800; color:var(--text); letter-spacing:-.5px; }
+        .proposal-card-price-old { text-decoration:line-through; color:var(--text-light); font-size:14px; font-weight:500; margin-right:10px; }
+        .proposal-card-price-row { display:flex; align-items:baseline; gap:0; }
+        .proposal-card-arrow { width:36px; height:36px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; transition:all .25s; flex-shrink:0; }
+        .proposal-card:hover .proposal-card-arrow { background:var(--primary); color:#fff; transform:translateX(2px); }
+        .proposal-card-arrow svg { width:16px; height:16px; }
+        .back-to-cards { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; margin:16px 0 4px; border-radius:100px; background:var(--primary-light); color:var(--primary); font-size:13px; font-weight:600; border:none; cursor:pointer; font-family:inherit; transition:.2s; }
+        .back-to-cards:hover { background:var(--primary); color:#fff; }
+        .back-to-cards svg { width:14px; height:14px; }
+        @media (max-width:640px) {
+            .proposal-cards-grid { gap:16px; }
+            .proposal-card-inner { padding:20px 18px 18px; }
+            .proposal-card-name { font-size:16px; }
+            .proposal-card-price { font-size:19px; }
+            .cards-tabs { margin:0 0 16px; }
+        }
+
         /* EMPTY */
         .empty-state { text-align:center; padding:40px 16px; color:var(--text-dim); }
         .empty-state .empty-icon { font-size:40px; margin-bottom:12px; }
         .empty-state p { font-size:14px; line-height:1.5; }
 
         /* FOOTER */
-        .footer { max-width:960px; margin:0 auto; padding:24px 24px 40px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+        .footer-border { border-top:1px solid var(--border); margin-top:auto; }
+        .footer { max-width:960px; margin:0 auto; padding:32px 24px 40px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
         .footer-copy { font-size:13px; color:var(--text-light); }
         .footer-copy a { color:var(--text-dim); text-decoration:none; font-weight:600; }
         .footer-copy a:hover { color:var(--primary); }
@@ -346,7 +423,7 @@
             <img src="/img/logo-icon.png" alt="НейроСофт"><span>НейроСофт</span>
         </a>
         <div class="nav-right">
-            <a href="#chat" class="nav-btn" id="navChatBtn" onclick="event.preventDefault(); if(window.switchInnerTab){switchInnerTab('chat');} var c=document.getElementById('cabinetChat'); if(c){c.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){var inp=c.querySelector('.cw-input');if(inp)inp.focus();},100);}">
+            <a href="#chat" class="nav-btn" id="navChatBtn" onclick="event.preventDefault(); window.openChatTab && window.openChatTab();">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
                 Написать нам
             </a>
@@ -372,7 +449,7 @@
     <a href="https://t.me/IT_anasta" target="_blank" class="error-btn">Связаться с менеджером</a>
 </div>
 
-<div id="mainContent" style="display:none">
+<div id="mainContent" style="display:none;min-height:100vh;flex-direction:column" class="main-wrap">
     <section class="hero">
         <div class="hero-inner">
             <p class="hero-welcome" id="heroWelcome"></p>
@@ -387,6 +464,7 @@
 
     <div class="content" id="dashboardArea"></div>
 
+    <div class="footer-border"></div>
     <footer class="footer">
         <div class="footer-copy">&copy; 2026 <a href="https://rusneurosoft.ru" target="_blank">НейроСофт</a></div>
         <div class="footer-links">
@@ -430,7 +508,7 @@
 
     function init() {
         document.getElementById('loadingState').style.display = 'none';
-        document.getElementById('mainContent').style.display = '';
+        document.getElementById('mainContent').style.display = 'flex';
 
         var client = DATA.client || {};
         var isStaff = DATA.is_staff === true;
@@ -450,6 +528,24 @@
             return;
         }
 
+        // Collect all proposals into a flat list
+        var allProposals = [];
+        projects.forEach(function(proj) {
+            (proj.proposals || []).forEach(function(p) { allProposals.push(p); });
+        });
+        standalone.forEach(function(p) { allProposals.push(p); });
+
+        DATA._allProposals = allProposals;
+
+        // If 2+ proposals → show cards view
+        if (allProposals.length >= 2) {
+            document.getElementById('heroName').textContent = 'Ваши проекты';
+            document.title = 'Проекты — Личный кабинет';
+            renderProposalCards(allProposals, isStaff, staff);
+            return;
+        }
+
+        // Single proposal → direct dashboard (existing logic)
         if (projects.length === 0 && standalone.length > 0) {
             var virtualProject = buildVirtualProject(standalone);
             projects = [virtualProject];
@@ -459,11 +555,6 @@
         if (projects.length > 0) {
             document.getElementById('heroName').textContent = projects[0].name || 'Ваш проект';
             document.title = (projects[0].name || 'Проект') + ' — Личный кабинет';
-        }
-
-        if (projects.length > 1) {
-            document.getElementById('projectTabsWrap').style.display = '';
-            renderTabs(projects);
         }
 
         renderDashboard(projects[0], isStaff, staff);
@@ -521,6 +612,168 @@
             document.title = (proj.name || 'Проект') + ' — Личный кабинет';
             renderDashboard(proj, DATA.is_staff, DATA.staff || {});
         });
+    }
+
+    function renderProposalCards(allProposals, isStaff, staff) {
+        var area = document.getElementById('dashboardArea');
+
+        // Tabs: Projects + Chat
+        var html = '<div class="cards-tabs fade-up">';
+        html += '<button class="cards-tab active" data-tab="projects"><span class="cards-tab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>Проекты</button>';
+        html += '<button class="cards-tab" data-tab="chat"><span class="cards-tab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>Чат с командой</button>';
+        html += '</div>';
+
+        // Projects pane
+        html += '<div class="cards-tab-pane active" id="paneProjects">';
+        html += '<div class="proposal-cards-grid">';
+        allProposals.forEach(function(p, i) {
+            var pName = p.project_name || 'Коммерческое предложение';
+            var status = p.status || 'draft';
+            var statusLabel = STATUS_MAP[status] || status;
+            var totalC = resolveRange(p.total_cost);
+            var currency = p.currency || '₽';
+            var phases = p.payment_phases || [];
+            var paidCount = 0;
+            var firstUnpaid = -1;
+            phases.forEach(function(pp, pi) {
+                if (pp.status === 'paid') paidCount++;
+                else if (firstUnpaid < 0) firstUnpaid = pi;
+            });
+            var modules = p.modules || [];
+            var modCount = modules.length;
+
+            // Discount check
+            var cardDiscountItems = p.discount_items || [];
+            var cardHasDiscount = cardDiscountItems.length > 0;
+            if (cardHasDiscount && cardDiscountItems[0].expires_at) {
+                var cardExpDate = new Date(cardDiscountItems[0].expires_at + 'T23:59:59');
+                if (cardExpDate < new Date()) cardHasDiscount = false;
+            }
+            var cardDiscPct = cardHasDiscount ? (Math.abs(cardDiscountItems[0].percent) || 10) : 0;
+
+            html += '<div class="proposal-card' + (cardHasDiscount ? ' has-discount' : '') + '" data-proposal-idx="' + i + '">';
+            html += '<div class="proposal-card-accent"></div>';
+            html += '<div class="proposal-card-inner">';
+
+            html += '<div class="proposal-card-top">';
+            html += '<div class="proposal-card-name">' + esc(pName) + '</div>';
+            html += '<div class="proposal-card-status ' + status + '">' + esc(statusLabel) + '</div>';
+            html += '</div>';
+
+            // Progress bar
+            if (phases.length > 0) {
+                var progressLabel = paidCount + ' из ' + phases.length + ' ' + plural(phases.length, 'этапа', 'этапов', 'этапов') + ' оплачено';
+                html += '<div class="proposal-card-progress">';
+                html += '<div class="proposal-card-progress-label"><span>' + progressLabel + '</span></div>';
+                html += '<div class="proposal-card-progress-bar">';
+                phases.forEach(function(pp, pi) {
+                    var cls = pp.status === 'paid' ? 'paid' : (pi === firstUnpaid ? 'current' : 'pending');
+                    html += '<div class="proposal-card-progress-seg ' + cls + '"></div>';
+                });
+                html += '</div></div>';
+            }
+
+            // Module tags
+            if (modCount > 0) {
+                html += '<div class="proposal-card-modules">';
+                var showMods = modules.slice(0, 3);
+                showMods.forEach(function(m) {
+                    html += '<span class="proposal-card-mod-tag">' + esc(m.name || 'Модуль') + '</span>';
+                });
+                if (modCount > 3) html += '<span class="proposal-card-mod-tag">+' + (modCount - 3) + '</span>';
+                html += '</div>';
+            }
+
+            // Discount banner
+            if (cardHasDiscount) {
+                var saving = p.base_cost_no_discount ? Math.round(p.base_cost_no_discount - totalC) : Math.round(totalC * cardDiscPct / (100 - cardDiscPct));
+                html += '<div class="proposal-card-discount-banner">';
+                html += '<div class="proposal-card-discount-badge">-' + cardDiscPct + '%</div>';
+                html += '<div class="proposal-card-discount-text">Специальная скидка на проект. Экономия <span class="proposal-card-discount-saving">' + fmtCost(saving, currency) + '</span></div>';
+                html += '</div>';
+            }
+
+            // Bottom: price + arrow
+            html += '<div class="proposal-card-bottom">';
+            if (cardHasDiscount && p.base_cost_no_discount) {
+                html += '<div class="proposal-card-price-row"><span class="proposal-card-price-old">' + fmtCost(p.base_cost_no_discount, currency) + '</span><span class="proposal-card-price">' + fmtCost(totalC, currency) + '</span></div>';
+            } else {
+                html += '<div class="proposal-card-price">' + fmtCost(totalC, currency) + '</div>';
+            }
+            html += '<div class="proposal-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>';
+            html += '</div>';
+
+            html += '</div>'; // .proposal-card-inner
+            html += '</div>'; // .proposal-card
+        });
+        html += '</div>'; // .proposal-cards-grid
+        html += '</div>'; // #paneProjects
+
+        // Chat pane
+        html += '<div class="cards-tab-pane" id="paneChat">';
+        html += '<div class="section chat-section" style="margin:0"><div class="chat-wrap" id="cabinetChat" style="height:520px;border-radius:16px;overflow:hidden;border:1px solid var(--border)"></div></div>';
+        html += '</div>';
+
+        area.innerHTML = html;
+
+        // Tab switching
+        var chatInited = false;
+        area.querySelectorAll('.cards-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                area.querySelectorAll('.cards-tab').forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                var target = tab.dataset.tab;
+                document.getElementById('paneProjects').classList.toggle('active', target === 'projects');
+                document.getElementById('paneChat').classList.toggle('active', target === 'chat');
+                // Lazy init chat
+                if (target === 'chat' && !chatInited) {
+                    chatInited = true;
+                    ChatWidget.init({
+                        container: '#cabinetChat',
+                        messagesUrl: '/api/cabinet/' + cabinetToken + '/messages',
+                        sendUrl: '/api/cabinet/' + cabinetToken + '/messages',
+                        headerTitle: 'Чат с командой',
+                        headerSub: isStaff ? ('Вы: ' + ((staff && staff.name) || 'Менеджер')) : 'Мы ответим в ближайшее время',
+                        pollInterval: 5000,
+                    });
+                }
+            });
+        });
+
+        // Card click handler
+        area.addEventListener('click', function(e) {
+            var card = e.target.closest('.proposal-card');
+            if (!card) return;
+            var idx = parseInt(card.dataset.proposalIdx);
+            if (!isNaN(idx)) openProposal(idx, isStaff, staff);
+        });
+    }
+
+    function openProposal(idx, isStaff, staff) {
+        var proposals = DATA._allProposals || [];
+        var p = proposals[idx];
+        if (!p) return;
+
+        var virtualProject = buildVirtualProject([p]);
+        virtualProject.name = p.project_name || 'Проект';
+
+        document.getElementById('heroName').textContent = virtualProject.name;
+        document.title = virtualProject.name + ' — Личный кабинет';
+        document.getElementById('projectTabsWrap').style.display = 'none';
+
+        var area = document.getElementById('dashboardArea');
+        renderDashboard(virtualProject, isStaff, staff);
+
+        // Add back button at the top
+        var backBtn = document.createElement('button');
+        backBtn.className = 'back-to-cards';
+        backBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Все проекты';
+        backBtn.addEventListener('click', function() {
+            document.getElementById('heroName').textContent = 'Ваши проекты';
+            document.title = 'Проекты — Личный кабинет';
+            renderProposalCards(DATA._allProposals, isStaff, staff);
+        });
+        area.insertBefore(backBtn, area.firstChild);
     }
 
     function resolveRange(v) {
@@ -587,36 +840,43 @@
 
         var html = '';
 
-        // Promo banner (always visible above tabs)
+        // Discount banner — show if KP has discount items and not expired
         var promo = DATA.promo || {};
-        var promoActive = promo.enabled && promo.expires_at && !promo.expired;
-        var promoShow = promo.enabled && promo.started_at;
-        if (promoShow && totalC) {
-            var discPct = promo.discount_percent || 10;
-            var discountedTotal = Math.round(totalC * (1 - discPct / 100));
-            var saving = Math.round(totalC - discountedTotal);
-            var expiredClass = promo.expired ? ' expired' : '';
-            html += '<div class="promo-banner fade-up' + expiredClass + '" id="promoBanner">';
+        var discountItems = project.discount_items || [];
+        var hasKPDiscount = discountItems.length > 0;
+        var discountExpired = false;
+        var discountExpiresAt = null;
+        if (hasKPDiscount && discountItems[0].expires_at) {
+            discountExpiresAt = new Date(discountItems[0].expires_at + 'T23:59:59');
+            if (discountExpiresAt < new Date()) { hasKPDiscount = false; discountExpired = true; }
+        }
+        var promoActive = hasKPDiscount;
+        if (hasKPDiscount && totalC) {
+            var discPct = Math.abs(discountItems[0].percent) || 10;
+            var baseCost = project.base_cost_no_discount || 0;
+            var discountedTotal = totalC; // totalC already includes discount
+            var saving = baseCost > totalC ? Math.round(baseCost - totalC) : Math.round(totalC * discPct / (100 - discPct));
+            if (!baseCost || baseCost <= totalC) baseCost = Math.round(totalC + saving);
+            var hasTimer = !!discountExpiresAt;
+            html += '<div class="promo-banner fade-up" id="promoBanner">';
             html += '<div class="promo-inner">';
             html += '<div class="promo-tag">⚡ Ограниченное предложение</div>';
             html += '<div class="promo-title">Скидка ' + discPct + '% на разработку проекта</div>';
             html += '<div class="promo-subtitle">Специальные условия для быстрого старта вашего проекта</div>';
             html += '<div class="promo-prices">';
-            html += '<span class="promo-price-old">' + fmtCost(totalC, currency) + '</span>';
+            html += '<span class="promo-price-old">' + fmtCost(baseCost, currency) + '</span>';
             html += '<span class="promo-price-new">' + fmtCost(discountedTotal, currency) + '</span>';
             html += '<span class="promo-saving">Экономия ' + fmtCost(saving, currency) + '</span>';
             html += '</div>';
-            if (!promo.expired) {
+            if (hasTimer) {
                 html += '<div class="promo-timer" id="promoTimer">';
                 html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoDays">00</span><span class="promo-timer-label">дней</span></div>';
                 html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoHours">00</span><span class="promo-timer-label">часов</span></div>';
                 html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoMins">00</span><span class="promo-timer-label">минут</span></div>';
                 html += '<div class="promo-timer-block"><span class="promo-timer-num" id="promoSecs">00</span><span class="promo-timer-label">секунд</span></div>';
                 html += '</div>';
-                html += '<button class="promo-cta" onclick="switchInnerTab(\'pay\')">Забронировать скидку <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>';
-            } else {
-                html += '<div class="promo-expired-msg">Срок действия предложения истёк</div>';
             }
+            html += '<button class="promo-cta" onclick="switchInnerTab(\'pay\')">Забронировать скидку <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>';
             html += '</div></div>';
         }
 
@@ -695,7 +955,7 @@
             html += '<div class="section fade-up"><div class="section-hdr"><div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>';
             html += '<div class="section-title">Этапы оплаты</div>';
             if (promoActive) {
-                html += '<div class="section-badge" style="background:rgba(245,158,11,.1);color:#f59e0b">Скидка ' + (promo.discount_percent||10) + '%</div>';
+                html += '<div class="section-badge" style="background:rgba(245,158,11,.1);color:#f59e0b">Скидка ' + (discPct || 10) + '%</div>';
             }
             html += '</div>';
             html += '<div class="pay-list">';
@@ -706,7 +966,7 @@
                 var isPaid = pp.status === 'paid';
                 var isCurrent = !isPaid && i === firstUnpaid;
                 var phaseCost = Number(pp.cost || 0);
-                var discountedCost = promoActive ? Math.round(phaseCost * (1 - (promo.discount_percent||10) / 100)) : phaseCost;
+                var originalPhaseCost = promoActive && discPct ? Math.round(phaseCost * 100 / (100 - discPct)) : phaseCost;
                 html += '<div class="pay-item' + (isCurrent ? ' active' : '') + '">';
                 html += '<div class="pay-num ' + (isPaid ? 'active' : isCurrent ? 'active' : 'pending') + '">' + (isPaid ? '✓' : (i + 1)) + '</div>';
                 var delivHtml = '';
@@ -720,7 +980,7 @@
                 html += '<div class="pay-info"><div class="pay-name">' + esc(pp.name) + '</div>' + delivHtml + '</div>';
                 html += '<div class="pay-row-right">';
                 if (promoActive) {
-                    html += '<div class="pay-cost"><span style="text-decoration:line-through;color:var(--text-light);font-size:13px;font-weight:500;margin-right:6px">' + fmtCost(phaseCost, currency) + '</span>' + fmtCost(discountedCost, currency) + '</div>';
+                    html += '<div class="pay-cost"><span style="text-decoration:line-through;color:var(--text-light);font-size:13px;font-weight:500;margin-right:6px">' + fmtCost(originalPhaseCost, currency) + '</span>' + fmtCost(phaseCost, currency) + '</div>';
                 } else {
                     html += '<div class="pay-cost">' + fmtCost(phaseCost, currency) + '</div>';
                 }
@@ -744,10 +1004,10 @@
             });
             html += '</div>';
             if (promoActive) {
-                var discTotal = Math.round(payTotal * (1 - (promo.discount_percent||10) / 100));
-                var totalSaving = Math.round(payTotal - discTotal);
-                html += '<div class="pay-total"><span>Итого</span><span><span style="text-decoration:line-through;color:var(--text-light);font-size:14px;font-weight:500;margin-right:8px">' + fmtCost(payTotal, currency) + '</span>' + fmtCost(discTotal, currency) + '</span></div>';
-                html += '<div style="display:flex;justify-content:flex-end;padding:4px 16px 8px;font-size:13px;font-weight:600;color:#00cec9">Экономия: ' + fmtCost(totalSaving, currency) + '</div>';
+                var baseCostTotal = project.base_cost_no_discount || payTotal;
+                var totalSaving = Math.round(baseCostTotal - payTotal);
+                html += '<div class="pay-total"><span>Итого</span><span><span style="text-decoration:line-through;color:var(--text-light);font-size:14px;font-weight:500;margin-right:8px">' + fmtCost(baseCostTotal, currency) + '</span>' + fmtCost(payTotal, currency) + '</span></div>';
+                if (totalSaving > 0) html += '<div style="display:flex;justify-content:flex-end;padding:4px 16px 8px;font-size:13px;font-weight:600;color:#00cec9">Экономия: ' + fmtCost(totalSaving, currency) + '</div>';
             } else {
                 html += '<div class="pay-total"><span>Итого</span><span>' + fmtCost(payTotal, currency) + '</span></div>';
             }
@@ -766,6 +1026,18 @@
             });
             html += '</div>';
         }
+
+        // File documents section
+        html += '<div class="section fade-up" id="fileDocsSection">';
+        html += '<div class="section-hdr"><div class="section-icon" style="background:rgba(0,206,201,.08);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>';
+        html += '<div class="section-title">Файлы проекта</div><div class="section-badge" id="fileDocsBadge">0</div></div>';
+        html += '<div class="file-docs-upload" id="fileDocsUpload"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+        html += '<div class="file-docs-upload-title">Загрузить файлы</div>';
+        html += '<div class="file-docs-upload-hint">PDF, DOC, XLS, PNG, JPG — до 50 МБ</div>';
+        html += '<input type="file" id="fileDocsInput" multiple style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.zip,.txt"></div>';
+        html += '<div id="fileDocsList"></div>';
+        html += '</div>';
+
         html += '</div>';
 
         // === TAB: Development ===
@@ -850,14 +1122,23 @@
             renderCharts(modules);
         }
         scrollToChatIfNeeded();
-        startPromoTimer();
+        startPromoTimer(discountExpiresAt);
+        initFileDocs(proposals);
     }
 
-    function startPromoTimer() {
+    function startPromoTimer(discountExpiresDate) {
         if (promoTimerInterval) clearInterval(promoTimerInterval);
-        var promo = DATA.promo || {};
-        if (!promo.enabled || !promo.expires_at || promo.expired) return;
-        var expiresAt = new Date(promo.expires_at).getTime();
+        // Use discount expires date if provided, otherwise fall back to promo expires
+        var expiresAtMs;
+        if (discountExpiresDate) {
+            expiresAtMs = discountExpiresDate.getTime();
+        } else {
+            var promo = DATA.promo || {};
+            if (!promo.enabled || !promo.expires_at || promo.expired) return;
+            expiresAtMs = new Date(promo.expires_at).getTime();
+        }
+        if (!expiresAtMs) return;
+        var expiresAt = expiresAtMs;
         function tick() {
             var now = Date.now();
             var diff = expiresAt - now;
@@ -883,6 +1164,86 @@
         }
         tick();
         promoTimerInterval = setInterval(tick, 1000);
+    }
+
+    // ── File Documents ──
+    var fileDocs = [];
+    function getFileDocIconClass(name) {
+        var ext = (name || '').split('.').pop().toLowerCase();
+        if (ext === 'pdf') return 'pdf';
+        if (['png','jpg','jpeg','gif','svg','webp'].includes(ext)) return 'img';
+        if (['doc','docx','xls','xlsx','txt'].includes(ext)) return 'doc';
+        return 'other';
+    }
+    function getFileDocExt(name) { return (name || '').split('.').pop().toUpperCase().slice(0,4); }
+    function fmtSize(b) { if (b<1024) return b+' Б'; if (b<1048576) return (b/1024).toFixed(1)+' КБ'; return (b/1048576).toFixed(1)+' МБ'; }
+    function fmtDocDate(iso) { if (!iso) return ''; return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'short'}); }
+
+    function renderFileDocs() {
+        var list = document.getElementById('fileDocsList');
+        var badge = document.getElementById('fileDocsBadge');
+        if (!list) return;
+        if (badge) badge.textContent = fileDocs.length;
+        if (!fileDocs.length) { list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:13px">Файлов пока нет</div>'; return; }
+        var h = '';
+        fileDocs.forEach(function(doc) {
+            var cls = getFileDocIconClass(doc.original_name);
+            var ext = getFileDocExt(doc.original_name);
+            var who = doc.uploaded_by === 'client' ? 'Вы' : 'Менеджер';
+            var tags = (doc.tags || '').split(',').map(function(t){return t.trim()}).filter(Boolean);
+            var comment = doc.comment || '';
+            h += '<div class="file-doc-item" style="flex-wrap:wrap"><div style="display:flex;align-items:center;gap:12px;width:100%"><div class="file-doc-ext '+cls+'">'+esc(ext)+'</div>';
+            h += '<div class="file-doc-info"><div class="file-doc-name" title="'+esc(doc.original_name)+'">'+esc(doc.original_name)+'</div>';
+            h += '<div class="file-doc-meta"><span>'+fmtSize(doc.file_size)+'</span><span>'+fmtDocDate(doc.created_at)+'</span><span>'+who+'</span></div></div>';
+            h += '<a class="file-doc-dl" href="'+esc(doc.s3_url)+'" target="_blank" title="Скачать"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a></div>';
+            if (tags.length) {
+                h += '<div class="file-doc-tags" style="width:100%;padding-left:48px">';
+                tags.forEach(function(t) { h += '<span class="file-doc-tag">'+esc(t)+'</span>'; });
+                h += '</div>';
+            }
+            if (comment) {
+                h += '<div class="file-doc-comment" style="width:100%;margin-left:48px;margin-right:0">'+esc(comment)+'</div>';
+            }
+            h += '</div>';
+        });
+        list.innerHTML = h;
+    }
+
+    function initFileDocs(proposals) {
+        var zone = document.getElementById('fileDocsUpload');
+        var input = document.getElementById('fileDocsInput');
+        if (!zone || !input) return;
+
+        // Determine proposal token to use for file docs
+        var proposalToken = (proposals && proposals.length === 1) ? proposals[0].token : null;
+        if (!proposalToken && proposals && proposals.length > 0) proposalToken = proposals[0].token;
+        if (!proposalToken) { document.getElementById('fileDocsSection').style.display = 'none'; return; }
+
+        // Load existing docs
+        fetch('/api/cabinet/' + cabinetToken + '/proposal/' + proposalToken + '/documents')
+            .then(function(r) { return r.ok ? r.json() : []; })
+            .then(function(docs) { fileDocs = docs || []; renderFileDocs(); })
+            .catch(function() {});
+
+        zone.addEventListener('click', function() { input.click(); });
+        input.addEventListener('change', function() { if (input.files.length) uploadFileDocs(proposalToken, input.files); input.value = ''; });
+        zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+        zone.addEventListener('drop', function(e) { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files.length) uploadFileDocs(proposalToken, e.dataTransfer.files); });
+    }
+
+    function uploadFileDocs(proposalToken, files) {
+        var fd = new FormData();
+        for (var i = 0; i < files.length; i++) fd.append('files', files[i]);
+        var zone = document.getElementById('fileDocsUpload');
+        if (zone) zone.style.opacity = '0.5';
+        fetch('/api/cabinet/' + cabinetToken + '/proposal/' + proposalToken + '/documents', { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.documents) { fileDocs = data.documents.concat(fileDocs); renderFileDocs(); }
+            })
+            .catch(function() {})
+            .finally(function() { if (zone) zone.style.opacity = ''; });
     }
 
     var chatInited = false;
@@ -917,6 +1278,23 @@
                 headerSub: (isStaff ? ('Вы: ' + ((staff && staff.name) || 'Менеджер')) : 'Мы ответим в ближайшее время'),
                 pollInterval: 5000,
             });
+        }
+    };
+
+    window.openChatTab = function() {
+        // Cards view (multiple proposals)
+        var cardsTab = document.querySelector('.cards-tab[data-tab="chat"]');
+        if (cardsTab) {
+            cardsTab.click();
+            var c = document.getElementById('cabinetChat');
+            if (c) setTimeout(function() { c.scrollIntoView({behavior:'smooth',block:'center'}); }, 100);
+            return;
+        }
+        // Dashboard view (single proposal)
+        if (window.switchInnerTab) {
+            switchInnerTab('chat');
+            var c = document.getElementById('cabinetChat');
+            if (c) setTimeout(function() { c.scrollIntoView({behavior:'smooth',block:'center'}); }, 100);
         }
     };
 
@@ -1016,9 +1394,9 @@
         var chatTitle = 'Чат с командой';
         var html = '';
 
-        // Promo banner in empty state
+        // Promo banner in empty state — hidden (no proposals with discounts)
         var promo = DATA.promo || {};
-        if (promo.enabled && promo.started_at) {
+        if (false && promo.enabled && promo.started_at) {
             var discPct = promo.discount_percent || 10;
             var expiredClass = promo.expired ? ' expired' : '';
             html += '<div class="promo-banner fade-up' + expiredClass + '" id="promoBanner" style="margin:20px 0 4px">';

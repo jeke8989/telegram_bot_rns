@@ -57,11 +57,26 @@
             border-radius:20px; padding:3px 10px; font-size:.76rem;
             color:var(--text-dim); white-space:nowrap;
         }
+        .create-modal { max-width:560px; }
+        .create-field { margin-bottom:14px; }
+        .create-field label { display:block; font-size:.75rem; color:var(--text-dim); margin-bottom:5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+        .create-field textarea { width:100%; min-height:110px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:.85rem; padding:10px 12px; outline:none; font-family:inherit; resize:vertical; transition:border-color var(--transition); box-sizing:border-box; }
+        .create-field textarea:focus { border-color:var(--accent); }
+        .create-field input, .create-field select { width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:.85rem; padding:9px 12px; outline:none; font-family:inherit; transition:border-color var(--transition); box-sizing:border-box; }
+        .create-field input:focus, .create-field select:focus { border-color:var(--accent); }
+        .create-row { display:flex; gap:10px; }
+        .create-row .create-field { flex:1; min-width:0; }
+        .create-spinner { display:none; align-items:center; gap:10px; padding:20px; justify-content:center; color:var(--text-dim); font-size:.88rem; }
+        .create-spinner.active { display:flex; }
+        .create-spinner svg { animation: cspin 1s linear infinite; }
+        @keyframes cspin { to { transform:rotate(360deg); } }
+
         @media (max-width:768px) {
             .proposals-table th:nth-child(3), .proposals-table td:nth-child(3),
             .proposals-table th:nth-child(4), .proposals-table td:nth-child(4),
             .proposals-table th:nth-child(5), .proposals-table td:nth-child(5) { display:none; }
             .proposals-table th, .proposals-table td { padding:10px; font-size:.82rem; }
+            .create-row { flex-direction:column; }
         }
     </style>
 </head>
@@ -82,9 +97,15 @@
         </div>
 
         <div class="container">
-            <div class="section-header">
-                <span class="section-title">Все предложения</span>
-                <span class="section-count" id="proposalsCount">&mdash;</span>
+            <div class="section-header" style="justify-content:space-between">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <span class="section-title">Все предложения</span>
+                    <span class="section-count" id="proposalsCount">&mdash;</span>
+                </div>
+                <button class="btn-primary btn-compact" id="createProposalBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Создать
+                </button>
             </div>
             <div id="proposalsContent">
                 <div class="table-wrap"><table class="proposals-table"><thead><tr><th>Название</th><th>Клиент</th><th>Тип</th><th>Статус</th><th>Ставка</th><th>Дата</th><th style="width:120px">Действия</th></tr></thead><tbody>
@@ -94,6 +115,27 @@
                     <tr><td><div class="sk" style="height:14px;width:50%"></div></td><td><div class="sk" style="height:12px;width:55%"></div></td><td><div class="sk" style="height:22px;width:45px;border-radius:20px"></div></td><td><div class="sk" style="height:22px;width:65px;border-radius:20px"></div></td><td><div class="sk" style="height:22px;width:60px;border-radius:20px"></div></td><td><div class="sk" style="height:12px;width:80px"></div></td><td><div style="display:flex;gap:4px"><div class="sk" style="height:28px;width:28px;border-radius:8px"></div><div class="sk" style="height:28px;width:28px;border-radius:8px"></div><div class="sk" style="height:28px;width:28px;border-radius:8px"></div></div></td></tr>
                 </tbody></table></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Create proposal modal -->
+    <div class="modal-overlay" id="createOverlay">
+        <div class="modal create-modal">
+            <h3>Новое предложение</h3>
+            <div id="createForm">
+                <div class="create-field"><label>Описание проекта / ТЗ</label><textarea id="createDescription" placeholder="Опишите проект, его цели и функциональность..."></textarea></div>
+                <div class="create-row">
+                    <div class="create-field"><label>Тип</label><select id="createType"><option value="mvp">MVP</option><option value="full">Full</option></select></div>
+                    <div class="create-field"><label>Дизайн</label><select id="createDesign"><option value="full_design">Полный дизайн</option><option value="wireframes">Только вайрфреймы</option><option value="no_design">Без дизайна</option></select></div>
+                </div>
+                <div class="create-row">
+                    <div class="create-field"><label>Ставка / час</label><input type="number" id="createRate" step="0.01" placeholder="2000" value="2000"></div>
+                    <div class="create-field"><label>Валюта</label><select id="createCurrency"><option value="₽">₽ RUB</option><option value="$">$ USD</option><option value="€">€ EUR</option></select></div>
+                    <div class="create-field"><label>Бюджет (опц.)</label><input type="number" id="createBudget" placeholder="—"></div>
+                </div>
+                <div class="modal-actions"><button class="btn-secondary" id="createCancel">Отмена</button><button class="btn-primary" id="createSubmit">Сгенерировать</button></div>
+            </div>
+            <div class="create-spinner" id="createSpinner"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-6.22-8.56"/></svg>Генерация сметы...</div>
         </div>
     </div>
 
@@ -296,6 +338,59 @@
         }
     });
 
+
+    // ── Create modal ──
+    const createOverlay = document.getElementById('createOverlay');
+    document.getElementById('createProposalBtn').addEventListener('click', () => {
+        document.getElementById('createForm').style.display = '';
+        document.getElementById('createSpinner').classList.remove('active');
+        document.getElementById('createDescription').value = '';
+        document.getElementById('createType').value = 'mvp';
+        document.getElementById('createDesign').value = 'no_design';
+        document.getElementById('createRate').value = '2000';
+        document.getElementById('createCurrency').value = '₽';
+        document.getElementById('createBudget').value = '';
+        createOverlay.classList.add('open');
+    });
+    document.getElementById('createCancel').addEventListener('click', () => createOverlay.classList.remove('open'));
+    createOverlay.addEventListener('click', e => { if (e.target === createOverlay) createOverlay.classList.remove('open'); });
+
+    document.getElementById('createSubmit').addEventListener('click', async () => {
+        const desc = document.getElementById('createDescription').value.trim();
+        if (!desc) { showToast('Заполните описание проекта'); return; }
+        const rate = parseFloat(document.getElementById('createRate').value);
+        if (!rate || rate <= 0) { showToast('Укажите ставку'); return; }
+
+        document.getElementById('createForm').style.display = 'none';
+        document.getElementById('createSpinner').classList.add('active');
+
+        try {
+            const res = await authFetch('/api/proposals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description: desc,
+                    proposal_type: document.getElementById('createType').value,
+                    design_type: document.getElementById('createDesign').value,
+                    hourly_rate: rate,
+                    currency: document.getElementById('createCurrency').value,
+                    budget: parseFloat(document.getElementById('createBudget').value) || null,
+                }),
+            });
+            const data = await res.json();
+            if (data.ok) {
+                window.location.href = '/proposal/' + data.token + '/edit';
+            } else {
+                document.getElementById('createForm').style.display = '';
+                document.getElementById('createSpinner').classList.remove('active');
+                showToast('Ошибка: ' + (data.error || 'unknown'));
+            }
+        } catch(e) {
+            document.getElementById('createForm').style.display = '';
+            document.getElementById('createSpinner').classList.remove('active');
+            showToast('Ошибка при создании');
+        }
+    });
 
     (async () => {
         loadProposals();
