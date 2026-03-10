@@ -335,7 +335,7 @@ async def proposal_api(request):
 
         discount_items = [
             {'name': ci.get('name', ''), 'percent': ci.get('percent', 0), 'expires_at': ci.get('expires_at')}
-            for ci in custom_items_list if (ci.get('percent', 0) or 0) < 0
+            for ci in custom_items_list if (ci.get('percent', 0) or 0) < 0 and ci.get('_toggle_discount')
         ]
         base_cost_no_discount = _jr(
             max(0, base_h + pm_h + qa_h + mkt_h + seller_h) * hourly_rate
@@ -3762,7 +3762,7 @@ async def get_cabinet_data(request):
 
         discount_items = [
             {'name': ci.get('name', ''), 'percent': ci.get('percent', 0), 'expires_at': ci.get('expires_at')}
-            for ci in custom_items if (ci.get('percent', 0) or 0) < 0
+            for ci in custom_items if (ci.get('percent', 0) or 0) < 0 and ci.get('_toggle_discount')
         ]
         base_cost_no_discount = _js_round(
             max(0, base_hours + pm_hours + qa_hours + mkt_hours + seller_hours) * hourly_rate
