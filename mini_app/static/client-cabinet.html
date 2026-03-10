@@ -419,7 +419,7 @@
 
 <nav class="nav">
     <div class="nav-inner">
-        <a href="https://rusneurosoft.ru" target="_blank" class="nav-logo">
+        <a href="https://rusneurosoft.ru" target="_blank" class="nav-logo" onclick="event.preventDefault(); if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.openLink){Telegram.WebApp.openLink('https://rusneurosoft.ru');}else{window.open('https://rusneurosoft.ru','_blank');}">
             <img src="/img/logo-icon.png" alt="НейроСофт"><span>НейроСофт</span>
         </a>
         <div class="nav-right">
