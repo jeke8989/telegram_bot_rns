@@ -5246,51 +5246,85 @@ async def _reembed_project_safe(project_id: int):
 
 # ========== Zoom Webhook ==========
 
+# Fallback models when primary model fails (e.g. region block)
+_OPENROUTER_FALLBACK_MODELS = [
+    "anthropic/claude-sonnet-4",
+    "openai/gpt-4o-mini",
+    "google/gemini-2.0-flash-001",
+]
+
+
+async def _openrouter_chat(api_key: str, model: str, messages: list[dict],
+                           max_tokens: int = 2000, temperature: float = 0.3) -> str | None:
+    """Call OpenRouter chat API with automatic model rotation on failure."""
+    models_to_try = [model] + [m for m in _OPENROUTER_FALLBACK_MODELS if m != model]
+
+    for m in models_to_try:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": m,
+                        "messages": messages,
+                        "max_tokens": max_tokens,
+                        "temperature": temperature,
+                    },
+                    timeout=aiohttp.ClientTimeout(total=120),
+                ) as resp:
+                    data = await resp.json()
+                    if "choices" in data:
+                        if m != model:
+                            logger.info(f"OpenRouter: primary model {model} failed, succeeded with {m}")
+                        return data["choices"][0]["message"]["content"].strip()
+                    # Model failed — log and try next
+                    err = data.get("error", {})
+                    logger.warning(f"OpenRouter model {m} failed ({resp.status}): {err.get('message', '')[:100]}")
+        except asyncio.TimeoutError:
+            logger.warning(f"OpenRouter model {m} timed out")
+        except Exception as e:
+            logger.warning(f"OpenRouter model {m} error: {e}")
+
+    logger.error(f"OpenRouter: all models failed for request")
+    return None
+
+
 async def generate_summary(transcript: str) -> str:
     """Use OpenRouter to create a detailed meeting summary with timestamps."""
     api_key = os.getenv('OPENROUTER_API_KEY')
-    model = os.getenv('OPENROUTER_MODEL', 'gpt-4o')
+    model = os.getenv('OPENROUTER_MODEL', 'anthropic/claude-sonnet-4')
     if not api_key or not transcript:
         return ""
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": (
-                                "Ты — ассистент для анализа встреч. Создай подробное саммари встречи на русском языке.\n\n"
-                                "Правила:\n"
-                                "1. Создай 8-15 детальных пунктов, охватывающих ВСЕ ключевые моменты встречи.\n"
-                                "2. Каждый пункт ОБЯЗАТЕЛЬНО начинается с таймкода начала момента в формате [MM:SS] или [H:MM:SS].\n"
-                                "3. Используй таймкоды из транскрипции. Указывай только НАЧАЛО момента, не диапазон.\n"
-                                "4. Включай максимум деталей: имена участников, конкретные решения, цифры, названия инструментов, ключевые идеи.\n"
-                                "5. Пункты должны идти в хронологическом порядке.\n"
-                                "6. Отвечай ТОЛЬКО списком пунктов, без заголовков и вступлений.\n\n"
-                                "Пример формата:\n"
-                                "• [00:00] Обсудили необходимость централизованной организации коммуникаций через Telegram и интеграцию с Lark.\n"
-                                "• [03:15] Рассмотрели маркетинговые стратегии с акцентом на создание делового аккаунта в Instagram.\n"
-                                "• [12:40] Приняли решение о внедрении автоматизированной системы управления проектами."
-                            ),
-                        },
-                        {"role": "user", "content": f"Транскрипция встречи:\n\n{transcript[:60000]}"},
-                    ],
-                    "max_tokens": 2000,
-                    "temperature": 0.3,
-                },
-            ) as resp:
-                data = await resp.json()
-                return data["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        logger.error(f"Summary generation error: {e}")
-        return ""
+    result = await _openrouter_chat(
+        api_key, model,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Ты — ассистент для анализа встреч. Создай подробное саммари встречи на русском языке.\n\n"
+                    "Правила:\n"
+                    "1. Создай 8-15 детальных пунктов, охватывающих ВСЕ ключевые моменты встречи.\n"
+                    "2. Каждый пункт ОБЯЗАТЕЛЬНО начинается с таймкода начала момента в формате [MM:SS] или [H:MM:SS].\n"
+                    "3. Используй таймкоды из транскрипции. Указывай только НАЧАЛО момента, не диапазон.\n"
+                    "4. Включай максимум деталей: имена участников, конкретные решения, цифры, названия инструментов, ключевые идеи.\n"
+                    "5. Пункты должны идти в хронологическом порядке.\n"
+                    "6. Отвечай ТОЛЬКО списком пунктов, без заголовков и вступлений.\n\n"
+                    "Пример формата:\n"
+                    "• [00:00] Обсудили необходимость централизованной организации коммуникаций через Telegram и интеграцию с Lark.\n"
+                    "• [03:15] Рассмотрели маркетинговые стратегии с акцентом на создание делового аккаунта в Instagram.\n"
+                    "• [12:40] Приняли решение о внедрении автоматизированной системы управления проектами."
+                ),
+            },
+            {"role": "user", "content": f"Транскрипция встречи:\n\n{transcript[:60000]}"},
+        ],
+        max_tokens=2000,
+        temperature=0.3,
+    )
+    return result or ""
 
 
 async def generate_short_summary(full_summary: str) -> str:
@@ -5489,33 +5523,24 @@ async def _structured_transcript_single(
     api_key: str, model: str, formatted_transcript: str
 ) -> str | None:
     """Single-pass structured transcript generation for transcripts that fit in context."""
+    raw = await _openrouter_chat(
+        api_key, model,
+        messages=[
+            {"role": "system", "content": _STRUCTURED_TRANSCRIPT_SYSTEM_PROMPT},
+            {"role": "user", "content": f"Транскрипция встречи:\n\n{formatted_transcript}"},
+        ],
+        max_tokens=8000,
+        temperature=0.2,
+    )
+    if not raw:
+        return None
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "messages": [
-                        {"role": "system", "content": _STRUCTURED_TRANSCRIPT_SYSTEM_PROMPT},
-                        {"role": "user", "content": f"Транскрипция встречи:\n\n{formatted_transcript}"},
-                    ],
-                    "max_tokens": 8000,
-                    "temperature": 0.2,
-                },
-                timeout=aiohttp.ClientTimeout(total=120),
-            ) as resp:
-                data = await resp.json()
-                raw = data["choices"][0]["message"]["content"].strip()
-                raw = re.sub(r"^```(?:json)?\s*", "", raw)
-                raw = re.sub(r"\s*```$", "", raw)
-                json.loads(raw)
-                return raw
-    except Exception as e:
-        logger.error(f"Structured transcript generation error: {e}")
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+        json.loads(raw)  # validate JSON
+        return raw
+    except (json.JSONDecodeError, ValueError) as e:
+        logger.error(f"Structured transcript JSON parse error: {e}")
         return None
 
 
