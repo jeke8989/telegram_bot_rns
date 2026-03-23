@@ -227,6 +227,79 @@ class ZoomClient:
                 logger.error(f"Zoom delete recordings error {resp.status}: {data}")
                 return False
 
+    async def get_past_meeting_instances(self, meeting_id: int | str) -> list[dict]:
+        """Fetch all instances (sessions) of a meeting.
+
+        When a meeting is ended and restarted, each session is a separate instance
+        with its own UUID and recordings.
+        Returns list of dicts with uuid, start_time.
+        """
+        token = await self.get_access_token()
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{self.API_BASE}/past_meetings/{meeting_id}/instances",
+                headers={"Authorization": f"Bearer {token}"},
+            ) as resp:
+                if resp.status == 404:
+                    return []
+                data = await resp.json()
+                if resp.status != 200:
+                    logger.error(f"Zoom past meeting instances error: {data}")
+                    return []
+                return data.get("meetings", [])
+
+    async def get_meeting_recordings_by_uuid(self, meeting_uuid: str) -> dict | None:
+        """Fetch recordings for a specific meeting instance by UUID.
+
+        UUID must be double-encoded if it contains '/' or '//' characters.
+        """
+        token = await self.get_access_token()
+        # Double-encode UUID if it contains / or //
+        import urllib.parse
+        encoded_uuid = urllib.parse.quote(urllib.parse.quote(meeting_uuid, safe=""), safe="")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{self.API_BASE}/meetings/{encoded_uuid}/recordings",
+                headers={"Authorization": f"Bearer {token}"},
+            ) as resp:
+                if resp.status == 404:
+                    return None
+                data = await resp.json()
+                if resp.status != 200:
+                    logger.error(f"Zoom recordings by UUID error: {data}")
+                    return None
+                return data
+
+    async def get_latest_instance_recordings(self, meeting_id: int | str) -> dict | None:
+        """Get recordings from the latest (most recent) instance of a meeting.
+
+        If the meeting was stopped and restarted, this returns recordings
+        from the last session, not the first one.
+        Falls back to regular get_meeting_recordings if no instances found.
+        """
+        instances = await self.get_past_meeting_instances(meeting_id)
+        if not instances:
+            logger.info(f"Meeting {meeting_id}: no instances found, falling back to direct recordings")
+            return await self.get_meeting_recordings(meeting_id)
+
+        # Sort by start_time descending, pick the latest
+        instances.sort(key=lambda x: x.get("start_time", ""), reverse=True)
+        latest = instances[0]
+        latest_uuid = latest.get("uuid", "")
+        logger.info(
+            f"Meeting {meeting_id}: {len(instances)} instance(s) found, "
+            f"using latest UUID={latest_uuid} (started {latest.get('start_time')})"
+        )
+
+        recordings = await self.get_meeting_recordings_by_uuid(latest_uuid)
+        if recordings:
+            return recordings
+
+        logger.warning(f"Meeting {meeting_id}: latest instance has no recordings, falling back to direct")
+        return await self.get_meeting_recordings(meeting_id)
+
     async def get_past_meeting_participants(self, meeting_id: int | str) -> list[dict]:
         """Fetch participants who actually joined a past meeting.
 
@@ -298,13 +371,18 @@ class ZoomClient:
                     logger.error(f"Meeting {meeting_id}: {label} CDN download failed {cdn_resp.status}")
         return None
 
-    async def download_meeting_audio(self, meeting_id: int | str) -> tuple[bytes, str] | None:
+    async def download_meeting_audio(self, meeting_id: int | str, instance_uuid: str | None = None) -> tuple[bytes, str] | None:
         """Download audio (M4A) or video (MP4) file for a meeting.
 
         Returns (file_bytes, format) or None if not available.
         Prefers M4A over MP4 since it's smaller.
+        If instance_uuid is provided, fetches from that specific instance.
+        Otherwise uses the latest instance if the meeting was restarted.
         """
-        recordings = await self.get_meeting_recordings(meeting_id)
+        if instance_uuid:
+            recordings = await self.get_meeting_recordings_by_uuid(instance_uuid)
+        else:
+            recordings = await self.get_latest_instance_recordings(meeting_id)
         if not recordings:
             logger.info(f"Meeting {meeting_id}: no recordings found for audio download")
             return None
@@ -338,8 +416,9 @@ class ZoomClient:
         """Download MP4 video file for a meeting.
 
         Returns (file_bytes, 'mp4') or None if not available.
+        Uses the latest instance if the meeting was restarted.
         """
-        recordings = await self.get_meeting_recordings(meeting_id)
+        recordings = await self.get_latest_instance_recordings(meeting_id)
         if not recordings:
             logger.info(f"Meeting {meeting_id}: no recordings found for video download")
             return None
@@ -360,12 +439,17 @@ class ZoomClient:
         data = await self._download_zoom_file(meeting_id, download_url, "video (mp4)")
         return (data, "mp4") if data else None
 
-    async def download_meeting_transcript(self, meeting_id: int | str) -> str | None:
+    async def download_meeting_transcript(self, meeting_id: int | str, instance_uuid: str | None = None) -> str | None:
         """Poll Zoom API for a meeting's transcript and download it.
 
         Returns the VTT transcript text, or None if not available yet.
+        If instance_uuid is provided, fetches from that specific instance.
+        Otherwise uses the latest instance if the meeting was restarted.
         """
-        recordings = await self.get_meeting_recordings(meeting_id)
+        if instance_uuid:
+            recordings = await self.get_meeting_recordings_by_uuid(instance_uuid)
+        else:
+            recordings = await self.get_latest_instance_recordings(meeting_id)
         if not recordings:
             logger.info(f"Meeting {meeting_id}: no recordings found via API")
             return None

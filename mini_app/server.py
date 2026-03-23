@@ -2874,14 +2874,21 @@ async def meeting_transcribe(request):
     return web.json_response({'status': 'accepted'}, status=202)
 
 
-async def _run_manual_transcription(meeting_id, prev_status):
-    """Background worker for manual transcription triggered via the UI."""
+async def _run_manual_transcription(meeting_id, prev_status, instance_uuid=None):
+    """Background worker for manual transcription triggered via the UI.
+
+    If instance_uuid is provided, fetches transcript/audio from that specific
+    Zoom meeting instance (session) rather than auto-selecting the latest.
+    """
     try:
         zoom_vtt = None
         if zoom_client:
             try:
-                logger.info(f"Meeting {meeting_id}: trying Zoom VTT transcript first...")
-                zoom_vtt = await zoom_client.download_meeting_transcript(meeting_id)
+                if instance_uuid:
+                    logger.info(f"Meeting {meeting_id}: trying Zoom VTT from instance {instance_uuid}...")
+                else:
+                    logger.info(f"Meeting {meeting_id}: trying Zoom VTT transcript first...")
+                zoom_vtt = await zoom_client.download_meeting_transcript(meeting_id, instance_uuid=instance_uuid)
             except Exception as e:
                 logger.warning(f"Meeting {meeting_id}: Zoom VTT download failed: {e}")
 
@@ -2913,7 +2920,7 @@ async def _run_manual_transcription(meeting_id, prev_status):
                 transcript_text=None,
                 summary=None,
             )
-            await _auto_transcribe_audio(meeting_id)
+            await _auto_transcribe_audio(meeting_id, instance_uuid=instance_uuid)
 
         refreshed = await db.get_zoom_meeting(meeting_id)
         if not refreshed or not refreshed.get('transcript_text'):
@@ -2943,6 +2950,103 @@ async def meeting_status(request):
         'has_summary': has_summary,
         'has_video': bool(meeting.get('video_s3_url')),
     })
+
+
+@routes.get('/api/meeting/{token}/instances')
+async def meeting_instances(request):
+    """List all Zoom instances (sessions) of a meeting.
+    When a meeting was stopped and restarted, each session is a separate instance."""
+    require_staff_session(request)
+    token = request.match_info['token']
+    meeting = await db.get_meeting_by_public_token(token)
+    if not meeting:
+        return web.json_response({'error': 'not found'}, status=404)
+
+    meeting_id = meeting.get('meeting_id')
+    if not zoom_client or not meeting_id:
+        return web.json_response({'error': 'Zoom not configured'}, status=503)
+
+    instances = await zoom_client.get_past_meeting_instances(meeting_id)
+    result = []
+    for inst in instances:
+        uuid = inst.get('uuid', '')
+        start_time = inst.get('start_time', '')
+        recordings = await zoom_client.get_meeting_recordings_by_uuid(uuid)
+        file_count = len(recordings.get('recording_files', [])) if recordings else 0
+        has_transcript = False
+        has_video = False
+        total_size_mb = 0
+        if recordings:
+            for rf in recordings.get('recording_files', []):
+                if rf.get('file_type') == 'TRANSCRIPT':
+                    has_transcript = True
+                if rf.get('file_type') == 'MP4':
+                    has_video = True
+                total_size_mb += (rf.get('file_size', 0) / 1024 / 1024)
+        result.append({
+            'uuid': uuid,
+            'start_time': start_time,
+            'file_count': file_count,
+            'has_transcript': has_transcript,
+            'has_video': has_video,
+            'total_size_mb': round(total_size_mb, 1),
+        })
+    return web.json_response({'instances': result})
+
+
+@routes.post('/api/meeting/{token}/refetch')
+async def meeting_refetch_recording(request):
+    """Re-fetch recording/transcript from a specific Zoom instance (by UUID).
+    Clears existing transcript/summary and re-downloads from the selected instance."""
+    require_staff_session(request)
+    token = request.match_info['token']
+    meeting = await db.get_meeting_by_public_token(token)
+    if not meeting:
+        return web.json_response({'error': 'not found'}, status=404)
+
+    meeting_id = meeting.get('meeting_id')
+    if not zoom_client or not meeting_id:
+        return web.json_response({'error': 'Zoom not configured'}, status=503)
+
+    body = await request.json()
+    instance_uuid = body.get('instance_uuid')
+
+    if not instance_uuid:
+        return web.json_response({'error': 'instance_uuid required'}, status=400)
+
+    # Get recordings for the selected instance
+    recordings = await zoom_client.get_meeting_recordings_by_uuid(instance_uuid)
+    if not recordings:
+        return web.json_response({'error': 'No recordings found for this instance'}, status=404)
+
+    recording_files = recordings.get('recording_files', [])
+    share_url = recordings.get('share_url', '')
+    recording_password = recordings.get('recording_play_passcode') or recordings.get('password', '')
+    recording_url = share_url
+    if recording_password and recording_url and '?pwd=' not in recording_url:
+        recording_url = f'{recording_url}?pwd={recording_password}'
+
+    # Update recording URL and clear old transcript/summary
+    await db.update_meeting_recording(
+        meeting_id=meeting_id,
+        recording_url=recording_url or None,
+        transcript_text=None,
+        summary=None,
+        status='transcribing',
+    )
+    try:
+        await db.update_meeting_structured_transcript(meeting_id, None)
+    except Exception:
+        pass
+
+    # Kick off re-transcription in background using this specific instance
+    asyncio.ensure_future(_run_manual_transcription(meeting_id, 'recorded', instance_uuid=instance_uuid))
+
+    return web.json_response({
+        'status': 'accepted',
+        'instance_uuid': instance_uuid,
+        'file_count': len(recording_files),
+    }, status=202)
 
 
 @routes.post('/api/meeting/{token}/regenerate-structured')
@@ -6063,9 +6167,10 @@ async def _send_lark_recording_card_no_summary(meeting_id: int):
         logger.error(f"Meeting {meeting_id}: failed to send Lark recording card (no summary): {e}")
 
 
-async def _auto_transcribe_audio(meeting_id: int, provided_audio: bytes = None, provided_audio_fmt: str = None):
+async def _auto_transcribe_audio(meeting_id: int, provided_audio: bytes = None, provided_audio_fmt: str = None, instance_uuid: str = None):
     """Background: transcribe audio via OpenRouter, save transcript/summary, send Lark card.
-    If provided_audio is given, uses it directly; otherwise downloads from Zoom."""
+    If provided_audio is given, uses it directly; otherwise downloads from Zoom.
+    If instance_uuid is provided, downloads from that specific Zoom instance."""
     import base64
     import tempfile
     import glob as glob_module
@@ -6145,8 +6250,8 @@ async def _auto_transcribe_audio(meeting_id: int, provided_audio: bytes = None, 
             if not zoom_client:
                 logger.warning(f"Meeting {meeting_id}: auto-transcribe skipped — no audio source available")
                 return
-            logger.info(f"Meeting {meeting_id}: auto-transcribe starting (audio from Zoom)")
-            audio_result = await zoom_client.download_meeting_audio(meeting_id)
+            logger.info(f"Meeting {meeting_id}: auto-transcribe starting (audio from Zoom{', instance=' + instance_uuid if instance_uuid else ''})")
+            audio_result = await zoom_client.download_meeting_audio(meeting_id, instance_uuid=instance_uuid)
             if not audio_result:
                 logger.warning(f"Meeting {meeting_id}: auto-transcribe — no audio available from any source")
                 return
