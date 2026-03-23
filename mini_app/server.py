@@ -2898,24 +2898,40 @@ async def _run_manual_transcription(meeting_id, prev_status, instance_uuid=None)
             # Convert raw VTT to clean readable text for transcript_text
             clean_transcript = _format_vtt_for_display(vtt_entries) if vtt_entries else zoom_vtt
             summary = await generate_summary(clean_transcript)
-            structured_transcript_json = None
-            if vtt_entries:
-                structured_transcript_json = await generate_structured_transcript(vtt_entries)
-            else:
-                or_api_key = os.getenv('OPENROUTER_API_KEY')
-                or_model = os.getenv('OPENROUTER_MODEL', 'gpt-4o')
-                if or_api_key:
-                    structured_transcript_json = await _structured_transcript_single(or_api_key, or_model, zoom_vtt[:200000])
+            # Save transcript and summary first so user sees content immediately
             try:
                 await db.update_meeting_transcript_and_summary(
                     meeting_id=meeting_id,
                     transcript_text=clean_transcript,
                     summary=summary or None,
                 )
-                if structured_transcript_json:
-                    await db.update_meeting_structured_transcript(meeting_id, structured_transcript_json)
             except Exception as e:
                 logger.error(f"Meeting {meeting_id}: failed to save Zoom VTT transcript: {e}")
+
+            # Generate structured transcript (chapters + descriptions)
+            structured_transcript_json = None
+            if vtt_entries:
+                structured_transcript_json = await generate_structured_transcript(vtt_entries)
+                # Retry once if failed
+                if not structured_transcript_json:
+                    logger.warning(f"Meeting {meeting_id}: structured transcript first attempt failed, retrying...")
+                    await asyncio.sleep(3)
+                    structured_transcript_json = await generate_structured_transcript(vtt_entries)
+            if not structured_transcript_json:
+                # Fallback: generate from clean text directly
+                or_api_key = os.getenv('OPENROUTER_API_KEY')
+                or_model = os.getenv('OPENROUTER_MODEL', 'gpt-4o')
+                if or_api_key and clean_transcript:
+                    logger.info(f"Meeting {meeting_id}: trying structured transcript from plain text fallback")
+                    structured_transcript_json = await _structured_transcript_single(or_api_key, or_model, clean_transcript[:120000])
+            if structured_transcript_json:
+                try:
+                    await db.update_meeting_structured_transcript(meeting_id, structured_transcript_json)
+                    logger.info(f"Meeting {meeting_id}: structured transcript saved — {len(structured_transcript_json)} chars")
+                except Exception as e:
+                    logger.error(f"Meeting {meeting_id}: failed to save structured transcript: {e}")
+            else:
+                logger.error(f"Meeting {meeting_id}: all structured transcript generation attempts failed")
         else:
             await db.update_meeting_transcript_and_summary(
                 meeting_id=meeting_id,
