@@ -373,11 +373,15 @@ class ZoomWSListener:
                 try:
                     vtt_entries = self.parse_vtt(transcript_text)
                     if vtt_entries:
-                        # Convert raw VTT to clean readable text
+                        # Convert raw VTT to clean readable text [2:29] Speaker: text
                         clean_lines = []
                         for e in vtt_entries:
-                            h, m, s = e['start_time'].split(':')
-                            ts = f"{int(h):d}:{m}" if int(h) > 0 else f"{int(m):d}:{s.split('.')[0]}"
+                            try:
+                                parts = e['start_time'].split(':')
+                                h, m, s = int(parts[0]), int(parts[1]), int(parts[2].split('.')[0])
+                                ts = f"{h}:{m:02d}:{s:02d}" if h > 0 else f"{m}:{s:02d}"
+                            except (ValueError, IndexError):
+                                ts = e['start_time']
                             prefix = f"[{ts}]"
                             if e.get("speaker"):
                                 prefix += f" {e['speaker']}:"

@@ -2896,7 +2896,7 @@ async def _run_manual_transcription(meeting_id, prev_status, instance_uuid=None)
             logger.info(f"Meeting {meeting_id}: Zoom VTT found ({len(zoom_vtt)} chars), using it directly")
             vtt_entries = parse_vtt(zoom_vtt)
             # Convert raw VTT to clean readable text for transcript_text
-            clean_transcript = _format_vtt_for_llm(vtt_entries) if vtt_entries else zoom_vtt
+            clean_transcript = _format_vtt_for_display(vtt_entries) if vtt_entries else zoom_vtt
             summary = await generate_summary(clean_transcript)
             structured_transcript_json = None
             if vtt_entries:
@@ -5366,6 +5366,35 @@ def parse_vtt(vtt_text: str) -> list[dict]:
         })
 
     return entries
+
+
+def _format_vtt_timestamp(ts: str) -> str:
+    """Convert VTT timestamp '00:02:29.963' to clean '[2:29]' format."""
+    try:
+        parts = ts.split(":")
+        h, m, s = int(parts[0]), int(parts[1]), parts[2].split(".")[0]
+        s = int(s)
+        if h > 0:
+            return f"{h}:{m:02d}:{s:02d}"
+        else:
+            return f"{m}:{s:02d}"
+    except (ValueError, IndexError):
+        return ts
+
+
+def _format_vtt_for_display(entries: list[dict]) -> str:
+    """Format parsed VTT entries into clean readable transcript for display.
+
+    Output: [2:29] Ангелина Мороз: Добрый день.
+    """
+    lines = []
+    for e in entries:
+        ts = _format_vtt_timestamp(e['start_time'])
+        prefix = f"[{ts}]"
+        if e.get("speaker"):
+            prefix += f" {e['speaker']}:"
+        lines.append(f"{prefix} {e['text']}")
+    return "\n".join(lines)
 
 
 def _format_vtt_for_llm(entries: list[dict]) -> str:
