@@ -2894,9 +2894,11 @@ async def _run_manual_transcription(meeting_id, prev_status, instance_uuid=None)
 
         if zoom_vtt:
             logger.info(f"Meeting {meeting_id}: Zoom VTT found ({len(zoom_vtt)} chars), using it directly")
-            summary = await generate_summary(zoom_vtt)
-            structured_transcript_json = None
             vtt_entries = parse_vtt(zoom_vtt)
+            # Convert raw VTT to clean readable text for transcript_text
+            clean_transcript = _format_vtt_for_llm(vtt_entries) if vtt_entries else zoom_vtt
+            summary = await generate_summary(clean_transcript)
+            structured_transcript_json = None
             if vtt_entries:
                 structured_transcript_json = await generate_structured_transcript(vtt_entries)
             else:
@@ -2907,7 +2909,7 @@ async def _run_manual_transcription(meeting_id, prev_status, instance_uuid=None)
             try:
                 await db.update_meeting_transcript_and_summary(
                     meeting_id=meeting_id,
-                    transcript_text=zoom_vtt,
+                    transcript_text=clean_transcript,
                     summary=summary or None,
                 )
                 if structured_transcript_json:

@@ -373,7 +373,17 @@ class ZoomWSListener:
                 try:
                     vtt_entries = self.parse_vtt(transcript_text)
                     if vtt_entries:
-                        logger.info(f"Meeting {meeting_id}: parsed {len(vtt_entries)} VTT entries (WS)")
+                        # Convert raw VTT to clean readable text
+                        clean_lines = []
+                        for e in vtt_entries:
+                            h, m, s = e['start_time'].split(':')
+                            ts = f"{int(h):d}:{m}" if int(h) > 0 else f"{int(m):d}:{s.split('.')[0]}"
+                            prefix = f"[{ts}]"
+                            if e.get("speaker"):
+                                prefix += f" {e['speaker']}:"
+                            clean_lines.append(f"{prefix} {e['text']}")
+                        transcript_text = "\n".join(clean_lines)
+                        logger.info(f"Meeting {meeting_id}: parsed {len(vtt_entries)} VTT entries, cleaned transcript (WS)")
                         structured_transcript_json = await self.generate_structured(vtt_entries)
                         if structured_transcript_json:
                             logger.info(f"Meeting {meeting_id}: structured transcript generated from VTT (WS)")
