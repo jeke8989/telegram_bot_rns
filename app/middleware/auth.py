@@ -11,10 +11,9 @@ _PUBLIC_PREFIXES = (
     '/login', '/auth/callback', '/auth/logout', '/api/auth/bot-info', '/api/auth/telegram',
     '/api/auth/dev-users', '/api/auth/dev-login',
     '/api/health', '/api/zoom/webhook',
-    '/style.css', '/script.js', '/logo.png', '/img/', '/favicon.ico', '/apple-touch-icon.png',
+    '/style.css', '/logo.png', '/img/', '/favicon.ico', '/apple-touch-icon.png',
     '/og-image.png', '/og-meeting.png', '/og-meeting.jpg', '/og-proposal.png',
     '/css/', '/js/',
-    '/api/can-spin', '/api/spin',
     '/my-cabinet',
 )
 

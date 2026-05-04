@@ -9,7 +9,6 @@ Usage in server.py:
 
 from .static_files import routes as static_routes
 from .auth import routes as auth_routes
-from .roulette import routes as roulette_routes
 from .proposals import routes as proposal_routes
 from .clients import routes as client_routes
 from .cabinet import routes as cabinet_routes
@@ -23,7 +22,6 @@ from .ai import routes as ai_routes
 all_routes = [
     static_routes,
     auth_routes,
-    roulette_routes,
     proposal_routes,
     client_routes,
     cabinet_routes,

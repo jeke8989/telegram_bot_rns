@@ -15,10 +15,6 @@ async def update_commands():
             "command": "start",
             "description": "🚀 Начать работу с ботом"
         },
-        {
-            "command": "roulette",
-            "description": "🎰 Крутить рулетку призов"
-        }
     ]
     
     url = f"https://api.telegram.org/bot{config.telegram_token}/setMyCommands"

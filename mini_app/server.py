@@ -1,6 +1,6 @@
 """
 Mini App Web Server
-Serves static files and API endpoints for the roulette + Zoom webhook
+Serves the web cabinet (clients, projects, proposals, meetings) and Zoom webhook.
 """
 
 from aiohttp import web
@@ -154,8 +154,8 @@ async def send_telegram_message(telegram_id: int, text: str, reply_markup=None):
 
 @routes.get('/')
 async def index(request):
-    """Serve main HTML page"""
-    return web.FileResponse('./static/index.html')
+    """Root: redirect to login (auth flow then routes by role)."""
+    raise web.HTTPFound('/login')
 
 @routes.get('/projects')
 async def projects_page(request):
@@ -198,11 +198,6 @@ async def client_detail_page(request):
 async def css(request):
     """Serve CSS stylesheet"""
     return web.FileResponse('./static/style.css')
-
-@routes.get('/script.js')
-async def js(request):
-    """Serve JavaScript file"""
-    return web.FileResponse('./static/script.js')
 
 @routes.get('/sidebar.js')
 async def sidebar_js(request):
@@ -877,90 +872,17 @@ async def cabinet_proposal_document_upload(request):
 
 # ========== API Endpoints ==========
 
-import random
-
-PRIZES = [5000, 10000, 15000, 20000, 25000, 30000]
-
-@routes.get('/api/can-spin')
-async def can_spin(request):
-    """Check if user can spin the roulette"""
-    try:
-        telegram_id = request.query.get('telegram_id')
-        
-        if not telegram_id:
-            return web.json_response({'error': 'telegram_id required'}, status=400)
-        
-        telegram_id = int(telegram_id)
-        can_spin = await db.can_spin_roulette(telegram_id)
-        
-        # Also get prize if already spun
-        prize = await db.get_user_prize(telegram_id) if not can_spin else None
-        
-        return web.json_response({
-            'can_spin': can_spin,
-            'prize': prize
-        })
-    except Exception as e:
-        logger.error(f"Error in can-spin endpoint: {e}")
-        return web.json_response({'error': str(e)}, status=500)
-
-@routes.post('/api/spin')
-async def spin_roulette(request):
-    """Spin the roulette and return prize"""
-    try:
-        data = await request.json()
-        telegram_id = data.get('telegram_id')
-        
-        if not telegram_id:
-            return web.json_response({'error': 'telegram_id required'}, status=400)
-        
-        telegram_id = int(telegram_id)
-        
-        # Check if can spin
-        if not await db.can_spin_roulette(telegram_id):
-            prize = await db.get_user_prize(telegram_id)
-            return web.json_response({
-                'error': 'Already spun',
-                'prize': prize
-            }, status=400)
-        
-        # Select random prize with equal probability
-        prize = random.choice(PRIZES)
-        
-        # Save to database
-        await db.save_roulette_spin(telegram_id, prize)
-        
-        logger.info(f"User {telegram_id} won {prize} RUB")
-        
-        # Send notification to user
-        message_text = f"""
-🎉 **Поздравляем!**
-
-Вы выиграли скидку **{prize:,} ₽** на услуги нашей компании!
-
-💰 Эта сумма будет вычтена из стоимости разработки вашего проекта.
-
-📞 Свяжитесь с нами, чтобы использовать скидку:
-• Сайт: {config.company_website}
-• Email: {config.company_email}
-• Телефон: {config.company_phone}
-
-Спасибо за участие! 🚀
-        """.strip()
-        
-        # Send message asynchronously (don't wait for result)
-        await send_telegram_message(telegram_id, message_text)
-        
-        return web.json_response({'prize': prize})
-    
-    except Exception as e:
-        logger.error(f"Error in spin endpoint: {e}")
-        return web.json_response({'error': str(e)}, status=500)
-
 @routes.get('/api/health')
 async def health(request):
-    """Health check endpoint"""
-    return web.json_response({'status': 'ok'})
+    """Health check endpoint."""
+    db_ok = False
+    try:
+        await db.fetchval("SELECT 1")
+        db_ok = True
+    except Exception as e:
+        logger.warning(f"health: db ping failed: {e}")
+    status = 'ok' if db_ok else 'degraded'
+    return web.json_response({'status': status, 'db': db_ok}, status=200 if db_ok else 503)
 
 
 # ========== Authentication ==========
@@ -1309,10 +1231,9 @@ _PUBLIC_PREFIXES = (
     '/login', '/auth/callback', '/auth/logout', '/api/auth/bot-info', '/api/auth/telegram',
     '/api/auth/dev-users', '/api/auth/dev-login',
     '/api/health', '/api/zoom/webhook',
-    '/css/', '/js/', '/style.css', '/script.js', '/sidebar.js', '/chat-widget.js',
+    '/css/', '/js/', '/style.css', '/sidebar.js', '/chat-widget.js',
     '/logo.png', '/img/', '/favicon.ico', '/apple-touch-icon.png',
     '/og-image.png', '/og-meeting.png', '/og-meeting.jpg', '/og-proposal.png',
-    '/api/can-spin', '/api/spin',
     '/my-cabinet',
 )
 
@@ -1336,7 +1257,7 @@ async def auth_middleware(request, handler):
     path = request.path
     method = request.method
 
-    # Roulette root page — public
+    # Root: public (handler redirects to /login)
     if path == '/':
         return await handler(request)
 

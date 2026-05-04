@@ -839,45 +839,6 @@ class Database:
             except Exception as e:
                 logger.error(f"Failed to update business card data: {e}")
     
-    async def can_spin_roulette(self, telegram_id: int) -> bool:
-        """Check if user can spin the roulette (hasn't spun before)"""
-        async with self.pool.acquire() as conn:
-            try:
-                result = await conn.fetchval(
-                    "SELECT COUNT(*) FROM roulette_spins WHERE telegram_id = $1",
-                    telegram_id
-                )
-                return result == 0
-            except Exception as e:
-                logger.error(f"Failed to check roulette spin status: {e}")
-                return False
-    
-    async def save_roulette_spin(self, telegram_id: int, prize_amount: int):
-        """Save roulette spin result"""
-        async with self.pool.acquire() as conn:
-            try:
-                await conn.execute("""
-                    INSERT INTO roulette_spins (telegram_id, prize_amount)
-                    VALUES ($1, $2)
-                    ON CONFLICT (telegram_id) DO NOTHING
-                """, telegram_id, prize_amount)
-                logger.info(f"Roulette spin saved for user {telegram_id}: {prize_amount} RUB")
-            except Exception as e:
-                logger.error(f"Failed to save roulette spin: {e}")
-    
-    async def get_user_prize(self, telegram_id: int) -> int:
-        """Get user's prize amount (if they have spun)"""
-        async with self.pool.acquire() as conn:
-            try:
-                prize = await conn.fetchval(
-                    "SELECT prize_amount FROM roulette_spins WHERE telegram_id = $1",
-                    telegram_id
-                )
-                return prize if prize else 0
-            except Exception as e:
-                logger.error(f"Failed to get user prize: {e}")
-                return 0
-    
     # === Methods for user management (broadcasts) ===
     
     async def get_all_users(self, exclude_blocked: bool = True):
