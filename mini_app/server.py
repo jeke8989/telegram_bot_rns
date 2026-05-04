@@ -879,10 +879,11 @@ async def health(request):
     """Health check endpoint."""
     db_ok = False
     try:
-        await db.fetchval("SELECT 1")
+        async with db.pool.acquire() as conn:
+            await conn.fetchval("SELECT 1")
         db_ok = True
     except Exception as e:
-        logger.warning(f"health: db ping failed: {e}")
+        logger.warning("health: db ping failed: %s", e)
     status = 'ok' if db_ok else 'degraded'
     return web.json_response({'status': status, 'db': db_ok}, status=200 if db_ok else 503)
 

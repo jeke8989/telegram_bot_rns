@@ -114,6 +114,8 @@ services:
       - ./app/s3_client.py:/app/app/s3_client.py
       - ./app/kimai_client.py:/app/app/kimai_client.py
       - ./app/proposal_calculator.py:/app/app/proposal_calculator.py
+      - ./app/retry.py:/app/app/retry.py
+      - ./app/log_filter.py:/app/app/log_filter.py
     ports:
       - "8080:8080"
     command: python server.py

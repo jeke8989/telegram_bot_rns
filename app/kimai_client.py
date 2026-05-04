@@ -7,7 +7,10 @@ from typing import Any
 
 import aiohttp
 
-from app.retry import retry_async
+try:
+    from app.retry import retry_async  # webapp context
+except ImportError:  # pragma: no cover
+    from retry import retry_async  # bot context
 
 logger = logging.getLogger(__name__)
 

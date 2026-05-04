@@ -9,7 +9,10 @@ import logging
 import asyncio
 from yarl import URL
 
-from app.retry import retry_async
+try:
+    from app.retry import retry_async  # webapp context (server.py imports as `app.zoom_client`)
+except ImportError:  # pragma: no cover
+    from retry import retry_async  # bot context (bot.py imports as `zoom_client`)
 
 logger = logging.getLogger(__name__)
 
