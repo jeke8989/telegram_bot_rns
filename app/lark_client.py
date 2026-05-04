@@ -7,6 +7,8 @@ import time
 import json
 import logging
 
+from app.retry import retry_async
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,6 +23,7 @@ class LarkClient:
         self._token: str | None = None
         self._token_expires_at: float = 0
 
+    @retry_async(attempts=3, base_delay=1.0)
     async def get_tenant_token(self) -> str:
         if self._token and time.time() < self._token_expires_at - 60:
             return self._token
@@ -40,6 +43,7 @@ class LarkClient:
                 logger.info("Lark tenant token obtained successfully")
                 return self._token
 
+    @retry_async(attempts=3, base_delay=0.5)
     async def _send_message(self, msg_type: str, content: str) -> dict:
         token = await self.get_tenant_token()
 
