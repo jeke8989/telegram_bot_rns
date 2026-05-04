@@ -278,8 +278,8 @@ async def proposal_page(request):
                 og_description = f'Коммерческое предложение по проекту «{project_name}» для {client_name}'
             elif project_name:
                 og_description = f'Коммерческое предложение по проекту «{project_name}»'
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("og meta build failed for proposal %s: %s", token, e)
 
     html = html.replace('{{OG_TITLE}}', og_title)
     html = html.replace('{{OG_DESCRIPTION}}', og_description)
@@ -528,8 +528,8 @@ async def proposal_update_api(request):
             for cid in all_affected:
                 try:
                     await db.recalc_user_client_status(cid)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning("recalc_user_client_status(cid=%s) failed: %s", cid, e)
             # Keep legacy client_id in sync (first client or null)
             primary_cid = new_client_ids[0] if new_client_ids else None
             if primary_cid != updated.get('client_id'):
@@ -1766,8 +1766,8 @@ async def _process_uploaded_video(meeting_id: int, db_id: int, file_bytes: bytes
                     await conn.execute(
                         "UPDATE zoom_meetings SET duration = $2 WHERE meeting_id = $1",
                         meeting_id, dur_minutes)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Manual meeting %s: failed to update duration: %s", meeting_id, e)
 
     try:
         await _embed_meeting_safe(project_id, db_id)
@@ -2977,8 +2977,8 @@ async def meeting_refetch_recording(request):
     )
     try:
         await db.update_meeting_structured_transcript(meeting_id, None)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("clear structured_transcript for meeting %s failed: %s", meeting_id, e)
 
     # Kick off re-transcription in background using this specific instance
     asyncio.ensure_future(_run_manual_transcription(meeting_id, 'recorded', instance_uuid=instance_uuid))
@@ -4768,13 +4768,13 @@ async def project_finance_summary(request):
             try:
                 acts = await kimai_client.get_activities()
                 activities_map = {a['id']: a['name'] for a in acts}
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Kimai get_activities failed (activity names will be missing): %s", e)
             try:
                 usrs = await kimai_client.get_users()
                 users_map = {u['id']: u.get('alias') or u.get('username') or f"User {u['id']}" for u in usrs}
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Kimai get_users failed (user names will be missing): %s", e)
             for r in records:
                 dur_sec = r.get('duration', 0) or 0
                 rate = r.get('rate', 0) or 0
@@ -5643,8 +5643,8 @@ async def zoom_webhook(request):
             from datetime import datetime
             try:
                 start_time_dt = datetime.fromisoformat(start_time_raw.replace("Z", "+00:00"))
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("could not parse start_time_raw=%r: %s", start_time_raw, e)
 
         start_time_str = format_start_time(start_time_dt)
         end_time_str = format_end_time(start_time_dt, duration) if start_time_dt else None
@@ -7001,8 +7001,8 @@ async def _fix_meeting_durations():
                 if past and past.get('duration') and past['duration'] != row['duration']:
                     await db.update_meeting_duration(mid, past['duration'])
                     updated += 1
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("duration fix for meeting %s failed: %s", mid, e)
             await asyncio.sleep(0.3)
         logger.info(f"Duration fix: updated {updated}/{len(rows)} meetings")
     except Exception as e:
