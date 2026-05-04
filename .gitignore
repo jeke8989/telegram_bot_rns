@@ -12,10 +12,12 @@ env/
 venv/
 ENV/
 .venv
+.venv_cleanup/
 
 # IDEs
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 *~
