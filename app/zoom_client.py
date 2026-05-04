@@ -9,6 +9,8 @@ import logging
 import asyncio
 from yarl import URL
 
+from app.retry import retry_async
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,6 +29,7 @@ class ZoomClient:
         credentials = f"{self.client_id}:{self.client_secret}"
         return base64.b64encode(credentials.encode()).decode()
 
+    @retry_async(attempts=3, base_delay=1.0)
     async def get_access_token(self) -> str:
         if self._token and time.time() < self._token_expires_at - 60:
             return self._token

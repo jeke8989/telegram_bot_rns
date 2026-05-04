@@ -7,6 +7,8 @@ from typing import Any
 
 import aiohttp
 
+from app.retry import retry_async
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,6 +21,7 @@ class KimaiClient:
             "Content-Type": "application/json",
         }
 
+    @retry_async(attempts=3, base_delay=0.5)
     async def _get(self, path: str, params: dict | None = None) -> Any:
         url = f"{self.base_url}{path}"
         async with aiohttp.ClientSession(headers=self._headers) as session:

@@ -37,6 +37,8 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+from app.log_filter import install as _install_secret_filter
+_install_secret_filter()
 logger = logging.getLogger(__name__)
 
 
