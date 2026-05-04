@@ -589,8 +589,6 @@ class NeuroConnectorBot:
             f"🎯 Отвечу на 3–4 вопроса\n"
             f"🧠 Проанализирую вашу ситуацию\n"
             f"✨ Подготовлю персональные рекомендации\n\n"
-            f"🎰 <b>Бонус:</b> В конце вас ждёт сюрприз — рулетка с реальным денежным призом "
-            f"до <b>30 000 ₽</b> на услуги нашей компании!\n\n"
             f"Выберите, что вам ближе:"
         )
 
@@ -967,21 +965,16 @@ _(например: обработка заявок, подготовка отч
 
 Хорошего дня и продуктивной работы! 🚀
         """
-        
-        keyboard = [
-            [InlineKeyboardButton("🎰 Крутить AI рулетку", web_app=WebAppInfo(url=self.config.webapp_url))]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        
+
         logger.info(f"Sending entrepreneur solution message to user {user_id}")
         try:
-            await update.message.reply_text(result_text, reply_markup=reply_markup, parse_mode='HTML')
+            await update.message.reply_text(result_text, parse_mode='HTML')
             logger.info(f"Entrepreneur solution message sent successfully to user {user_id}")
         except Exception as e:
             logger.error(f"Error sending solution message: {e}")
             # Try without formatting if HTML fails
             simple_text = f"✅ Готово! Решение готово.\n\n{solution}\n\nСвяжитесь с нами: {self.config.company_website}"
-            await update.message.reply_text(simple_text, reply_markup=reply_markup)
+            await update.message.reply_text(simple_text)
         
         return ROLE_SELECTION
     
@@ -1245,21 +1238,16 @@ _(Например: "Приложение для поиска напарнико
 
 Хорошего дня и удачи в развитии вашей идеи! 🚀
         """
-        
-        keyboard = [
-            [InlineKeyboardButton("🎰 Крутить AI рулетку", web_app=WebAppInfo(url=self.config.webapp_url))]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        
+
         logger.info(f"Sending startup solution message to user {user_id}")
         try:
-            await update.message.reply_text(result_text, reply_markup=reply_markup, parse_mode='HTML')
+            await update.message.reply_text(result_text, parse_mode='HTML')
             logger.info(f"Startup solution message sent successfully to user {user_id}")
         except Exception as e:
             logger.error(f"Error sending solution message: {e}")
             # Try without formatting if HTML fails
             simple_text = f"✅ Готово! Рекомендации готовы.\n\n{welcome_msg}\n\nСвяжитесь с нами: {self.config.company_website}"
-            await update.message.reply_text(simple_text, reply_markup=reply_markup)
+            await update.message.reply_text(simple_text)
         
         return ROLE_SELECTION
     
@@ -1535,15 +1523,10 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
 Спасибо за интерес к **{self.config.company_name}**! 🚀
         """
         
-        keyboard = [
-            [InlineKeyboardButton("🎰 Крутить AI рулетку", web_app=WebAppInfo(url=self.config.webapp_url))]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        
-        await update.message.reply_text(result_text, reply_markup=reply_markup, parse_mode='Markdown')
-        
+        await update.message.reply_text(result_text, parse_mode='Markdown')
+
         return ROLE_SELECTION
-    
+
     # ============= RESEARCHER PATH =============
     async def researcher_path(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Researcher: Quick company overview"""
@@ -1844,8 +1827,6 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
 🎯 Отвечу на 3-4 вопроса
 🧠 Проанализирую вашу ситуацию
 ✨ Подготовлю персональные рекомендации
-
-**🎰 Бонус:** В конце вас ждёт сюрприз — рулетка с реальным денежным призом до **30 000 ₽** на услуги нашей компании!
 
 Выберите, что вам ближе:
         """
@@ -5276,73 +5257,6 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
         await query.answer()
         return await self._cp_ask_description(query, context)
 
-    async def handle_roulette_result(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle roulette result from mini app"""
-        user = update.effective_user
-        web_app_data = update.message.web_app_data.data
-        
-        try:
-            import json
-            data = json.loads(web_app_data)
-            prize = data.get('prize', 0)
-            
-            logger.info(f"User {user.id} won {prize} RUB in roulette")
-            
-            # Send congratulations message with buttons
-            congrats_text = f"""
-🎉 **Поздравляем, {user.first_name}!**
-
-Вы выиграли **{prize:,} ₽** на услуги нашей компании!
-
-Этот приз можно использовать как скидку при заказе разработки проекта.
-
-Хотите узнать стоимость вашего проекта с учетом скидки?
-            """
-            
-            keyboard = [
-                [InlineKeyboardButton("💰 Расчет стоимости проекта", callback_data="request_cost_calculation")],
-                [InlineKeyboardButton("🏠 В главное меню", callback_data="back_to_roles")]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            
-            await update.message.reply_text(
-                text=congrats_text,
-                reply_markup=reply_markup,
-                parse_mode='Markdown'
-            )
-            
-        except Exception as e:
-            logger.error(f"Error handling roulette result: {e}")
-    
-    async def roulette_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle /roulette command - open mini app"""
-        user = update.effective_user
-        logger.info(f"User {user.id} ({user.first_name}) requested roulette")
-        
-        # Create keyboard with Web App button that opens mini app
-        keyboard = [
-            [InlineKeyboardButton(
-                "🎰 Крутить рулетку призов", 
-                web_app=WebAppInfo(url=self.config.webapp_url)
-            )]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        
-        await update.message.reply_text(
-            "🎰 **Рулетка призов**\n\n"
-            "Нажмите кнопку ниже, чтобы открыть рулетку и попытать удачу!\n\n"
-            "💰 **Призы:**\n"
-            "• 5 000 ₽\n"
-            "• 10 000 ₽\n"
-            "• 15 000 ₽\n"
-            "• 20 000 ₽\n"
-            "• 25 000 ₽\n"
-            "• 30 000 ₽\n\n"
-            "🎁 Вы можете выиграть скидку на услуги нашей компании!",
-            reply_markup=reply_markup,
-            parse_mode='Markdown'
-        )
-    
     async def cancel(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Cancel conversation"""
         await update.message.reply_text("Диалог отменен. Спасибо за внимание! 👋")
@@ -5704,13 +5618,7 @@ def main():
     )
     
     application.add_handler(conv_handler)
-    
-    # Add roulette command handler
-    application.add_handler(CommandHandler("roulette", bot.roulette_command))
-    
-    # Add web app data handler (for roulette results)
-    application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, bot.handle_roulette_result))
-    
+
     # Initialize database and register bot commands
     async def post_init(app: Application) -> None:
         """Initialize database, register commands, and re-schedule reminders."""
