@@ -158,4 +158,4 @@ docker compose exec bot python broadcast.py "Ваше сообщение"
 
 ---
 
-Сделано с ❤️ в **Manus AI** для **rusneurosoft.ru**
+Сделано с ❤️ в **Manus AI** для **neurosoft.pro**

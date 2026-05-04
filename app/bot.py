@@ -5109,7 +5109,7 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
                     'name': self.config.company_name or 'НейроСофт',
                     'role': 'CEO',
                     'phone': self.config.company_phone or '',
-                    'email': self.config.company_email or 'info@rusneurosoft.ru',
+                    'email': self.config.company_email or 'info@neurosoft.pro',
                     'telegram': self.config.company_telegram or '',
                 }
             else:
@@ -5119,14 +5119,14 @@ _(Примеры: сложные AI-системы, финтех, e-commerce,
                         'name': f"{update.effective_user.first_name or ''} {update.effective_user.last_name or ''}".strip(),
                         'role': '',
                         'phone': self.config.company_phone or '',
-                        'email': self.config.company_email or 'info@rusneurosoft.ru',
+                        'email': self.config.company_email or 'info@neurosoft.pro',
                         'telegram': f"@{creator_username}" if creator_username else '',
                     }
 
             config_data = {
                 'company_name': self.config.company_name or 'НейроСофт',
-                'company_email': self.config.company_email or 'info@rusneurosoft.ru',
-                'company_website': self.config.company_website or 'https://rusneurosoft.ru/',
+                'company_email': self.config.company_email or 'info@neurosoft.pro',
+                'company_website': self.config.company_website or 'https://neurosoft.pro/',
                 'company_phone': self.config.company_phone or '',
                 'company_telegram': self.config.company_telegram or '',
                 'creator': creator_contact,

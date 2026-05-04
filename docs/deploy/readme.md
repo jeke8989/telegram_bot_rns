@@ -5,7 +5,7 @@
 Все готово для деплоя мини-приложения на ваш сервер:
 
 - **Сервер:** 217.198.13.11
-- **Поддомен:** miniapp.rusneurosoft.ru
+- **Поддомен:** miniapp.neurosoft.pro
 - **Путь на сервере:** /var/www/nc-miniapp
 - **Порт:** 8080
 - **SSL:** Let's Encrypt (будет настроен автоматически)
@@ -27,7 +27,7 @@ deploy/
 
 Добавьте DNS запись в панели управления вашего доменного регистратора:
 
-**Для rusneurosoft.ru добавьте:**
+**Для neurosoft.pro добавьте:**
 - **Тип:** A
 - **Имя/Host:** miniapp
 - **Значение/IP:** 217.198.13.11
@@ -36,7 +36,7 @@ deploy/
 ### Где добавить?
 
 В зависимости от вашего регистратора:
-- **REG.RU:** Личный кабинет → Домены → rusneurosoft.ru → Управление зоной DNS
+- **REG.RU:** Личный кабинет → Домены → neurosoft.pro → Управление зоной DNS
 - **Cloudflare:** Dashboard → DNS → Add record
 - **Timeweb/Beget:** Панель управления → DNS/Домены
 
@@ -61,17 +61,17 @@ cd /Users/evgenijkukuskin/Documents/Проекты/cursor/NC_bot/deploy
 
 1. **Проверьте DNS:**
    ```bash
-   nslookup miniapp.rusneurosoft.ru
+   nslookup miniapp.neurosoft.pro
    # Должен вернуть: 217.198.13.11
    ```
 
 2. **Откройте в браузере:**
-   - HTTP: http://miniapp.rusneurosoft.ru
-   - HTTPS: https://miniapp.rusneurosoft.ru (после настройки SSL)
+   - HTTP: http://miniapp.neurosoft.pro
+   - HTTPS: https://miniapp.neurosoft.pro (после настройки SSL)
 
 3. **Проверьте API:**
    ```bash
-   curl "https://miniapp.rusneurosoft.ru/api/can-spin?telegram_id=123456"
+   curl "https://miniapp.neurosoft.pro/api/can-spin?telegram_id=123456"
    ```
 
 ## Шаг 4: Обновление бота
@@ -79,7 +79,7 @@ cd /Users/evgenijkukuskin/Documents/Проекты/cursor/NC_bot/deploy
 В файле `.env` бота обновите:
 
 ```env
-WEBAPP_URL=https://miniapp.rusneurosoft.ru
+WEBAPP_URL=https://miniapp.neurosoft.pro
 ```
 
 Затем перезапустите бота:
@@ -95,7 +95,7 @@ systemctl restart bot
 
 После успешного деплоя ваше мини-приложение будет доступно по адресу:
 
-**https://miniapp.rusneurosoft.ru**
+**https://miniapp.neurosoft.pro**
 
 Эту ссылку нужно использовать в боте для кнопки "🎰 Крутить рулетку призов".
 
@@ -127,7 +127,7 @@ ssh root@217.198.13.11 "cd /var/www/nc-miniapp && docker-compose ps"
 ### DNS не работает
 - Подождите дольше (до 1 часа)
 - Проверьте правильность добавленной записи
-- Попробуйте другой DNS сервер: `nslookup miniapp.rusneurosoft.ru 8.8.8.8`
+- Попробуйте другой DNS сервер: `nslookup miniapp.neurosoft.pro 8.8.8.8`
 
 ### Nginx не запускается
 ```bash
@@ -143,7 +143,7 @@ ssh root@217.198.13.11 "cd /var/www/nc-miniapp && docker-compose logs"
 ### SSL не настраивается
 - Убедитесь, что DNS работает
 - Проверьте, что порт 80 открыт
-- Попробуйте вручную: `certbot --nginx -d miniapp.rusneurosoft.ru`
+- Попробуйте вручную: `certbot --nginx -d miniapp.neurosoft.pro`
 
 ## Контакты
 
@@ -161,4 +161,4 @@ ssh root@217.198.13.11 "cd /var/www/nc-miniapp && docker-compose logs"
 4. ✅ Бот обновлен с новым WEBAPP_URL
 5. ✅ Готово! Пользователи могут крутить рулетку
 
-**Ваша ссылка:** https://miniapp.rusneurosoft.ru
+**Ваша ссылка:** https://miniapp.neurosoft.pro

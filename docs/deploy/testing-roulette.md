@@ -128,7 +128,7 @@ Message sent to user [telegram_id]
 
 ### API Endpoint:
 
-**POST** `https://miniapp.rusneurosoft.ru/api/spin`
+**POST** `https://miniapp.neurosoft.pro/api/spin`
 
 **Request:**
 ```json

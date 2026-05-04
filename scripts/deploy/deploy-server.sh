@@ -9,7 +9,7 @@ set -e
 SERVER_IP="217.198.13.11"
 SERVER_USER="root"
 DEPLOY_PATH="/var/www/nc-miniapp"
-DOMAIN="miniapp.rusneurosoft.ru"
+DOMAIN="miniapp.neurosoft.pro"
 
 echo "🚀 Starting deployment to $SERVER_IP..."
 
@@ -29,8 +29,8 @@ scp ../.env $SERVER_USER@$SERVER_IP:$DEPLOY_PATH/.env
 # Copy Nginx configuration
 echo "🔧 Setting up Nginx..."
 scp nginx-miniapp.conf $SERVER_USER@$SERVER_IP:/tmp/miniapp.conf
-ssh $SERVER_USER@$SERVER_IP "sudo mv /tmp/miniapp.conf /etc/nginx/sites-available/miniapp.rusneurosoft.ru"
-ssh $SERVER_USER@$SERVER_IP "sudo ln -sf /etc/nginx/sites-available/miniapp.rusneurosoft.ru /etc/nginx/sites-enabled/"
+ssh $SERVER_USER@$SERVER_IP "sudo mv /tmp/miniapp.conf /etc/nginx/sites-available/miniapp.neurosoft.pro"
+ssh $SERVER_USER@$SERVER_IP "sudo ln -sf /etc/nginx/sites-available/miniapp.neurosoft.pro /etc/nginx/sites-enabled/"
 ssh $SERVER_USER@$SERVER_IP "sudo nginx -t && sudo systemctl reload nginx"
 
 # Build and start Docker containers
@@ -41,7 +41,7 @@ ssh $SERVER_USER@$SERVER_IP "cd $DEPLOY_PATH && docker-compose up -d"
 
 # Setup SSL certificate (optional)
 echo "🔒 Setting up SSL certificate..."
-ssh $SERVER_USER@$SERVER_IP "sudo certbot --nginx -d $DOMAIN --non-interactive --agree-tos --email info@rusneurosoft.ru || echo 'SSL setup skipped or failed'"
+ssh $SERVER_USER@$SERVER_IP "sudo certbot --nginx -d $DOMAIN --non-interactive --agree-tos --email info@neurosoft.pro || echo 'SSL setup skipped or failed'"
 
 echo "✅ Deployment completed!"
 echo ""

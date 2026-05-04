@@ -59,7 +59,7 @@ $ docker compose exec bot printenv | grep WEBAPP
 ### После исправления:
 ```bash
 $ docker compose exec bot printenv | grep WEBAPP
-WEBAPP_URL=https://miniapp.rusneurosoft.ru  # ✅
+WEBAPP_URL=https://miniapp.neurosoft.pro  # ✅
 ```
 
 ---
@@ -133,7 +133,7 @@ docker compose -f docker-compose.full.yml up -d miniapp
 2. Пройдите квиз
 3. Поделитесь контактом
 4. **Получите финальное сообщение с кнопкой "🎰 Крутить AI рулетку"** ✅
-5. Нажмите кнопку → откроется мини-приложение на **https://miniapp.rusneurosoft.ru**
+5. Нажмите кнопку → откроется мини-приложение на **https://miniapp.neurosoft.pro**
 
 ---
 

@@ -4,7 +4,7 @@
 
 ### ШАГ 1: Настроить DNS (5 минут)
 
-Зайдите в панель управления вашего регистратора домена rusneurosoft.ru и добавьте:
+Зайдите в панель управления вашего регистратора домена neurosoft.pro и добавьте:
 
 ```
 Тип: A
@@ -53,8 +53,8 @@ ssh root@217.198.13.11
 mkdir -p /var/www/nc-miniapp
 
 # Настройте Nginx
-mv /tmp/miniapp.conf /etc/nginx/sites-available/miniapp.rusneurosoft.ru
-ln -sf /etc/nginx/sites-available/miniapp.rusneurosoft.ru /etc/nginx/sites-enabled/
+mv /tmp/miniapp.conf /etc/nginx/sites-available/miniapp.neurosoft.pro
+ln -sf /etc/nginx/sites-available/miniapp.neurosoft.pro /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 
 # Запустите Docker контейнер
@@ -81,7 +81,7 @@ nc-miniapp   Up X seconds
 
 ```bash
 # На сервере выполните:
-certbot --nginx -d miniapp.rusneurosoft.ru --non-interactive --agree-tos --email info@rusneurosoft.ru
+certbot --nginx -d miniapp.neurosoft.pro --non-interactive --agree-tos --email info@neurosoft.pro
 ```
 
 ---
@@ -91,7 +91,7 @@ certbot --nginx -d miniapp.rusneurosoft.ru --non-interactive --agree-tos --email
 В файле `/Users/evgenijkukuskin/Documents/Проекты/cursor/NC_bot/.env` обновите:
 
 ```env
-WEBAPP_URL=https://miniapp.rusneurosoft.ru
+WEBAPP_URL=https://miniapp.neurosoft.pro
 ```
 
 Перезапустите бота:
@@ -107,7 +107,7 @@ docker-compose restart bot
 
 Ваше мини-приложение доступно по адресу:
 
-**https://miniapp.rusneurosoft.ru**
+**https://miniapp.neurosoft.pro**
 
 Эту ссылку используйте в боте для кнопки "🎰 Крутить рулетку призов".
 
@@ -115,12 +115,12 @@ docker-compose restart bot
 
 ## Проверка работы
 
-1. Откройте в браузере: https://miniapp.rusneurosoft.ru
+1. Откройте в браузере: https://miniapp.neurosoft.pro
    - Должна открыться страница с рулеткой
 
 2. Проверьте API:
    ```bash
-   curl "https://miniapp.rusneurosoft.ru/api/can-spin?telegram_id=123456"
+   curl "https://miniapp.neurosoft.pro/api/can-spin?telegram_id=123456"
    ```
    - Должен вернуть JSON с данными
 
@@ -136,7 +136,7 @@ docker-compose restart bot
 ### DNS не резолвится
 ```bash
 # Проверьте DNS
-nslookup miniapp.rusneurosoft.ru
+nslookup miniapp.neurosoft.pro
 
 # Если не работает, подождите еще 10-20 минут
 ```
@@ -163,12 +163,12 @@ ssh root@217.198.13.11 "systemctl status nginx"
 | Параметр | Значение |
 |----------|----------|
 | **Сервер** | 217.198.13.11 |
-| **Домен** | miniapp.rusneurosoft.ru |
-| **URL** | https://miniapp.rusneurosoft.ru |
+| **Домен** | miniapp.neurosoft.pro |
+| **URL** | https://miniapp.neurosoft.pro |
 | **Путь на сервере** | /var/www/nc-miniapp |
 | **Порт** | 8080 |
 | **DNS запись** | A miniapp 217.198.13.11 |
-| **WEBAPP_URL** | https://miniapp.rusneurosoft.ru |
+| **WEBAPP_URL** | https://miniapp.neurosoft.pro |
 
 ---
 

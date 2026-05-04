@@ -153,7 +153,7 @@ docker compose -f docker-compose.dev.yml --env-file .env.dev down -v
 APP_ENV=development        # вместо production
 DEBUG=True                 # вместо False
 LOG_LEVEL=DEBUG            # вместо INFO
-WEBAPP_URL=http://localhost:8081  # вместо https://portal.rusneurosoft.ru
+WEBAPP_URL=http://localhost:8081  # вместо https://portal.neurosoft.pro
 DATABASE_URL=...postgres-dev...   # вместо postgres
 ```
 

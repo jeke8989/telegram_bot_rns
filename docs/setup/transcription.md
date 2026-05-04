@@ -98,4 +98,4 @@ OPENROUTER_MODEL=gpt-4o
 
 ---
 
-**Сделано с ❤️ в rusneurosoft.ru**
+**Сделано с ❤️ в neurosoft.pro**

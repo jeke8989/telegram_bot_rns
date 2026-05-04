@@ -1,6 +1,6 @@
 # Настройка DNS для мини-приложения
 
-## Поддомен: miniapp.rusneurosoft.ru
+## Поддомен: miniapp.neurosoft.pro
 
 ### DNS запись, которую нужно добавить:
 
@@ -11,7 +11,7 @@
 
 ## Где добавить DNS запись
 
-1. Зайдите в панель управления вашего доменного регистратора (где зарегистрирован rusneurosoft.ru)
+1. Зайдите в панель управления вашего доменного регистратора (где зарегистрирован neurosoft.pro)
 2. Найдите раздел DNS Management / DNS Settings / Zone Editor
 3. Добавьте новую A запись с параметрами выше
 
@@ -19,7 +19,7 @@
 
 ### REG.RU:
 1. Зайдите в личный кабинет
-2. Выберите домен rusneurosoft.ru
+2. Выберите домен neurosoft.pro
 3. Перейдите в "Управление зоной DNS"
 4. Нажмите "Добавить запись"
 5. Выберите тип A
@@ -30,7 +30,7 @@
 
 ### Cloudflare:
 1. Зайдите в панель Cloudflare
-2. Выберите домен rusneurosoft.ru
+2. Выберите домен neurosoft.pro
 3. Перейдите в DNS
 4. Нажмите "Add record"
 5. Выберите:
@@ -43,7 +43,7 @@
 ### Timeweb / Beget / другие:
 1. Зайдите в панель управления хостингом
 2. Найдите раздел DNS или Домены
-3. Выберите rusneurosoft.ru
+3. Выберите neurosoft.pro
 4. Добавьте A запись:
    - Имя: `miniapp`
    - IP: `217.198.13.11`
@@ -54,9 +54,9 @@
 
 Проверить можно командой:
 ```bash
-nslookup miniapp.rusneurosoft.ru
+nslookup miniapp.neurosoft.pro
 # или
-dig miniapp.rusneurosoft.ru
+dig miniapp.neurosoft.pro
 ```
 
 Должно вернуть IP: 217.198.13.11
@@ -64,18 +64,18 @@ dig miniapp.rusneurosoft.ru
 ## После настройки DNS
 
 1. Дождитесь распространения DNS (5-30 минут)
-2. Откройте в браузере: http://miniapp.rusneurosoft.ru
+2. Откройте в браузере: http://miniapp.neurosoft.pro
 3. Если работает, запустите скрипт для установки SSL:
    ```bash
-   ssh root@217.198.13.11 "sudo certbot --nginx -d miniapp.rusneurosoft.ru"
+   ssh root@217.198.13.11 "sudo certbot --nginx -d miniapp.neurosoft.pro"
    ```
-4. После этого сайт будет доступен по HTTPS: https://miniapp.rusneurosoft.ru
+4. После этого сайт будет доступен по HTTPS: https://miniapp.neurosoft.pro
 
 ## Обновление WEBAPP_URL в боте
 
 После успешного деплоя обновите в `.env`:
 ```
-WEBAPP_URL=https://miniapp.rusneurosoft.ru
+WEBAPP_URL=https://miniapp.neurosoft.pro
 ```
 
 И перезапустите бота.

@@ -2740,7 +2740,7 @@ async def ticket_ai_generate(request):
     headers = {
         'Authorization': f'Bearer {config.openrouter_api_key}',
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://rusneurosoft.ru',
+        'HTTP-Referer': 'https://neurosoft.pro',
         'X-Title': 'NC Bot ticket-ai',
     }
     payload = {

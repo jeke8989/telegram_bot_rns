@@ -2,7 +2,7 @@
 
 ## DNS настройка (сделайте ПЕРВЫМ делом!)
 
-Добавьте DNS запись для rusneurosoft.ru:
+Добавьте DNS запись для neurosoft.pro:
 
 | Параметр | Значение |
 |----------|----------|
@@ -26,14 +26,14 @@ cd /Users/evgenijkukuskin/Documents/Проекты/cursor/NC_bot/deploy
 
 ## Проверка работы
 
-1. Откройте: https://miniapp.rusneurosoft.ru
+1. Откройте: https://miniapp.neurosoft.pro
 2. Должна открыться страница с рулеткой
 
 ## Обновление WEBAPP_URL
 
 В файле `.env` обновите:
 ```
-WEBAPP_URL=https://miniapp.rusneurosoft.ru
+WEBAPP_URL=https://miniapp.neurosoft.pro
 ```
 
 Перезапустите бота.
@@ -41,6 +41,6 @@ WEBAPP_URL=https://miniapp.rusneurosoft.ru
 ## Готово!
 
 Ваша ссылка на мини-приложение:
-**https://miniapp.rusneurosoft.ru**
+**https://miniapp.neurosoft.pro**
 
 Используйте эту ссылку в боте для кнопки "Крутить рулетку".

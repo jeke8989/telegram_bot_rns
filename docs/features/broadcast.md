@@ -180,7 +180,7 @@ docker compose exec bot python broadcast.py "⚠️ Внимание!\n\nБот 
 ### Анонс мероприятия
 
 ```bash
-docker compose exec bot python broadcast.py "📅 Приглашаем на наше мероприятие!\n\n**Дата:** 15 февраля 2026\n**Время:** 18:00 МСК\n**Тема:** AI в бизнесе\n\nПодробности: https://rusneurosoft.ru/event"
+docker compose exec bot python broadcast.py "📅 Приглашаем на наше мероприятие!\n\n**Дата:** 15 февраля 2026\n**Время:** 18:00 МСК\n**Тема:** AI в бизнесе\n\nПодробности: https://neurosoft.pro/event"
 ```
 
 ## Мониторинг

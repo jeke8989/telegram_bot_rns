@@ -17,8 +17,8 @@ mkdir -p /var/www/nc-miniapp
 cp -r /tmp/nc-miniapp-upload/* /var/www/nc-miniapp/
 
 echo "🔧 Setting up Nginx..."
-mv /var/www/nc-miniapp/miniapp.conf /etc/nginx/sites-available/miniapp.rusneurosoft.ru
-ln -sf /etc/nginx/sites-available/miniapp.rusneurosoft.ru /etc/nginx/sites-enabled/
+mv /var/www/nc-miniapp/miniapp.conf /etc/nginx/sites-available/miniapp.neurosoft.pro
+ln -sf /etc/nginx/sites-available/miniapp.neurosoft.pro /etc/nginx/sites-enabled/
 nginx -t
 systemctl reload nginx
 
@@ -42,5 +42,5 @@ ENDSSH
 echo ""
 echo "✅ Server setup completed!"
 echo ""
-echo "🌐 Your mini app will be available at: https://miniapp.rusneurosoft.ru"
+echo "🌐 Your mini app will be available at: https://miniapp.neurosoft.pro"
 echo "⏳ Wait 10-15 minutes for DNS to propagate"

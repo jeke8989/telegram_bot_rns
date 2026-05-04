@@ -37,10 +37,10 @@ scp deploy/docker-compose.miniapp.yml root@217.198.13.11:/var/www/nc-miniapp/doc
 
 ```bash
 # Создайте конфигурацию Nginx
-cat > /etc/nginx/sites-available/miniapp.rusneurosoft.ru << 'EOF'
+cat > /etc/nginx/sites-available/miniapp.neurosoft.pro << 'EOF'
 server {
     listen 80;
-    server_name miniapp.rusneurosoft.ru;
+    server_name miniapp.neurosoft.pro;
 
     location / {
         proxy_pass http://localhost:8080;
@@ -65,7 +65,7 @@ server {
 EOF
 
 # Активируйте конфигурацию
-ln -sf /etc/nginx/sites-available/miniapp.rusneurosoft.ru /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/miniapp.neurosoft.pro /etc/nginx/sites-enabled/
 
 # Проверьте конфигурацию
 nginx -t
@@ -114,21 +114,21 @@ apt update
 apt install certbot python3-certbot-nginx -y
 
 # Получите SSL сертификат
-certbot --nginx -d miniapp.rusneurosoft.ru --non-interactive --agree-tos --email info@rusneurosoft.ru
+certbot --nginx -d miniapp.neurosoft.pro --non-interactive --agree-tos --email info@neurosoft.pro
 ```
 
 ## Шаг 8: Проверка работы
 
-1. Откройте в браузере: https://miniapp.rusneurosoft.ru
+1. Откройте в браузере: https://miniapp.neurosoft.pro
 2. Должна открыться страница с рулеткой
-3. Проверьте API: https://miniapp.rusneurosoft.ru/api/can-spin?telegram_id=123456
+3. Проверьте API: https://miniapp.neurosoft.pro/api/can-spin?telegram_id=123456
 
 ## Шаг 9: Обновление WEBAPP_URL в боте
 
 В файле `.env` бота обновите:
 
 ```env
-WEBAPP_URL=https://miniapp.rusneurosoft.ru
+WEBAPP_URL=https://miniapp.neurosoft.pro
 ```
 
 Перезапустите бота.
@@ -166,4 +166,4 @@ docker-compose restart
 ## Готово!
 
 Ваше мини-приложение доступно по адресу:
-**https://miniapp.rusneurosoft.ru**
+**https://miniapp.neurosoft.pro**

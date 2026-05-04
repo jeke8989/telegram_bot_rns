@@ -3,7 +3,7 @@
 ## 🎯 Что было сделано (полный список):
 
 ### 1. ✅ Мини-приложение развёрнуто на сервере
-- URL: **https://miniapp.rusneurosoft.ru**
+- URL: **https://miniapp.neurosoft.pro**
 - SSL сертификат установлен
 - PostgreSQL + Docker + Nginx настроены
 - Автоматическая отправка уведомлений о выигрыше
@@ -42,7 +42,7 @@
 │  - Отправляет кнопку рулетки                   │
 └─────────────────┬───────────────────────────────┘
                   │
-                  │ https://miniapp.rusneurosoft.ru
+                  │ https://miniapp.neurosoft.pro
                   │
 ┌─────────────────▼───────────────────────────────┐
 │        Mini App (На сервере 217.198.13.11)     │
@@ -89,7 +89,7 @@ COMPANY_WEBSITE=https://neuro-code.com
 # Links
 CASES_LINK=https://neuro-code.com/cases
 BOOK_CALL_LINK=https://calendly.com/neuro-code
-WEBAPP_URL=https://miniapp.rusneurosoft.ru
+WEBAPP_URL=https://miniapp.neurosoft.pro
 ```
 
 ---
@@ -123,7 +123,7 @@ await update.message.reply_text(
     reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton(
             "🎰 Крутить AI рулетку", 
-            web_app=WebAppInfo(url="https://miniapp.rusneurosoft.ru")
+            web_app=WebAppInfo(url="https://miniapp.neurosoft.pro")
         )]
     ]),
     parse_mode='HTML'
@@ -176,7 +176,7 @@ docker compose -f docker-compose.full.yml ps
 
 ### Доступность:
 ```bash
-curl -I https://miniapp.rusneurosoft.ru
+curl -I https://miniapp.neurosoft.pro
 # HTTP/1.1 200 OK ✅
 ```
 
@@ -190,7 +190,7 @@ curl -I https://miniapp.rusneurosoft.ru
 4. ✅ Отправка контакта
 5. ✅ Генерация решения через AI
 6. ✅ Получение финального сообщения с кнопкой
-7. ✅ Открытие мини-приложения (https://miniapp.rusneurosoft.ru)
+7. ✅ Открытие мини-приложения (https://miniapp.neurosoft.pro)
 8. ✅ Прокрутка рулетки
 9. ✅ Получение уведомления о выигрыше
 10. ✅ Сохранение в БД

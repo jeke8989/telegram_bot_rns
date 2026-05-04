@@ -91,7 +91,7 @@ def generate_og_image():
     
     # Draw simple gradient/solid badge
     draw.rounded_rectangle((badge_x, badge_y, badge_x+badge_w, badge_y+badge_h), radius=15, fill=(120, 124, 245, 60), outline=(120, 124, 245, 120), width=2)
-    draw.text((badge_x + 35, badge_y + 10), "rusneurosoft.ru", font=font_badge, fill=(255, 255, 255, 200))
+    draw.text((badge_x + 35, badge_y + 10), "neurosoft.pro", font=font_badge, fill=(255, 255, 255, 200))
 
     # Save
     bg = bg.convert("RGB") # Remove alpha for standard jpeg/png compat

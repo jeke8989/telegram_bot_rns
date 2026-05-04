@@ -253,4 +253,4 @@ tail -f logs/bot.log | grep -i "voice\|transcri"
 
 ---
 
-**Сделано с ❤️ в rusneurosoft.ru**
+**Сделано с ❤️ в neurosoft.pro**

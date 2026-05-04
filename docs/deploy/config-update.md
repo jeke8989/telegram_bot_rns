@@ -33,7 +33,7 @@ COMPANY_PHONE=+7 (987) 750-30-75
 
 **app/config.py:**
 ```python
-cases_link = os.getenv('CASES_LINK', 'https://rusneurosoft.ru/cases')
+cases_link = os.getenv('CASES_LINK', 'https://neurosoft.pro/cases')
 book_call_link = os.getenv('BOOK_CALL_LINK', 'https://calendly.com/rusneurosoft')
 ```
 
