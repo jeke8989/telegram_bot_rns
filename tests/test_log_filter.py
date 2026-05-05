@@ -19,10 +19,13 @@ def _make_record(msg, *args, name="test"):
 
 
 def test_mask_telegram_bot_token_in_url():
-    raw = "POST https://api.telegram.org/bot8364761240:AAFCNThzfpes3UGuK2iJ-zCv8uz-bkn5zmI/setMyCommands"
+    # Synthetic token (NOT real). Format must match what Telegram issues:
+    # <bot_id>:<35+ char secret>. Using only `A` characters in the secret
+    # so the test fixture cannot accidentally match a real revoked token.
+    raw = "POST https://api.telegram.org/bot1234567890:" + "A" * 35 + "/setMyCommands"
     out = _mask(raw)
-    assert "AAFCNThzfpes3UGuK2iJ" not in out
-    assert "8364761240:***" in out
+    assert "A" * 35 not in out
+    assert "1234567890:***" in out
 
 
 def test_mask_openrouter_key():
