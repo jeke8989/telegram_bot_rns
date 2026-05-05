@@ -47,7 +47,7 @@
 
 ```env
 # Telegram Bot Configuration
-TELEGRAM_BOT_TOKEN=8364761240:AAGwq6m_pC-fkrzba3g6rEl77pywJ_OmZq4
+TELEGRAM_BOT_TOKEN=<your_telegram_bot_token>
 
 # OpenRouter API Configuration
 OPENROUTER_API_KEY=your_openrouter_api_key_here  # <--- ВАШ КЛЮЧ OPENROUTER

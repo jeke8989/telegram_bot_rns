@@ -71,7 +71,7 @@
 
 ```env
 # Telegram Bot
-TELEGRAM_BOT_TOKEN=8364761240:AAGwq6m_pC-fkrzba3g6rEl77pywJ_OmZq4
+TELEGRAM_BOT_TOKEN=<your_telegram_bot_token>
 
 # OpenRouter API
 OPENROUTER_API_KEY=sk-or-v1-...
